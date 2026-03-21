@@ -42,11 +42,14 @@ body.gamepad-active{cursor:none;}
 .scr{
   display:none;position:fixed;inset:0;z-index:500;
   flex-direction:column;align-items:center;
-  justify-content:flex-start;   /* never clip with center on small screens */
+  justify-content:flex-start;
   overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
 }
+/* iOS WebView fix — remove tap delay everywhere */
+* { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+button, [onclick] { cursor:pointer; }
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
@@ -62,9 +65,10 @@ body.gamepad-active{cursor:none;}
 
 /* BUTTONS */
 .btn{position:relative;overflow:hidden;font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(10px,2.5vw,13px);
-  letter-spacing:.25em;padding:13px 28px;border:1px solid;cursor:pointer;transition:transform .1s;background:transparent;}
-.btn span{position:relative;z-index:1;}
-.btn::before{content:'';position:absolute;inset:0;transform:scaleX(0);transform-origin:left;transition:transform .18s;}
+  letter-spacing:.25em;padding:13px 28px;border:1px solid;cursor:pointer;transition:background .18s,transform .1s;background:transparent;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation;}
+.btn span{position:relative;z-index:1;pointer-events:none;}
+.btn::before{content:'';position:absolute;inset:0;transform:scaleX(0);transform-origin:left;transition:transform .18s;pointer-events:none;}
 .btn:hover::before,.btn:active::before{transform:scaleX(1);}
 .btn:active{transform:scale(.95);}
 .btn-p{border-color:var(--c1);color:var(--c1);}
@@ -1274,8 +1278,8 @@ body.touch #minimap{display:none;}
   <div class="auth-box">
     <div class="auth-title">PULSE</div>
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
-    <input class="auth-input" id="auth-email" type="email" placeholder="EMAIL" autocomplete="email">
-    <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password">
+    <input class="auth-input" id="auth-email" type="email" placeholder="EMAIL" autocomplete="email" onkeydown="if(event.key==='Enter')doAuth()">
+    <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-ok"  id="auth-ok"></div>
     <button class="btn btn-p" id="auth-submit-btn" onclick="doAuth()"><span id="auth-submit-lbl">SE CONNECTER</span></button>
@@ -5764,9 +5768,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }
 
-  // Check if Supabase is configured and has a session
-  if(SB){
-    // Timeout de sécurité : si getSession ne répond pas en 4s, afficher l'auth
+  // Détecter si on est en file:// (aperçu iOS Fichiers)
+  const isFileProtocol = location.protocol === 'file:';
+
+  if(isFileProtocol){
+    // Mode fichier local — démarrer directement en invité
+    // Supabase est bloqué sur file://, inutile d'essayer
+    isGuest = true;
+    SB = null;
+    // Afficher un message dans l'écran titre
+    const userBar = document.getElementById('title-user-pill');
+    if(userBar) userBar.textContent = '📱 Mode local · Compte désactivé';
+    maybeShowOnboard(false);
+    updateCoinsHUD();
+    updateUserBar();
+    renderTitleBest();
+  } else if(SB){
     const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
     SB.auth.getSession().then(({data})=>{
       clearTimeout(sbTimeout);
@@ -5795,6 +5812,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // Wire up leaderboard button
   document.querySelector('.btn-g[onclick*="s-lb"]').addEventListener('click',renderLeaderboard);
+
+  // iOS fix: sur file://, les clics sur boutons peuvent être bloqués.
+  // On écoute touchend et on déclenche .click() manuellement.
+  if(isFileProtocol){
+    document.addEventListener('touchend', function(e){
+      var el = e.target;
+      for(var i=0; i<6; i++){
+        if(!el) break;
+        if(el.tagName==='BUTTON' || el.tagName==='A' || el.getAttribute('onclick')){
+          e.preventDefault();
+          el.click();
+          break;
+        }
+        el = el.parentElement;
+      }
+    }, {passive:false});
+  }
 });
 </script>
 </body>
