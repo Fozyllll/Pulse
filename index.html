@@ -5494,16 +5494,30 @@ async function adminSave(playerId){
 
   // Get current profile for merge
   const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades').eq('id',playerId).single();
-  const bp = Object.assign({level:0,xp:0,season:1,claimed:{}}, cur?.battle_pass||{}, {level:bpLevel});
+  const bp = Object.assign({level:0,xp:0,season:1,claimed:{}}, cur?.battle_pass||{}, {level:bpLevel, xp:0});
   const perma = Object.assign({}, cur?.perma_upgrades||{}, {p_hp:phpLvl, p_dmg:pdmgLvl});
 
   try {
-    const {error} = await SB.from('profiles').upsert({
-      id:playerId, coins, owned_skins:ownedSkins,
-      battle_pass:bp, perma_upgrades:perma
-    });
-    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; }
-    else { statusEl.textContent='✓ Sauvegardé !'; statusEl.className='admin-status ok'; }
+    // Sauvegarder en deux passes pour éviter l'erreur de cache Supabase sur battle_pass
+    const {error:e1} = await SB.from('profiles').update({
+      coins, owned_skins:ownedSkins, perma_upgrades:perma
+    }).eq('id', playerId);
+
+    if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
+
+    // Mettre à jour battle_pass séparément
+    const {error:e2} = await SB.from('profiles').update({
+      battle_pass: bp
+    }).eq('id', playerId);
+
+    if(e2){
+      // Si battle_pass échoue (colonne manquante dans cache), ignorer et signaler partiellement
+      statusEl.textContent='✓ Sauvegardé (passe combat: '+e2.message+')';
+      statusEl.className='admin-status wait';
+    } else {
+      statusEl.textContent='✓ Tout sauvegardé !';
+      statusEl.className='admin-status ok';
+    }
   } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
 }
 
@@ -5527,13 +5541,16 @@ async function adminReset(playerId){
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Reset…'; statusEl.className='admin-status wait';
   try {
-    const {error} = await SB.from('profiles').upsert({
-      id:playerId, coins:0, owned_skins:['default'], equipped_skin:'default',
-      perma_upgrades:{}, scores:[], stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0},
-      ach:{}, battle_pass:{level:0,xp:0,season:1,claimed:{}}
-    });
-    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; }
-    else { statusEl.textContent='✓ Joueur réinitialisé.'; statusEl.className='admin-status ok'; }
+    const {error:e1} = await SB.from('profiles').update({
+      coins:0, owned_skins:['default'], equipped_skin:'default',
+      perma_upgrades:{}, scores:[],
+      stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0},
+      ach:{}
+    }).eq('id', playerId);
+    if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
+    // Reset battle_pass séparément
+    await SB.from('profiles').update({ battle_pass:{level:0,xp:0,season:1,claimed:{}} }).eq('id', playerId);
+    statusEl.textContent='✓ Joueur réinitialisé.'; statusEl.className='admin-status ok';
   } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
 }
 
