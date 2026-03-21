@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
-<title>PULSE v19 — Twin-Stick Survivor</title>
+<title>PULSE v20 — Twin-Stick Survivor</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -854,6 +854,40 @@ body.touch #minimap{display:none;}
 .online-peer-hp-fill{height:100%;background:var(--c1);border-radius:2px;transition:width .3s;}
 .online-peer-wave{font-size:6px;color:var(--txt2);}
 
+
+/* ═══ ADMIN PANEL ═══ */
+#s-admin{background:rgba(3,3,10,.99);backdrop-filter:blur(20px);}
+.admin-wrap{width:min(680px,96vw);display:flex;flex-direction:column;gap:0;}
+.admin-header{display:flex;align-items:center;gap:12px;padding:10px 0 14px;border-bottom:1px solid rgba(255,26,110,.3);}
+.admin-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4vmin,22px);letter-spacing:.12em;color:var(--c2);}
+.admin-badge{font-size:7px;letter-spacing:.3em;padding:3px 10px;border:1px solid var(--c2);color:var(--c2);background:rgba(255,26,110,.08);}
+.admin-search{display:flex;gap:8px;margin:14px 0 8px;}
+.admin-input{flex:1;background:var(--dim2);border:1px solid var(--border);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:12px;padding:10px 12px;outline:none;}
+.admin-input:focus{border-color:var(--c2);}
+.admin-player-card{border:1px solid var(--border);background:var(--dim2);padding:14px 16px;margin-bottom:8px;}
+.admin-player-name{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.1em;color:var(--txt);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.admin-player-email{font-size:8px;color:var(--txt2);letter-spacing:.08em;}
+.admin-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.admin-field{display:flex;flex-direction:column;gap:4px;}
+.admin-field-lbl{font-size:7px;letter-spacing:.2em;color:var(--txt2);}
+.admin-field-input{background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px 8px;outline:none;width:100%;}
+.admin-field-input:focus{border-color:var(--c1);}
+.admin-skins-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.admin-skin-pill{font-size:7px;letter-spacing:.08em;padding:3px 8px;border:1px solid var(--border);color:var(--txt2);cursor:pointer;transition:all .1s;}
+.admin-skin-pill.owned{border-color:var(--c1);color:var(--c1);background:rgba(0,245,212,.08);}
+.admin-skin-pill:hover{border-color:var(--txt2);}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.admin-btn{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.12em;padding:7px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all .13s;}
+.admin-btn.save{border-color:var(--c1);color:var(--c1);}.admin-btn.save:hover{background:var(--c1);color:var(--bg);}
+.admin-btn.danger{border-color:var(--c2);color:var(--c2);}.admin-btn.danger:hover{background:var(--c2);color:#fff;}
+.admin-btn.warn{border-color:var(--c3);color:var(--c3);}.admin-btn.warn:hover{background:var(--c3);color:var(--bg);}
+.admin-status{font-size:8px;letter-spacing:.15em;min-height:14px;margin-top:6px;}
+.admin-status.ok{color:var(--c1);}.admin-status.err{color:var(--c2);}.admin-status.wait{color:var(--c3);}
+.admin-stats-bar{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap;}
+.admin-stat{display:flex;flex-direction:column;gap:2px;}
+.admin-stat-v{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--c1);}
+.admin-stat-l{font-size:6px;letter-spacing:.2em;color:var(--txt2);}
+
 </style>
 </head>
 <body>
@@ -1084,7 +1118,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 19.0</div>
+    <div class="logo-ver">VERSION 20.0</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1254,7 +1288,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v19.0</div>
+<div id="watermark">PULSE v20.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1589,7 +1623,7 @@ body.touch #minimap{display:none;}
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '19.0';
+const VERSION = '20.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -3288,19 +3322,43 @@ function draw(){
   ctx.globalAlpha=1;
   ctx.translate(G.sx,G.sy);
 
-  // Obstacles
+  // Obstacles — murs bien visibles
   for(const o of G.obstacles){
+    const x1=o.x-o.w/2, y1=o.y-o.h/2, x2=o.x+o.w/2, y2=o.y+o.h/2;
     ctx.save();
-    ctx.fillStyle='rgba(8,18,13,.92)';
-    ctx.shadowColor='rgba(0,245,212,.08)'; ctx.shadowBlur=12;
-    ctx.strokeStyle='rgba(0,245,212,.18)'; ctx.lineWidth=1;
-    ctx.fillRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h);
-    ctx.strokeRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h);
-    // Corner dots
-    ctx.shadowBlur=0; ctx.fillStyle='rgba(0,245,212,.35)';
-    [[o.x-o.w/2,o.y-o.h/2],[o.x+o.w/2,o.y-o.h/2],[o.x+o.w/2,o.y+o.h/2],[o.x-o.w/2,o.y+o.h/2]].forEach(([cx,cy])=>{
-      ctx.beginPath(); ctx.arc(cx,cy,2,0,Math.PI*2); ctx.fill();
+    // Corps solide avec pattern grille
+    ctx.fillStyle='rgba(4,14,10,.97)';
+    ctx.fillRect(x1,y1,o.w,o.h);
+    // Lignes de grille internes
+    ctx.strokeStyle='rgba(0,245,212,.07)'; ctx.lineWidth=1;
+    const gs=14;
+    ctx.beginPath();
+    for(let gx=x1+gs;gx<x2;gx+=gs){ ctx.moveTo(gx,y1); ctx.lineTo(gx,y2); }
+    for(let gy=y1+gs;gy<y2;gy+=gs){ ctx.moveTo(x1,gy); ctx.lineTo(x2,gy); }
+    ctx.stroke();
+    // Bordure principale — épaisse et lumineuse
+    const pulse=0.6+0.4*Math.sin(frame*.04+o.x*.01);
+    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=settings.lowQuality?0:10;
+    ctx.strokeStyle=`rgba(0,245,212,${pulse*.7})`; ctx.lineWidth=2;
+    ctx.strokeRect(x1,y1,o.w,o.h);
+    // Liseré intérieur plus fin
+    ctx.shadowBlur=0; ctx.strokeStyle=`rgba(0,245,212,${pulse*.3})`; ctx.lineWidth=1;
+    ctx.strokeRect(x1+3,y1+3,o.w-6,o.h-6);
+    // Coins lumineux
+    ctx.fillStyle=`rgba(0,245,212,${pulse*.9})`;
+    const cSize=4;
+    [[x1,y1],[x2,y1],[x2,y2],[x1,y2]].forEach(([cx,cy])=>{
+      ctx.beginPath(); ctx.arc(cx,cy,cSize,0,Math.PI*2); ctx.fill();
     });
+    // Diagonales de coin (style tech)
+    ctx.strokeStyle=`rgba(0,245,212,${pulse*.5})`; ctx.lineWidth=1.5;
+    const cd=10;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1+cd); ctx.lineTo(x1,y1); ctx.lineTo(x1+cd,y1);
+    ctx.moveTo(x2-cd,y1); ctx.lineTo(x2,y1); ctx.lineTo(x2,y1+cd);
+    ctx.moveTo(x2,y2-cd); ctx.lineTo(x2,y2); ctx.lineTo(x2-cd,y2);
+    ctx.moveTo(x1+cd,y2); ctx.lineTo(x1,y2); ctx.lineTo(x1,y2-cd);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -4016,6 +4074,7 @@ function renderSettings(){
     const emailShort = currentUser.email||'';
     accDiv.innerHTML = `
       <div class="acc-section-title">👤 COMPTE — ${emailShort}</div>
+      ${currentUser&&currentUser.email===ADMIN_EMAIL?'<button class="admin-btn save" style="margin-bottom:8px;width:100%;" onclick="openAdmin()">⚡ PANEL ADMIN</button>':''}
       <div class="acc-field">
         <div class="acc-label">PSEUDO (affiché dans le classement)</div>
         <div class="acc-row">
@@ -5149,6 +5208,201 @@ function olDrawPeers(){
   ctx.restore();
 }
 
+
+// ═══════════════════════════════════════════════════════
+//  ADMIN PANEL
+//  Accessible uniquement pour fozyllll.yt@gmail.com
+// ═══════════════════════════════════════════════════════
+const ADMIN_EMAIL = 'fozyllll.yt@gmail.com';
+
+function isAdmin(){
+  return currentUser && currentUser.email === ADMIN_EMAIL;
+}
+
+function openAdmin(){
+  if(!isAdmin()){ showPopup('⛔ ACCÈS REFUSÉ','#ff1a6e'); return; }
+  show('s-admin');
+  adminLoadGlobalStats();
+}
+
+async function adminLoadGlobalStats(){
+  if(!SB||!isAdmin()) return;
+  try {
+    const {data,error} = await SB.from('profiles').select('stats,scores');
+    if(error||!data) return;
+    let totalGames=0, totalKills=0;
+    data.forEach(p=>{
+      totalGames += p.stats?.gamesPlayed||0;
+      totalKills += p.stats?.totalKills||0;
+    });
+    document.getElementById('adm-total-players').textContent = data.length;
+    document.getElementById('adm-total-games').textContent = totalGames.toLocaleString('fr-FR');
+    document.getElementById('adm-total-kills').textContent = totalKills.toLocaleString('fr-FR');
+  } catch(e){ console.warn('Admin stats error:',e); }
+}
+
+async function adminSearch(){
+  if(!isAdmin()) return;
+  const query = document.getElementById('admin-search-input').value.trim().toLowerCase();
+  if(!query){ adminStatus('Saisis un email ou pseudo.','err'); return; }
+  adminStatus('Recherche…','wait');
+  try {
+    const {data,error} = await SB.from('profiles').select('*');
+    if(error){ adminStatus('Erreur: '+error.message,'err'); return; }
+    const results = data.filter(p=>
+      (p.pseudo||'').toLowerCase().includes(query) ||
+      (p.id||'').toLowerCase().includes(query)
+    );
+    // Also search by email via auth (limited — only pseudo/id searchable from profiles)
+    adminRenderResults(results);
+    adminStatus(results.length ? results.length+' joueur(s) trouvé(s).' : 'Aucun résultat.', results.length?'ok':'err');
+  } catch(e){ adminStatus('Erreur réseau.','err'); }
+}
+
+async function adminLoadAll(){
+  if(!isAdmin()) return;
+  adminStatus('Chargement…','wait');
+  try {
+    const {data,error} = await SB.from('profiles').select('*').order('coins',{ascending:false}).limit(50);
+    if(error){ adminStatus('Erreur: '+error.message,'err'); return; }
+    adminRenderResults(data);
+    adminStatus(data.length+' joueurs (top 50 par pièces).','ok');
+  } catch(e){ adminStatus('Erreur réseau.','err'); }
+}
+
+function adminRenderResults(players){
+  const el = document.getElementById('admin-results');
+  el.innerHTML = '';
+  if(!players||!players.length){ el.innerHTML='<div style="color:var(--dim);font-size:8px;letter-spacing:.2em;padding:20px 0;text-align:center;">Aucun joueur</div>'; return; }
+  players.forEach(p => el.appendChild(adminPlayerCard(p)));
+}
+
+function adminPlayerCard(p){
+  const div = document.createElement('div');
+  div.className = 'admin-player-card';
+  div.id = 'admin-card-'+p.id;
+
+  const ownedSkins = p.owned_skins || ['default'];
+  const perma = p.perma_upgrades || {};
+  const stats = p.stats || {};
+
+  // Skin pills
+  const skinPills = SKIN_DEFS.map(sk=>
+    `<div class="admin-skin-pill${ownedSkins.includes(sk.id)?' owned':''}"
+      onclick="adminToggleSkin('${p.id}','${sk.id}',this)">${sk.name}</div>`
+  ).join('');
+
+  div.innerHTML = `
+    <div class="admin-player-name">
+      <span>${p.pseudo||'(sans pseudo)'}</span>
+      <span class="admin-player-email">${p.id.substring(0,16)}…</span>
+    </div>
+    <div style="font-size:7px;color:var(--txt2);letter-spacing:.1em;margin-bottom:10px;">
+      Parties: ${stats.gamesPlayed||0} · Kills: ${(stats.totalKills||0).toLocaleString('fr-FR')} · Meilleur score: ${(stats.maxScore||0).toLocaleString('fr-FR')}
+    </div>
+    <div class="admin-fields">
+      <div class="admin-field">
+        <div class="admin-field-lbl">🪙 PIÈCES</div>
+        <input class="admin-field-input" id="adm-coins-${p.id}" type="number" value="${p.coins||0}" min="0" max="99999">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-lbl">⭐ NIVEAU PASSE</div>
+        <input class="admin-field-input" id="adm-bp-${p.id}" type="number" value="${p.battle_pass?.level||0}" min="0" max="30">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-lbl">❤️ VITALITÉ+ (0-5)</div>
+        <input class="admin-field-input" id="adm-php-${p.id}" type="number" value="${perma.p_hp||0}" min="0" max="5">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-lbl">💥 PUISSANCE+ (0-5)</div>
+        <input class="admin-field-input" id="adm-pdmg-${p.id}" type="number" value="${perma.p_dmg||0}" min="0" max="5">
+      </div>
+    </div>
+    <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-bottom:6px;">SKINS (clic pour toggle)</div>
+    <div class="admin-skins-grid" id="adm-skins-${p.id}">${skinPills}</div>
+    <div class="admin-actions">
+      <button class="admin-btn save" onclick="adminSave('${p.id}')">💾 SAUVEGARDER</button>
+      <button class="admin-btn warn" onclick="adminGiveAllSkins('${p.id}')">🎨 TOUS LES SKINS</button>
+      <button class="admin-btn warn" onclick="adminMaxPerma('${p.id}')">⬆ MAX PERMA</button>
+      <button class="admin-btn danger" onclick="adminReset('${p.id}')">🗑 RESET JOUEUR</button>
+    </div>
+    <div class="admin-status" id="adm-status-${p.id}"></div>
+  `;
+  return div;
+}
+
+function adminToggleSkin(playerId, skinId, el){
+  el.classList.toggle('owned');
+}
+
+async function adminSave(playerId){
+  if(!isAdmin()) return;
+  const statusEl = document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Sauvegarde…'; statusEl.className='admin-status wait';
+
+  const coins = parseInt(document.getElementById('adm-coins-'+playerId).value)||0;
+  const bpLevel = parseInt(document.getElementById('adm-bp-'+playerId).value)||0;
+  const phpLvl = parseInt(document.getElementById('adm-php-'+playerId).value)||0;
+  const pdmgLvl = parseInt(document.getElementById('adm-pdmg-'+playerId).value)||0;
+
+  // Collect skins from pills
+  const skinPills = document.querySelectorAll('#adm-skins-'+playerId+' .admin-skin-pill');
+  const ownedSkins = Array.from(skinPills).filter(p=>p.classList.contains('owned')).map(p=>{
+    const name = p.textContent;
+    return SKIN_DEFS.find(s=>s.name===name)?.id;
+  }).filter(Boolean);
+  if(!ownedSkins.includes('default')) ownedSkins.unshift('default');
+
+  // Get current profile for merge
+  const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades').eq('id',playerId).single();
+  const bp = Object.assign({level:0,xp:0,season:1,claimed:{}}, cur?.battle_pass||{}, {level:bpLevel});
+  const perma = Object.assign({}, cur?.perma_upgrades||{}, {p_hp:phpLvl, p_dmg:pdmgLvl});
+
+  try {
+    const {error} = await SB.from('profiles').upsert({
+      id:playerId, coins, owned_skins:ownedSkins,
+      battle_pass:bp, perma_upgrades:perma
+    });
+    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; }
+    else { statusEl.textContent='✓ Sauvegardé !'; statusEl.className='admin-status ok'; }
+  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
+}
+
+async function adminGiveAllSkins(playerId){
+  const pills = document.querySelectorAll('#adm-skins-'+playerId+' .admin-skin-pill');
+  pills.forEach(p=>p.classList.add('owned'));
+  const statusEl = document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Tous les skins sélectionnés — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+}
+
+function adminMaxPerma(playerId){
+  document.getElementById('adm-php-'+playerId).value=5;
+  document.getElementById('adm-pdmg-'+playerId).value=5;
+  const statusEl = document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Améliorations max — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+}
+
+async function adminReset(playerId){
+  if(!isAdmin()) return;
+  if(!confirm('RESET COMPLET de ce joueur ? Irréversible !')) return;
+  const statusEl = document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Reset…'; statusEl.className='admin-status wait';
+  try {
+    const {error} = await SB.from('profiles').upsert({
+      id:playerId, coins:0, owned_skins:['default'], equipped_skin:'default',
+      perma_upgrades:{}, scores:[], stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0},
+      ach:{}, battle_pass:{level:0,xp:0,season:1,claimed:{}}
+    });
+    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; }
+    else { statusEl.textContent='✓ Joueur réinitialisé.'; statusEl.className='admin-status ok'; }
+  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
+}
+
+function adminStatus(msg, cls){
+  const el = document.getElementById('admin-search-status');
+  if(el){ el.textContent=msg; el.className='admin-status '+(cls||''); }
+}
+
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
 // ═══════════════════════════════════════════════════════
@@ -5831,5 +6085,43 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 </script>
+
+<!-- ADMIN PANEL -->
+<div class="scr" id="s-admin">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="admin-wrap">
+      <div class="admin-header">
+        <div>
+          <div class="admin-title">⚡ PANEL ADMIN</div>
+          <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-top:2px;">PULSE · GESTION JOUEURS</div>
+        </div>
+        <div class="admin-badge">ACCÈS RESTREINT</div>
+      </div>
+
+      <!-- Global stats -->
+      <div class="admin-stats-bar" id="admin-global-stats">
+        <div class="admin-stat"><div class="admin-stat-v" id="adm-total-players">—</div><div class="admin-stat-l">JOUEURS</div></div>
+        <div class="admin-stat"><div class="admin-stat-v" id="adm-total-games">—</div><div class="admin-stat-l">PARTIES</div></div>
+        <div class="admin-stat"><div class="admin-stat-v" id="adm-total-kills">—</div><div class="admin-stat-l">KILLS TOTAL</div></div>
+      </div>
+
+      <!-- Search -->
+      <div class="admin-search">
+        <input class="admin-input" id="admin-search-input" placeholder="EMAIL OU PSEUDO DU JOUEUR…"
+          onkeydown="if(event.key==='Enter')adminSearch()">
+        <button class="admin-btn save" onclick="adminSearch()">CHERCHER</button>
+        <button class="admin-btn warn" onclick="adminLoadAll()">TOUS</button>
+      </div>
+      <div class="admin-status" id="admin-search-status"></div>
+
+      <!-- Results -->
+      <div id="admin-results"></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
