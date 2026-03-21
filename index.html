@@ -806,12 +806,12 @@ body.touch #minimap{display:none;}
 .bp-section-label{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3em;color:var(--txt2);padding:10px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px;}
 
 /* Claim animation overlay */
-#bp-claim-overlay{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,3,10,.85);}
+#bp-claim-overlay{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,3,10,.88);}
 #bp-claim-overlay.on{display:flex;}
-.bp-claim-card{background:var(--dim2);border:2px solid var(--c3);padding:32px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;animation:bpClaimPop .35s cubic-bezier(.22,1,.36,1);}
-@keyframes bpClaimPop{from{transform:scale(.7);opacity:0;}to{transform:none;opacity:1;}}
-.bp-claim-icon{font-size:52px;animation:bpClaimBounce .5s ease .35s both;}
-@keyframes bpClaimBounce{0%{transform:scale(0);}60%{transform:scale(1.25);}100%{transform:scale(1);}}
+.bp-claim-card{background:var(--dim2);border:2px solid var(--c3);padding:32px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;animation:bpClaimPop .4s cubic-bezier(.22,1,.36,1) both;}
+@keyframes bpClaimPop{from{transform:scale(.6) translateY(20px);opacity:0;}to{transform:none;opacity:1;}}
+.bp-claim-icon{font-size:56px;line-height:1.2;display:block;animation:bpClaimBounce .6s cubic-bezier(.22,1,.36,1) .3s both;}
+@keyframes bpClaimBounce{0%{transform:scale(0) rotate(-15deg);}60%{transform:scale(1.3) rotate(5deg);}100%{transform:scale(1) rotate(0deg);}}
 .bp-claim-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4vmin,22px);color:var(--c3);letter-spacing:.1em;}
 .bp-claim-desc{font-size:9px;color:var(--txt2);letter-spacing:.1em;}
 
@@ -4725,34 +4725,50 @@ function claimBpReward(level){
   if(battlePass.level < level) return;
   const reward = BP_REWARDS.find(r=>r.lv===level);
   if(!reward) return;
-  battlePass.claimed[level]=true;
+
+  // Marquer comme réclamé IMMÉDIATEMENT et re-rendre avant l'animation
+  battlePass.claimed[level] = true;
+  saveBP();
+
+  // Appliquer la récompense
   if(reward.type==='coins'){
-    coins+=reward.value; saveData('pulse_coins_v3',coins);
+    coins += reward.value;
+    saveData('pulse_coins_v3', coins);
     if(currentUser&&SB) saveCloudProfile({coins});
     updateCoinsHUD();
-    if(!auto) showPopup('+'+reward.value+' 🪙 Passe!','#ffbe0b');
   } else if(reward.type==='skin'){
     if(!ownedSkins.includes(reward.value)){
       ownedSkins.push(reward.value);
-      saveData('pulse_skins_v3',ownedSkins);
+      saveData('pulse_skins_v3', ownedSkins);
       if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
     }
-    if(!auto) showPopup('🎨 '+reward.label,'#00f5d4');
   } else if(reward.type==='perma'){
     const def=PERMA_DEFS.find(d=>d.id===reward.value);
     if(def){ const lvl=getPermaLvl(reward.value); if(lvl<def.maxLvl){ permaUpgrades[reward.value]=(lvl+1); saveData('pulse_perma_v3',permaUpgrades); if(currentUser&&SB) saveCloudProfile({perma_upgrades:permaUpgrades}); } }
   }
-  saveBP();
-  // Show claim animation
-  document.getElementById('bp-claim-icon').textContent=reward.icon;
-  document.getElementById('bp-claim-title').textContent=reward.type==='coins'?'PIÈCES':'DÉBLOQUÉ !';
-  document.getElementById('bp-claim-desc').textContent=reward.label;
-  const ov=document.getElementById('bp-claim-overlay');
+
+  // Re-rendre immédiatement pour retirer le bouton RÉCLAMER
+  renderBP();
+
+  // Afficher l'animation de claim
+  const ov = document.getElementById('bp-claim-overlay');
+  const ic = document.getElementById('bp-claim-icon');
+  const titleEl = document.getElementById('bp-claim-title');
+  const descEl = document.getElementById('bp-claim-desc');
+
+  ic.textContent = reward.icon;
+  titleEl.textContent = reward.type==='coins' ? '+'+reward.value+' PIÈCES !'
+    : reward.type==='skin' ? 'SKIN DÉBLOQUÉ !'
+    : reward.type==='perma' ? 'AMÉLIORATION !'
+    : 'RÉCOMPENSE !';
+  descEl.textContent = reward.label;
+
+  // Forcer relance de l'animation CSS
+  const card = ov.querySelector('.bp-claim-card');
+  if(card){ card.style.animation='none'; void card.offsetWidth; card.style.animation=''; }
+  ic.style.animation = 'none'; void ic.offsetWidth; ic.style.animation = '';
+
   ov.classList.add('on');
-  // Re-animate the icon
-  const ic=document.getElementById('bp-claim-icon');
-  ic.style.animation='none'; void ic.offsetWidth; ic.style.animation='';
-  setTimeout(()=>renderBP(),300);
 }
 
 function openBP(){
@@ -4818,47 +4834,11 @@ function makeBpCard(r,lvl){
   return div;
 }
 
-function renderBP(){
-  const lvl = battlePass.level;
-  const xp = battlePass.xp;
-  document.getElementById('bp-level-badge').textContent='NIV. '+lvl;
-  document.getElementById('bp-season-lbl').textContent='SAISON '+BP_SEASON;
-  const pct = lvl>=BP_MAX_LEVEL ? 100 : Math.round(xp/BP_XP_PER_LEVEL*100);
-  document.getElementById('bp-xp-fill').style.width=pct+'%';
-  document.getElementById('bp-xp-label').textContent=lvl>=BP_MAX_LEVEL?'MAX':xp+' / '+BP_XP_PER_LEVEL+' XP';
-
-  const track = document.getElementById('bp-track');
-  track.innerHTML='';
-  for(const r of BP_REWARDS){
-    const done = lvl >= r.lv;
-    const current = lvl+1 === r.lv;
-    const claimed = battlePass.claimed[r.lv];
-    const canClaim = done && !claimed;
-    const node = document.createElement('div');
-    node.className='bp-node'+(done?' done':'')+(current?' current':'');
-    node.innerHTML=`
-      <div class="bp-node-lv">NIV.${r.lv}</div>
-      <div class="bp-circle">${r.icon}</div>
-      <div class="bp-reward-lbl">${r.label}</div>
-      ${canClaim?`<button class="bp-claim-btn" onclick="claimBpReward(${r.lv})">RÉCLAMER</button>`:''}
-      ${claimed?`<div class="bp-earned">✓</div>`:''}
-    `;
-    track.appendChild(node);
-  }
-  // Scroll to current level
-  const currentNode = track.children[Math.max(0,lvl-1)];
-  if(currentNode) setTimeout(()=>currentNode.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}),100);
-}
-
 // Hook BP XP gain to end of game
 function grantBpXp(score, wave, kills){
-  // Formula: generous to reward play
   const xp = Math.floor(score/200) + wave*10 + Math.floor(kills/5)*5;
-  addBpXp(Math.max(10, Math.min(xp, 300))); // 10-300 XP per game
+  addBpXp(Math.max(10, Math.min(xp, 300)));
 }
-
-
-
 // ═══════════════════════════════════════════════════════
 //  DUO LOCAL — Touches configurables P2
 // ═══════════════════════════════════════════════════════
