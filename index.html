@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
-<title>PULSE v20 — Twin-Stick Survivor</title>
+<title>PULSE v21 — Twin-Stick Survivor</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -18,6 +18,10 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;}
+/* iOS Safari: utiliser la vraie hauteur visible (exclut barres navigateur) */
+@supports (height: 100dvh) {
+  html,body { height: 100dvh; }
+}
 body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
 canvas{display:block;position:absolute;top:0;left:0;}
 #cvs-bg{z-index:0;}#cvs-game{z-index:1;}
@@ -374,27 +378,28 @@ body:not(.touch) #mob{display:none;}
 
 /* ── PORTRAIT MODE overrides ── */
 @media (orientation:portrait){
-  /* In portrait: game canvas area is top 65%, controls bottom 35% */
+  /* In portrait: game canvas area is top 62%, controls bottom 38% */
   #joy-zone{
-    position:absolute;
+    position:fixed;
     bottom:0; left:0;
-    width:55%; height:35%;
-    /* push zones down into safe area */
+    width:55%; height:40%;
+    z-index:200;
   }
   #aim-zone{
-    position:absolute;
+    position:fixed;
     bottom:0; right:0;
-    width:55%; height:38%;
+    width:55%; height:42%;
+    z-index:200;
   }
   #aim-ring{
-    bottom:clamp(14px,4vw,24px);
+    bottom:calc(clamp(14px,4vw,24px) + env(safe-area-inset-bottom, 0px));
     right:clamp(12px,3.5vw,20px);
     width:clamp(68px,18vw,96px);
     height:clamp(68px,18vw,96px);
   }
   #mob-btns{
     right:clamp(8px,2.5vw,18px);
-    bottom:clamp(44%,46vw,52%);
+    bottom:42%;
     flex-direction:row;
     gap:clamp(8px,2.5vw,14px);
   }
@@ -422,20 +427,26 @@ body:not(.touch) #mob{display:none;}
 #portrait-ctrl-bg{
   display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:55;
-  background:rgba(3,3,10,.72);
-  border-top:1px solid rgba(0,245,212,.1);
+  background:rgba(3,3,10,.8);
+  border-top:1px solid rgba(0,245,212,.15);
   pointer-events:none;
 }
 @media (orientation:portrait){
   body.touch #portrait-ctrl-bg{
     display:block;
-    height:36%;
+    height:38%;
   }
   body.touch #minimap{
     display:block !important;
     bottom:auto !important;
     top:clamp(52px,14vw,72px) !important;
     right:clamp(8px,2vw,14px) !important;
+  }
+}
+/* iOS safe area : compenser la barre du bas */
+@supports (padding-bottom: env(safe-area-inset-bottom)){
+  #portrait-ctrl-bg{
+    padding-bottom:env(safe-area-inset-bottom);
   }
 }
 
@@ -888,6 +899,51 @@ body.touch #minimap{display:none;}
 .admin-stat-v{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--c1);}
 .admin-stat-l{font-size:6px;letter-spacing:.2em;color:var(--txt2);}
 
+
+/* ═══ RELIQUES ═══ */
+.relic-offer{position:fixed;inset:0;z-index:610;background:rgba(3,3,10,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.relic-offer.on{display:flex;}
+.relic-offer-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(14px,3.5vmin,20px);letter-spacing:.18em;color:var(--c3);text-align:center;}
+.relic-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.relic-card{width:clamp(120px,28vw,160px);border:1px solid rgba(255,190,11,.4);background:rgba(255,190,11,.05);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;}
+.relic-card:hover{border-color:var(--c3);transform:translateY(-4px);box-shadow:0 8px 28px rgba(255,190,11,.2);}
+.relic-card-ico{font-size:clamp(28px,7vmin,38px);}
+.relic-card-name{font-family:'Orbitron',monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.1em;color:var(--c3);text-align:center;}
+.relic-card-desc{font-size:clamp(7px,1.6vmin,8px);color:var(--txt2);text-align:center;line-height:1.6;}
+.relic-card-tag{font-size:6px;letter-spacing:.2em;padding:2px 7px;border:1px solid rgba(255,190,11,.3);color:var(--c3);}
+/* Active relics HUD */
+#relic-hud{position:fixed;bottom:clamp(80px,18vmin,110px);right:clamp(8px,2vw,14px);z-index:104;display:flex;flex-direction:column;gap:3px;pointer-events:none;}
+.relic-hud-item{display:flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(3,3,10,.8);border:1px solid rgba(255,190,11,.25);font-size:7px;letter-spacing:.1em;color:var(--c3);}
+
+
+/* ═══ STATS DÉTAILLÉES ═══ */
+.go-detail-stats{width:min(480px,92vw);margin:8px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.go-detail-stat{padding:7px 10px;border:1px solid var(--border);background:var(--dim2);text-align:center;}
+.go-detail-val{font-family:'Orbitron',monospace;font-size:clamp(11px,2.8vmin,15px);font-weight:700;color:var(--c1);}
+.go-detail-lbl{font-size:6px;letter-spacing:.2em;color:var(--txt2);margin-top:2px;}
+/* Historique */
+.history-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);background:var(--dim2);margin-bottom:4px;}
+.history-wave{font-family:'Orbitron',monospace;font-size:11px;color:var(--c1);min-width:36px;}
+.history-score{font-family:'Orbitron',monospace;font-size:10px;color:var(--txt);flex:1;}
+.history-meta{font-size:7px;color:var(--txt2);letter-spacing:.08em;}
+/* Défi quotidien */
+#s-daily{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a0e1a 0%,var(--bg) 70%);}
+.daily-box{width:min(480px,94vw);display:flex;flex-direction:column;gap:10px;}
+.daily-header{border:1px solid rgba(255,190,11,.4);background:rgba(255,190,11,.04);padding:16px;text-align:center;}
+.daily-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(18px,4.5vmin,26px);letter-spacing:.12em;color:var(--c3);}
+.daily-modifiers{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.daily-mod{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);background:var(--dim2);}
+.daily-mod-ico{font-size:18px;}
+.daily-mod-name{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.1em;color:var(--txt);flex:1;}
+.daily-mod-desc{font-size:7px;color:var(--txt2);}
+.daily-lb{display:flex;flex-direction:column;gap:3px;margin-top:4px;}
+.daily-lb-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--border);background:var(--dim2);}
+.daily-lb-rank{font-family:'Orbitron',monospace;font-size:8px;color:var(--c3);min-width:22px;}
+.daily-lb-name{font-size:8px;color:var(--txt);flex:1;letter-spacing:.08em;}
+.daily-lb-score{font-family:'Orbitron',monospace;font-size:9px;color:var(--c1);}
+/* Speed setting */
+.speed-select{background:var(--dim2);border:1px solid var(--border);color:var(--txt);font-family:'Orbitron',monospace;font-size:9px;padding:6px 10px;letter-spacing:.1em;outline:none;cursor:pointer;}
+
 </style>
 </head>
 <body>
@@ -1045,7 +1101,10 @@ body.touch #minimap{display:none;}
 <div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div></div></div>
 
 <!-- PORTRAIT CONTROLS BG -->
-<div id="portrait-ctrl-bg"></div>
+<div id="portrait-ctrl-bg">
+  <div style="position:absolute;top:12px;left:22%;transform:translateX(-50%);font-size:7px;letter-spacing:.25em;color:rgba(0,245,212,.3);pointer-events:none;">DÉPLACER</div>
+  <div style="position:absolute;top:12px;right:22%;transform:translateX(50%);font-size:7px;letter-spacing:.25em;color:rgba(0,245,212,.3);pointer-events:none;">VISER</div>
+</div>
 
 <!-- MOBILE -->
 <div id="mob">
@@ -1118,13 +1177,14 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 20.0</div>
+    <div class="logo-ver">VERSION 21.1</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
     <div class="btn-col" style="margin-top:12px;">
       <button class="btn btn-p" onclick="showModeSelect()"><span>▶ JOUER</span></button>
       <button class="btn btn-p" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
+      <button class="btn btn-g" onclick="show('s-daily');initDailyChallenge()"><span>⚡ DÉFI DU JOUR</span></button>
       <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 CLASSEMENT</span></button>
       <button class="btn btn-s" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
@@ -1148,6 +1208,8 @@ body.touch #minimap{display:none;}
       <button class="lb-tab" onclick="lbTab('global',this)">🌍 GLOBAL</button>
     </div>
     <div class="lb-rows" id="lb-rows"></div>
+    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.3em;color:var(--txt2);margin:14px 0 6px;">📜 HISTORIQUE (10 DERNIÈRES PARTIES)</div>
+    <div id="history-list" style="width:min(520px,96vw);"></div>
     <div class="btn-row" style="margin-top:14px;"><button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button></div>
   </div>
 </div>
@@ -1251,6 +1313,8 @@ body.touch #minimap{display:none;}
     <div class="go-rec" id="go-rec"></div>
     <div class="go-new-ach" id="go-new-ach"></div>
     <div class="go-upgs" id="go-upgs"></div>
+    <!-- Stats détaillées -->
+    <div class="go-detail-stats" id="go-detail-stats"></div>
     <!-- Pièces & XP row -->
     <div class="go-coins-row">
       <div class="go-coin-item" id="go-coins">🪙 0 pièces</div>
@@ -1288,7 +1352,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v20.0</div>
+<div id="watermark">PULSE v21.1</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -2249,7 +2313,7 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0 });
-let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false });
+let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
 let newAchThisRun = [];
 
 function saveScores(){
@@ -2397,12 +2461,14 @@ let canvasOffsetX=0, canvasOffsetY=0, canvasScale=1;
 
 function setupCanvas(){
   const bc=document.getElementById('cvs-bg'), gc=document.getElementById('cvs-game');
-  const sw=window.innerWidth, sh=window.innerHeight;
+  // Sur iOS Safari, visualViewport donne la vraie hauteur sans les barres
+  const sw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
+  const sh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   const isPortrait=sh>sw;
 
   if(isPortrait && isMobile){
-    // Portrait mobile: game in top 64% of screen, controls in bottom 36%
-    const gameH=Math.floor(sh*0.64);
+    // Portrait mobile: game in top 62% of real viewport
+    const gameH=Math.floor(sh*0.62);
     W=sw; H=gameH;
     bc.style.width=gc.style.width=sw+'px';
     bc.style.height=gc.style.height=H+'px';
@@ -2532,6 +2598,10 @@ function buildWavePool(w){
 
 function startWave(){
   if(!G||!G.running) return;
+  // Relic offer every 5 waves
+  if(G.wave>0 && shouldOfferRelic(G.wave)){
+    offerRelic(); return;
+  }
   G.wave++;
   const w=G.wave;
   G.waveHitsReceived=0;
@@ -2554,7 +2624,14 @@ function startWave(){
 
 function showBanner(num,sub,tip=''){
   const b=document.getElementById('wbanner');
-  document.getElementById('wb-num').textContent=num;
+  const numEl=document.getElementById('wb-num');
+  // Color by wave tier
+  const isBossWave=typeof num==='number'&&num%10===0&&num>0;
+  const wCol=isBossWave?'#ff1a6e':num>=20?'#ff1a6e':num>=10?'#ffbe0b':'#00f5d4';
+  numEl.style.color=wCol;
+  numEl.style.textShadow=`0 0 40px ${wCol},0 0 80px ${wCol}40`;
+  b.style.borderColor=`${wCol}30`;
+  numEl.textContent=isBossWave?'👑 VAGUE '+num:num;
   document.getElementById('wb-sub').textContent=sub;
   document.getElementById('wb-tip').textContent=tip;
   b.classList.add('show');
@@ -2665,6 +2742,7 @@ function tryShoot(now){
   const rate=p.rapidFire>0 ? Math.max(32,Math.round(p.fireRate*.42)) : p.fireRate;
   if(now-p.lastShot<rate) return;
   p.lastShot=now;
+  G.shotsFired=(G.shotsFired||0)+1;
 
   // Determine aim direction — mobile touch OR gamepad → use stored aimDx/aimDy; mouse → compute from cursor
   let dx,dy;
@@ -2925,7 +3003,7 @@ function update(now){
   if(kkeys.some(key=>kbIsMove(key,'down')))  my+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
 
-  const spd=p.speed*(p.speedBoost>0?1.65:1);
+  const spd=p.speed*(p.speedBoost>0?1.65:1)*getGameSpeed();
   if(p.dashing){
     const nx=p.x+p.dashVx, ny=p.y+p.dashVy;
     if(!blocked(nx,p.y,p.r)) p.x=nx;
@@ -3004,14 +3082,15 @@ function update(now){
       mvx=0; mvy=0; // drones don't move
     } else if(e.ghostEnemy){
       // Ghost: ignores obstacles, phases through
-      mvx=nx*e.spd*slowFactor; mvy=ny*e.spd*slowFactor;
+      const _gs=getGameSpeed(); mvx=nx*e.spd*slowFactor*_gs; mvy=ny*e.spd*slowFactor*_gs;
       e.x+=mvx; e.y+=mvy;
       // Ghost blink effect
       e.wobT+=.06;
     } else if(e.zigzag){
       e.zigTimer++; if(e.zigTimer%28===0) e.zigDir*=-1;
-      mvx = nx*e.spd*slowFactor + (-ny*e.zigDir*1.8);
-      mvy = ny*e.spd*slowFactor + (nx*e.zigDir*1.8);
+      const _gs2=getGameSpeed();
+      mvx = nx*e.spd*slowFactor*_gs2 + (-ny*e.zigDir*1.8);
+      mvy = ny*e.spd*slowFactor*_gs2 + (nx*e.zigDir*1.8);
     } else {
       e.wobT+=.045;
       const wob=Math.cos(e.wobT)*e.wobAmp;
@@ -3180,6 +3259,7 @@ function hitEnemy(e,b){
   let dmg=b.dmg;
   if(e.armored&&!b.big&&!b.isLaser&&!b.overcharged) dmg=Math.ceil(dmg*0.4);
   e.hp-=dmg; e.flash=7; spawnFx(e.x,e.y,e.col,3); sfxHit();
+  G.shotsHit=(G.shotsHit||0)+1;
   // Floating damage number
   const dmgCol=b.isLaser?'#ffee00':b.big?'#ffbe0b':b.overcharged?'#ffe000':'#fff';
   if(G.floats) G.floats.push({x:e.x+(Math.random()-.5)*12,y:e.y-e.r,txt:Math.round(dmg),col:dmgCol,life:36,maxLife:36,vy:-1.4});
@@ -3256,6 +3336,17 @@ function onKill(e){
   const cls=e.boss?'g':e.mini?'p':pts>50?'g':'';
   addKF(`+${pts} ${e.lbl}`, cls);
   checkAch('first_kill',1); checkAch('kills_100',G.sessionKills); checkAch('kills_500',G.sessionKills);
+  // Max combo tracking
+  G.maxComboThisRun = Math.max(G.maxComboThisRun||0, G.combo);
+  // Relic: vampire
+  if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
+  // Relic: chain kill — every 5 kills in a row triggers mini nuke
+  G._chainKillCount=(G._chainKillCount||0)+1;
+  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
+  // Relic: coin magnet bonus
+  if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
+  // Daily mode score tracking
+  if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
 }
 
 function doExplosion(x,y,col){ G.explosions.push({x,y,r:12,life:11,maxLife:11,col,hit:new Set()}); }
@@ -3511,15 +3602,17 @@ function draw(){
       ctx.restore(); continue;
     }
     // Trail
-    if(b.trail&&b.trail.length>1){
+    if(b.trail&&b.trail.length>1&&!settings.lowQuality){
       for(let i=1;i<b.trail.length;i++){
-        const ta=((b.trail.length-i)/b.trail.length)*(b.enemy?0.22:0.35);
-        ctx.globalAlpha=ta;
+        const frac=1-i/b.trail.length;
+        ctx.globalAlpha=frac*(b.enemy?0.25:0.45);
         ctx.fillStyle=col;
+        ctx.shadowColor=col; ctx.shadowBlur=b.big?8:4;
         ctx.beginPath();
-        ctx.arc(b.trail[i].x,b.trail[i].y,b.r*(1-i/b.trail.length)*0.7,0,Math.PI*2);
+        ctx.arc(b.trail[i].x,b.trail[i].y,b.r*frac*(b.big?0.85:0.7),0,Math.PI*2);
         ctx.fill();
       }
+      ctx.shadowBlur=0;
     }
     ctx.globalAlpha=1;
     ctx.shadowColor=col; ctx.shadowBlur=settings.lowQuality?0:(b.big?26:b.enemy?12:16);
@@ -3783,11 +3876,22 @@ function togglePause(){
 //  GAME OVER
 // ═══════════════════════════════════════════════════════
 function gameOver(){
+  // Relic: bullet nova on death
+  if(G&&G.player&&G.player.bulletNova){
+    for(let i=0;i<12;i++){
+      const a=i/12*Math.PI*2;
+      G.bullets.push({x:G.player.x,y:G.player.y,vx:Math.cos(a)*10,vy:Math.sin(a)*10,
+        dmg:G.player.bulletDmg*2,r:6,life:80,dead:false,enemy:false,piercing:2,pierced:0,trail:[],big:false});
+    }
+  }
   G.running=false;
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
   const m=Math.floor(elapsed/60), s=elapsed%60;
-  const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR')};
+  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?'Chrono':currentMode==='arena'?'Arène':currentMode==='duo'?'Duo':'Classique';
+  const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
+  addToHistory(entry);
+  if(currentMode==='daily') saveDailyScore(G.score);
   scores.push(entry); scores.sort((a,b)=>b.score-a.score); scores=scores.slice(0,5);
   saveScores();
   // Update global stats
@@ -3834,6 +3938,7 @@ function gameOver(){
   document.getElementById('go-upgs').textContent=G.player.upgrades.length?G.player.upgrades.join(' · '):'';
   document.getElementById('go-coins').textContent=`🪙 +${coinsEarned} pièces`;
   document.getElementById('go-bp-xp').textContent=`⭐ +${bpXpGained} XP`;
+  renderDetailedStats(G);
 
   // ── BP XP bar animation ──
   const bpMaxLv = BP_MAX_LEVEL;
@@ -3975,29 +4080,51 @@ function skipCurse(){
 // ═══════════════════════════════════════════════════════
 function drawMinimap(){
   if(!G||!G.running||isMobile) return;
-  if(frame%3!==0) return; // ~20fps for minimap is plenty
+  if(frame%3!==0) return;
   const mc=_dom['minimap-cvs']||document.getElementById('minimap-cvs');
   const mw=100, mh=70;
   mc.width=mw; mc.height=mh;
   const mx=mc.getContext('2d');
   mx.clearRect(0,0,mw,mh);
-  mx.fillStyle='rgba(3,3,10,.75)'; mx.fillRect(0,0,mw,mh);
+  // Background
+  mx.fillStyle='rgba(3,3,10,.85)'; mx.fillRect(0,0,mw,mh);
+  // Obstacles
+  mx.fillStyle='rgba(0,245,212,.12)';
+  for(const o of G.obstacles){
+    mx.fillRect(o.x/W*mw-o.w/W*mw/2, o.y/H*mh-o.h/H*mh/2, o.w/W*mw, o.h/H*mh);
+  }
   const fogRange = G.player.fogCurse ? 200 : Infinity;
+  // Powerups — yellow dots
+  mx.fillStyle='rgba(255,190,11,.8)';
+  for(const pu of G.powerups){
+    const px2=pu.x/W*mw, py2=pu.y/H*mh;
+    mx.beginPath(); mx.arc(px2,py2,2,0,Math.PI*2); mx.fill();
+  }
+  // Enemies
   for(const e of G.enemies){
     if(e.dead) continue;
     const dist=Math.hypot(e.x-G.player.x, e.y-G.player.y);
     if(dist>fogRange) continue;
     const ex=e.x/W*mw, ey=e.y/H*mh;
-    mx.fillStyle=e.boss?'#fee440':e.mini?'#ff6600':e.ghostEnemy?'rgba(180,79,255,0.7)':e.col;
-    const er=e.boss?4:e.mini?3:1.5;
+    const pulse=0.7+0.3*Math.sin(frame*.1);
+    mx.globalAlpha=e.boss?pulse:1;
+    mx.fillStyle=e.boss?'#fee440':e.mini?'#ff6600':e.ghostEnemy?'#b44fff':e.col;
+    const er=e.boss?4.5:e.mini?3:1.5;
     mx.beginPath(); mx.arc(ex,ey,er,0,Math.PI*2); mx.fill();
+    mx.globalAlpha=1;
   }
+  // Player — triangle pointing in aim direction
   const px=G.player.x/W*mw, py=G.player.y/H*mh;
-  mx.fillStyle='#00f5d4'; mx.shadowColor='#00f5d4'; mx.shadowBlur=4;
-  mx.beginPath(); mx.arc(px,py,2.5,0,Math.PI*2); mx.fill();
-  mx.shadowBlur=0;
-  mx.strokeStyle='rgba(0,245,212,.2)'; mx.lineWidth=1;
-  mx.strokeRect(0,0,mw,mh);
+  const aimA=Math.atan2(G.aimDy||0, G.aimDx||1);
+  mx.fillStyle='#00f5d4'; mx.shadowColor='#00f5d4'; mx.shadowBlur=5;
+  mx.save(); mx.translate(px,py); mx.rotate(aimA);
+  mx.beginPath(); mx.moveTo(4,0); mx.lineTo(-2.5,2.5); mx.lineTo(-2.5,-2.5); mx.closePath(); mx.fill();
+  mx.restore(); mx.shadowBlur=0;
+  // Wave count label
+  mx.fillStyle='rgba(0,245,212,.45)'; mx.font='5px monospace';
+  mx.fillText('V.'+G.wave+' · '+G.enemies.filter(e=>!e.dead).length+'e', 3, mh-3);
+  // Border
+  mx.strokeStyle='rgba(0,245,212,.3)'; mx.lineWidth=1; mx.strokeRect(0,0,mw,mh);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4017,6 +4144,13 @@ function renderStats(){
   document.getElementById('stats-grid').innerHTML=data.map(([l,v])=>`<div class="stat-card"><div class="stat-v">${v}</div><div class="stat-l">${l}</div></div>`).join('');
 }
 
+// Hook history render into renderStats
+const _origRenderStats = renderStats;
+function renderStats(){
+  if(_origRenderStats) _origRenderStats();
+  renderHistory();
+}
+
 function renderSettings(){
   const list=document.getElementById('settings-list');
   const rows=[
@@ -4025,12 +4159,15 @@ function renderSettings(){
     {lbl:'Vibration',hint:'Retour haptique (mobile)',key:'haptique',type:'toggle'},
     {lbl:'Screen Shake',hint:'Vibration de l\'écran',key:'screenshake',type:'toggle'},
     {lbl:'Afficher FPS',hint:'Compteur images/seconde',key:'showFps',type:'toggle'},
+    {lbl:'Mode Éco',hint:'Réduit ombres/effets — améliore perf. mobile',key:'lowQuality',type:'toggle'},
+    {lbl:'Vitesse de jeu',hint:'',key:'gameSpeed',type:'speed'},
     {lbl:'Mode Eco',hint:'Réduit ombres/effets — améliore perf. mobile',key:'lowQuality',type:'toggle'},
     {lbl:'Volume sons',hint:'',key:'sfxVol',type:'range',min:0,max:100},
   ];
   list.innerHTML = rows.map(r=>{
     if(r.type==='toggle') return `<div class="srow"><div><div class="slbl">${r.lbl}</div><div class="shint">${r.hint}</div></div><div class="toggle${settings[r.key]?' on':''}" onclick="toggleSetting('${r.key}',this)"></div></div>`;
     if(r.type==='range')  return `<div class="srow"><div><div class="slbl">${r.lbl}</div></div><div style="display:flex;align-items:center;gap:8px;"><input type="range" min="${r.min}" max="${r.max}" value="${settings[r.key]}" oninput="settings.${r.key}=+this.value;document.getElementById('rv-${r.key}').textContent=this.value;saveSettings()"><span class="range-val" id="rv-${r.key}">${settings[r.key]}</span></div></div>`;
+    if(r.type==='speed') return `<div class="srow"><div><div class="slbl">${r.lbl}</div><div class="shint">0.5× = facile · 1× = normal · 1.5× = turbo</div></div><select class="speed-select" onchange="settings.gameSpeed=+this.value;saveSettings()">${[0.5,0.75,1,1.25,1.5].map(v=>`<option value="${v}"${settings.gameSpeed==v?' selected':''}>${v}×</option>`).join('')}</select></div>`;
     return '';
   }).join('');
 
@@ -4282,7 +4419,9 @@ function startGame(){
   newAchThisRun=[];
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
+  G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
   P2=null; initModeHud();
+  resetRelics();
   initDomCache();
   // Apply permanent upgrades
   applyPermaUpgrades(G.player, G);
@@ -5403,6 +5542,259 @@ function adminStatus(msg, cls){
   if(el){ el.textContent=msg; el.className='admin-status '+(cls||''); }
 }
 
+
+// ═══════════════════════════════════════════════════════
+//  SYSTÈME DE RELIQUES
+// ═══════════════════════════════════════════════════════
+const RELIC_DEFS = [
+  {id:'dash_trail',  ico:'💫', name:'TRAÎNE DE DASH',    desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',
+    apply:(p)=>{ p.dashTrail=true; }},
+  {id:'chain_kill',  ico:'⚡', name:'RÉACTION EN CHAÎNE', desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke automatique.', tag:'OFFENSIF',
+    apply:(p)=>{ p.chainKill=true; }},
+  {id:'armor_regen', ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT', desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',
+    apply:(p)=>{ p.armorRegen=true; }},
+  {id:'coin_magnet', ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE',
+    apply:(p)=>{ p.coinMagnet=true; }},
+  {id:'bullet_nova',  ico:'💥', name:'NOVA DE BALLES',     desc:'Mourir déclenche une explosion de 12 balles. (Oui, mourir.)', tag:'ULTIME',
+    apply:(p)=>{ p.bulletNova=true; }},
+  {id:'vampire',     ico:'🩸', name:'VAMPIRISME',          desc:'Chaque kill restaure 2 PV. Max 5 kills par seconde.', tag:'SURVIE',
+    apply:(p)=>{ p.vampireRelic=true; }},
+  {id:'overclock',   ico:'⚙',  name:'SURCHAUFFE',          desc:'Cadence de tir +30% mais la bombe se recharge 20% plus lentement.', tag:'RISQUE',
+    apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); p.specRate*=0.8; }},
+  {id:'gravity_well',ico:'🌀', name:'PUITS GRAVITATIONNEL',desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATÉGIQUE',
+    apply:(p)=>{ p.gravityNuke=true; }},
+  {id:'double_dash',  ico:'⚡⚡',name:'DOUBLE DASH',        desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',
+    apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
+  {id:'berserker',   ico:'😡', name:'BERSERKER',            desc:'Dégâts +5% par vague jouée. (Cumulatif — dangereux en fin de run.)', tag:'SCALING',
+    apply:(p)=>{ p.berserkerStacks=(p.berserkerStacks||0)+1; p.bulletDmg*=(1+0.05*((p.berserkerStacks||1))); }},
+];
+
+let activeRelics = [];
+let pendingRelicOffer = false;
+
+function shouldOfferRelic(wave){
+  return wave>0 && wave%5===0 && wave<=30; // every 5 waves up to 30
+}
+
+function offerRelic(){
+  if(pendingRelicOffer) return;
+  pendingRelicOffer = true;
+  G.paused = true;
+  // Pick 3 random relics not already owned
+  const available = RELIC_DEFS.filter(r=>!activeRelics.find(a=>a.id===r.id));
+  const shuffled = available.sort(()=>Math.random()-.5).slice(0,3);
+  const container = document.getElementById('relic-cards');
+  container.innerHTML='';
+  shuffled.forEach(r=>{
+    const div=document.createElement('div'); div.className='relic-card';
+    div.innerHTML=`<div class="relic-card-ico">${r.ico}</div>
+      <div class="relic-card-name">${r.name}</div>
+      <div class="relic-card-desc">${r.desc}</div>
+      <div class="relic-card-tag">${r.tag}</div>`;
+    div.onclick=()=>pickRelic(r);
+    container.appendChild(div);
+  });
+  document.getElementById('relic-offer').classList.add('on');
+}
+
+function pickRelic(r){
+  activeRelics.push(r);
+  r.apply(G.player);
+  document.getElementById('relic-offer').classList.remove('on');
+  G.paused=false; pendingRelicOffer=false;
+  showPopup('✨ '+r.name,'#ffbe0b');
+  updateRelicHud();
+  countdown(3,startWave);
+}
+
+function updateRelicHud(){
+  const hud=document.getElementById('relic-hud'); if(!hud) return;
+  hud.innerHTML='';
+  activeRelics.forEach(r=>{
+    const div=document.createElement('div'); div.className='relic-hud-item';
+    div.textContent=r.ico+' '+r.name;
+    hud.appendChild(div);
+  });
+}
+
+function resetRelics(){
+  activeRelics=[];
+  pendingRelicOffer=false;
+  updateRelicHud();
+  document.getElementById('relic-offer').classList.remove('on');
+}
+
+// ═══════════════════════════════════════════════════════
+//  DÉFI QUOTIDIEN
+// ═══════════════════════════════════════════════════════
+const DAILY_MODIFIERS_POOL = [
+  {id:'fast_enemies',  ico:'💨', name:'ENNEMIS RAPIDES',   desc:'Vitesse ennemis +40%', apply:(g)=>{ g._dailyMod_fastEnemies=true; }},
+  {id:'no_powerups',   ico:'🚫', name:'SANS BONUS',         desc:'Aucun powerup au sol', apply:(g)=>{ g._dailyMod_noPowerups=true; }},
+  {id:'double_enemies',ico:'👥', name:'DOUBLE VAGUE',       desc:'2× plus d\'ennemis par vague', apply:(g)=>{ g._dailyMod_doubleEnemies=true; }},
+  {id:'no_upgrade',    ico:'🔒', name:'PAS D\'UPGRADE',     desc:'Pas d\'upgrade entre les vagues (malédictions uniquement)', apply:(g)=>{ g._dailyMod_noUpgrade=true; }},
+  {id:'tiny_player',   ico:'🔬', name:'MICRO JOUEUR',       desc:'Taille du joueur réduite de 40%, vitesse +20%', apply:(g)=>{ g.player.r=7; g.player.speed*=1.2; }},
+  {id:'glass_cannon',  ico:'💥', name:'CANON DE VERRE',     desc:'Dégâts ×2 mais PV max = 40', apply:(g)=>{ g.player.bulletDmg*=2; g.player.maxHp=40; g.player.hp=40; }},
+  {id:'fog_always',    ico:'🌫', name:'BROUILLARD TOTAL',   desc:'Visibilité permanente réduite', apply:(g)=>{ g.player.fogCurse=true; }},
+];
+
+let dailyState = {played:false, score:0, date:''};
+
+function getDailyDateStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getDailySeed(){
+  const str=getDailyDateStr();
+  let hash=0;
+  for(let i=0;i<str.length;i++){ hash=((hash<<5)-hash)+str.charCodeAt(i); hash|=0; }
+  return Math.abs(hash);
+}
+
+function getDailyModifiers(){
+  const seed=getDailySeed();
+  // Deterministic selection from seed
+  const mods=[];
+  const pool=[...DAILY_MODIFIERS_POOL];
+  let s=seed;
+  for(let i=0;i<2;i++){
+    s=(s*1664525+1013904223)&0xffffffff;
+    const idx=Math.abs(s)%pool.length;
+    mods.push(pool.splice(idx,1)[0]);
+  }
+  return mods;
+}
+
+async function initDailyChallenge(){
+  const dateStr=getDailyDateStr();
+  document.getElementById('daily-date').textContent=dateStr.split('-').reverse().join('/');
+  const mods=getDailyModifiers();
+  const modEl=document.getElementById('daily-modifiers');
+  modEl.innerHTML='';
+  mods.forEach(m=>{
+    const div=document.createElement('div'); div.className='daily-mod';
+    div.innerHTML=`<div class="daily-mod-ico">${m.ico}</div>
+      <div><div class="daily-mod-name">${m.name}</div><div class="daily-mod-desc">${m.desc}</div></div>`;
+    modEl.appendChild(div);
+  });
+  // Check if already played today
+  const saved=loadData('pulse_daily_v1',{date:'',score:0});
+  if(saved.date===dateStr){
+    document.getElementById('daily-my-score').textContent='Ton score du jour : '+saved.score.toLocaleString('fr-FR');
+  } else {
+    document.getElementById('daily-my-score').textContent='';
+  }
+  // Load daily leaderboard from Supabase
+  await loadDailyLeaderboard(dateStr);
+}
+
+async function loadDailyLeaderboard(dateStr){
+  const lbEl=document.getElementById('daily-lb');
+  if(!SB||!currentUser){ lbEl.innerHTML='<div style="color:var(--dim);font-size:8px;text-align:center;padding:10px;">Connexion requise</div>'; return; }
+  try {
+    const {data}=await SB.from('profiles').select('pseudo,scores').limit(100);
+    if(!data){ return; }
+    // Extract daily scores (scores with date=today)
+    const dailyScores=[];
+    data.forEach(p=>{
+      if(!p.scores) return;
+      const ds=p.scores.find(s=>s.daily===dateStr);
+      if(ds) dailyScores.push({name:p.pseudo||'Joueur',score:ds.score});
+    });
+    dailyScores.sort((a,b)=>b.score-a.score);
+    lbEl.innerHTML='';
+    if(!dailyScores.length){ lbEl.innerHTML='<div style="color:var(--dim);font-size:8px;text-align:center;padding:10px;">Sois le premier !</div>'; return; }
+    dailyScores.slice(0,10).forEach((e,i)=>{
+      const div=document.createElement('div'); div.className='daily-lb-item';
+      div.innerHTML=`<div class="daily-lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+        <div class="daily-lb-name">${(e.name||'?').substring(0,16)}</div>
+        <div class="daily-lb-score">${e.score.toLocaleString('fr-FR')}</div>`;
+      lbEl.appendChild(div);
+    });
+  } catch(e){ lbEl.innerHTML='<div style="color:var(--dim);font-size:8px;text-align:center;padding:10px;">Erreur chargement</div>'; }
+}
+
+function startDailyChallenge(){
+  currentMode='daily';
+  const mods=getDailyModifiers();
+  G=null;
+  startGame();
+  // Apply mods after game starts
+  setTimeout(()=>{
+    if(!G) return;
+    mods.forEach(m=>m.apply(G));
+  },100);
+  show('s-mode'); // will be overridden by startGame
+}
+
+async function saveDailyScore(score){
+  const dateStr=getDailyDateStr();
+  const saved=loadData('pulse_daily_v1',{date:'',score:0});
+  if(saved.date===dateStr&&saved.score>=score) return; // only keep best
+  saveData('pulse_daily_v1',{date:dateStr,score});
+  if(!SB||!currentUser) return;
+  // Save as a special score entry
+  const profile=await loadCloudProfile();
+  if(!profile) return;
+  const scores=profile.scores||[];
+  const existing=scores.findIndex(s=>s.daily===dateStr);
+  const entry={daily:dateStr,score,date:dateStr};
+  if(existing>=0) scores[existing]=entry; else scores.push(entry);
+  await saveCloudProfile({scores:scores.slice(-50)}); // keep last 50
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORIQUE DES PARTIES
+// ═══════════════════════════════════════════════════════
+let gameHistory = loadData('pulse_history_v1', []);
+
+function addToHistory(entry){
+  gameHistory.unshift(entry);
+  if(gameHistory.length>10) gameHistory=gameHistory.slice(0,10);
+  saveData('pulse_history_v1', gameHistory);
+}
+
+function renderHistory(){
+  const el=document.getElementById('history-list'); if(!el) return;
+  el.innerHTML='';
+  if(!gameHistory.length){ el.innerHTML='<div style="color:var(--dim);font-size:8px;letter-spacing:.15em;padding:12px;text-align:center;">Aucune partie jouée</div>'; return; }
+  gameHistory.forEach((h,i)=>{
+    const div=document.createElement('div'); div.className='history-item';
+    div.innerHTML=`<div class="history-wave">V.${h.wave}</div>
+      <div><div class="history-score">${(h.score||0).toLocaleString('fr-FR')} pts</div>
+      <div class="history-meta">${h.kills} kills · Niv.${h.level} · ${h.time} · ${h.mode||'Classique'}</div></div>
+      <div style="font-size:7px;color:var(--dim);">${h.date||''}</div>`;
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATS DÉTAILLÉES EN FIN DE PARTIE
+// ═══════════════════════════════════════════════════════
+function renderDetailedStats(G){
+  const el=document.getElementById('go-detail-stats'); if(!el||!G) return;
+  const elapsed=Math.floor((Date.now()-G.startTime)/1000);
+  const dps=elapsed>0?Math.round(G.score/elapsed):0;
+  const kps=elapsed>0?(G.totalKills/elapsed).toFixed(2):0;
+  const accuracy=G.shotsFired>0?Math.round(G.shotsHit/G.shotsFired*100):0;
+  el.innerHTML=[
+    {v:dps, l:'DPS SCORE'},
+    {v:kps, l:'KILLS/SEC'},
+    {v:accuracy+'%', l:'PRÉCISION'},
+    {v:G.player.upgrades?.length||0, l:'UPGRADES'},
+    {v:G.maxComboThisRun||0, l:'MAX COMBO'},
+    {v:activeRelics.length, l:'RELIQUES'},
+  ].map(s=>`<div class="go-detail-stat">
+    <div class="go-detail-val">${s.v}</div>
+    <div class="go-detail-lbl">${s.l}</div>
+  </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  VITESSE DE JEU — appliquée dans update()
+// ═══════════════════════════════════════════════════════
+function getGameSpeed(){ return settings.gameSpeed||1; }
+
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
 // ═══════════════════════════════════════════════════════
@@ -5977,7 +6369,7 @@ function detectDevice(){
   isMobile=window.matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1;
   document.body.classList.toggle('touch',isMobile);
   if(isMobile){
-    const isPortrait=window.innerHeight>window.innerWidth;
+    const isPortrait=(window.visualViewport?.height||window.innerHeight)>(window.visualViewport?.width||window.innerWidth);
     document.getElementById('ctrl-hint').innerHTML=
       isPortrait
         ? '👆 BAS GAUCHE = joystick déplacement<br>👆 BAS DROITE = viser (tir auto)<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash<br>Tourne en paysage pour plus d\'espace !'
@@ -6002,6 +6394,10 @@ function detectDevice(){
 
 window.addEventListener('orientationchange',()=>{ setTimeout(()=>{ detectDevice(); setupCanvas(); },150); });
 window.addEventListener('resize',()=>{ detectDevice(); setupCanvas(); });
+// iOS Safari: visualViewport change (keyboard, browser bars)
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',()=>{ detectDevice(); setupCanvas(); });
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
   detectDevice();
@@ -6010,7 +6406,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderSettings();
   updateCoinsHUD();
 
-  // Check for already-connected gamepads
+  // Check for already-connected gamepads — force re-scan
+  gpIndex = null;
   const existingGps=safeGetGamepads();
   for(const gp of existingGps){
     if(gp&&gp.connected){
@@ -6085,6 +6482,40 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 </script>
+
+
+<!-- RELIC OFFER -->
+<div class="relic-offer" id="relic-offer">
+  <div class="relic-offer-title">✨ RELIQUE DISPONIBLE</div>
+  <div style="font-size:8px;letter-spacing:.25em;color:var(--txt2);">CHOISIR UN OBJET PASSIF PERMANENT</div>
+  <div class="relic-cards" id="relic-cards"></div>
+  <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-top:4px;">Apparaît toutes les 5 vagues</div>
+</div>
+<!-- Active relics HUD -->
+<div id="relic-hud"></div>
+
+
+<!-- DÉFI QUOTIDIEN -->
+<div class="scr" id="s-daily">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="daily-box">
+      <div class="daily-header">
+        <div style="font-size:7px;letter-spacing:.35em;color:var(--txt2);margin-bottom:6px;" id="daily-date">CHARGEMENT…</div>
+        <div class="daily-title">⚡ DÉFI QUOTIDIEN</div>
+        <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:4px;">Même seed pour tout le monde</div>
+      </div>
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);">MODIFICATEURS DU JOUR</div>
+      <div class="daily-modifiers" id="daily-modifiers"></div>
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:8px;">CLASSEMENT DU JOUR</div>
+      <div class="daily-lb" id="daily-lb"><div style="color:var(--dim);font-size:8px;text-align:center;padding:12px;">Connecte-toi pour voir le classement</div></div>
+      <div id="daily-my-score" style="font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);text-align:center;min-height:18px;"></div>
+      <button class="btn btn-p" onclick="startDailyChallenge()"><span>⚡ JOUER LE DÉFI</span></button>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
+    </div>
+  </div>
+</div>
 
 <!-- ADMIN PANEL -->
 <div class="scr" id="s-admin">
