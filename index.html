@@ -563,6 +563,8 @@ body.touch #minimap{display:none;}
   padding:clamp(16px,4vmin,32px) clamp(12px,3vw,20px) 24px;
   gap:0; margin:auto; min-height:min-content;
 }
+/* Nav is always last flex child → stays at bottom */
+.ob-nav{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:18px;padding-top:4px;gap:10px;flex-shrink:0;}
 /* Progress dots */
 .ob-dots{display:flex;gap:8px;margin-bottom:18px;}
 .ob-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:all .3s;cursor:pointer;flex-shrink:0;}
@@ -622,7 +624,6 @@ body.touch #minimap{display:none;}
 .ob-upg-pill.rare{border-color:rgba(180,79,255,.35);color:#d48fff;}
 .ob-upg-pill.leg{border-color:rgba(255,190,11,.4);color:var(--c3);}
 /* Navigation bar */
-.ob-nav{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:18px;gap:10px;flex-shrink:0;}
 .ob-btn{font-family:'Orbitron',monospace;font-size:clamp(9px,2.2vmin,11px);letter-spacing:.2em;padding:11px 22px;border:1px solid;cursor:pointer;background:transparent;transition:all .15s;flex-shrink:0;}
 .ob-btn-next{border-color:var(--c1);color:var(--c1);}
 .ob-btn-next:hover,.ob-btn-next:active{background:var(--c1);color:var(--bg);}
@@ -1912,14 +1913,6 @@ body.touch #minimap{display:none;}
       </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="ob-nav" id="ob-nav">
-      <div class="ob-progress" id="ob-prog">1 / 8</div>
-      <button class="ob-btn ob-btn-back" id="ob-back" onclick="obNav(-1)" style="display:none">← RETOUR</button>
-      <button class="ob-btn ob-btn-next" id="ob-next" onclick="obNav(1)">SUIVANT →</button>
-      <div class="ob-skip" onclick="obFinish()">Passer</div>
-    </div>
-
     <!-- ══ SLIDE 6 — Reliques ══ -->
     <div class="ob-slide" id="ob-slide-6">
       <div class="ob-icon">✨</div>
@@ -1988,6 +1981,14 @@ body.touch #minimap{display:none;}
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Navigation — always at bottom -->
+    <div class="ob-nav" id="ob-nav">
+      <div class="ob-progress" id="ob-prog">1 / 8</div>
+      <button class="ob-btn ob-btn-back" id="ob-back" onclick="obNav(-1)" style="display:none">← RETOUR</button>
+      <button class="ob-btn ob-btn-next" id="ob-next" onclick="obNav(1)">SUIVANT →</button>
+      <div class="ob-skip" onclick="obFinish()">Passer</div>
     </div>
   </div>
 </div>
