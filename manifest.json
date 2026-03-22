@@ -1,0 +1,29 @@
+{
+  "name": "PULSE — Twin-Stick Survivor",
+  "short_name": "PULSE",
+  "description": "Jeu d'action twin-stick avec upgrades, reliques, passe de combat et multijoueur en ligne.",
+  "start_url": "/Pulse/index.html",
+  "scope": "/Pulse/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#03030a",
+  "theme_color": "#00f5d4",
+  "lang": "fr",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
