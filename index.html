@@ -1335,6 +1335,12 @@ body.touch #minimap{display:none;}
         <div class="mode-desc">2 joueurs. Touches configurables pour P2.</div>
         <div class="mode-tag">2 JOUEURS</div>
       </div>
+      <div class="mode-card" style="border-color:rgba(255,26,110,.5);background:rgba(255,26,110,.04);" onclick="startMode('hardcore')">
+        <div class="mode-icon">💀</div>
+        <div class="mode-name" style="color:var(--c2);">HARDCORE</div>
+        <div class="mode-desc">1 seule vie. Aucune régénération. Score ×3. Leaderboard dédié.</div>
+        <div class="mode-tag" style="border-color:rgba(255,26,110,.4);color:var(--c2);">UNE VIE</div>
+      </div>
       <div class="mode-card" style="border-color:rgba(0,245,212,.35);background:rgba(0,245,212,.03);" onclick="show('s-online');olInit()">
         <div class="mode-icon">🌐</div>
         <div class="mode-name" style="color:var(--c1);">EN LIGNE</div>
@@ -1476,8 +1482,20 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;">
     <div class="pause-h">PAUSE</div>
     <div class="pause-stats" id="pause-stats"></div>
-    <div class="pause-upg" id="pause-upg"></div>
-    <div class="btn-col" style="width:min(250px,80vw);">
+
+    <!-- Active run relics -->
+    <div id="pause-relics" style="display:none;width:min(420px,92vw);margin:6px 0;">
+      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);margin-bottom:6px;text-align:center;">✨ RELIQUES ACTIVES</div>
+      <div id="pause-relics-list" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
+    <!-- Active upgrades summary -->
+    <div id="pause-upgs-wrap" style="display:none;width:min(420px,92vw);margin:6px 0;">
+      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);margin-bottom:6px;text-align:center;">⬆ UPGRADES DU RUN</div>
+      <div id="pause-upg" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
+    <div class="btn-col" style="width:min(250px,80vw);margin-top:8px;">
       <button class="btn btn-p" onclick="togglePause()"><span>▶ REPRENDRE</span></button>
       <button class="btn btn-s" onclick="pulseConfirm('Quitter la partie en cours ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ MENU</span></button>
     </div>
@@ -3415,7 +3433,34 @@ function startWave(){
   document.getElementById('hv-wave').textContent=w;
   const isBoss=w%5===0, isMini=w%2===0&&w>=4&&w%5!==0;
 
-  // Mini-objective every 3 waves (not on boss waves)
+  // Weather effects every 10 waves (wave 10, 20, 30...)
+  if(w>0 && w%10===0 && currentMode!=='arena'){
+    const WEATHERS=[
+      {id:'meteor',   ico:'☄️',  name:'PLUIE DE MÉTÉORES',  desc:'Explosions aléatoires toutes les 3s pendant la vague.',
+        apply:(g)=>{ g._weather='meteor'; g._weatherTimer=0; }},
+      {id:'haste',    ico:'⚡',  name:'HÂTE',               desc:'Tous les ennemis sont 40% plus rapides.',
+        apply:(g)=>{ g._weather='haste'; g.enemies.forEach(e=>e.spd*=1.4); }},
+      {id:'regen',    ico:'💚',  name:'RÉGÉNÉRATION',       desc:'Tu régénères 5 PV/s pendant cette vague.',
+        apply:(g)=>{ g._weather='regen'; }},
+      {id:'darkness', ico:'🌑',  name:'OBSCURITÉ',          desc:'Les ennemis sont invisibles à moins de 150px.',
+        apply:(g)=>{ g._weather='darkness'; g.player.fogCurse=true; }},
+      {id:'bouncy',   ico:'🔄',  name:'BALLES REBONDISSANTES', desc:'Toutes tes balles ricochent une fois.',
+        apply:(g)=>{ g._weather='bouncy'; g.player.ricochet=true; }},
+    ];
+    const wx=WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
+    G._weather=null;
+    // Clear previous weather effects
+    G.player.fogCurse=G.player._weatherFogCurse||G.player.fogCurse;
+    if(G._weatherPrevRicochet===false) G.player.ricochet=false;
+    // Apply new weather
+    wx.apply(G);
+    G._weatherActive=wx;
+    showPopup(wx.ico+' MÉTÉO : '+wx.name,'#00bbf9');
+    // Banner tip shows weather
+    G._weatherTip=wx.ico+' '+wx.name+' : '+wx.desc;
+  } else if(w===1){
+    G._weather=null; G._weatherActive=null;
+  }
   if(w%3===0 && !isBoss && currentMode!=='arena'){
     const OBJECTIVES=[
       {lbl:'⚡ SANS BOMBE',   desc:'Ne pas utiliser la bombe',  check:()=>!G._usedSpecThisWave,  reward:60,  setup:()=>{ G._usedSpecThisWave=false; }},
@@ -3435,7 +3480,9 @@ function startWave(){
     G._currentObjective=null;
     const objHud=document.getElementById('hud-objective');
     if(objHud) objHud.style.display='none';
-    const tip=Math.random()<.4 ? TIPS[Math.floor(Math.random()*TIPS.length)] : '';
+    // Weather tip takes priority over random tip
+    const tip=G._weatherTip||(Math.random()<.4 ? TIPS[Math.floor(Math.random()*TIPS.length)] : '');
+    G._weatherTip=null; // consume it
     showBanner(`VAGUE ${w}`, isBoss?'⚠ BOSS WAVE !': isMini?'⚡ MINI-BOSS !': `${G.spawnPool.length} ENNEMIS`, tip);
   }
   sfxWave();
@@ -3518,14 +3565,15 @@ function spawnEnemy(def){
   const spdScale = 1 + w*0.028 + Math.max(0,(w-10)*0.015);
   if(G.enemies.length>=120) return;
 
-  // Elite system: 1 in 15 enemies (from wave 3+) gets an elite modifier
+  // Elite system: starts at wave 5, grows to max 1/8 by wave 20
   const ELITE_TYPES = [
     {id:'enrage',  lbl:'⚡ENRAGÉ',   col:'#ff5500', hpMult:1.4, spdMult:1.5, dmgMult:1.2, pts:2.5},
     {id:'armored', lbl:'🛡BLINDÉ',   col:'#8899ff', hpMult:2.5, spdMult:0.8, dmgMult:1.3, pts:3.0},
     {id:'swift',   lbl:'💨RAPIDE',   col:'#ffee00', hpMult:0.8, spdMult:2.2, dmgMult:0.9, pts:2.0},
     {id:'giant',   lbl:'💀GÉANT',    col:'#ff44aa', hpMult:3.5, spdMult:0.7, dmgMult:2.0, pts:4.0},
   ];
-  const isElite = !def.boss && !def.mini && w>=3 && Math.random()<(1/15);
+  const eliteChance = w>=5 ? Math.min(0.125, (w-4)/120) : 0;
+  const isElite = !def.boss && !def.mini && Math.random()<eliteChance;
   const elite = isElite ? ELITE_TYPES[Math.floor(Math.random()*ELITE_TYPES.length)] : null;
 
   const baseHp = Math.round(def.hp*hpScale*(elite?.hpMult||1));
@@ -3665,11 +3713,24 @@ function useSpecial(){
   const p=G.player;
   if(p.specCharge<p.specMax){ showPopup('BOMBE NON CHARGÉE','#b44fff'); return; }
   p.specCharge=0; updateSpecBar();
-  G._usedSpecThisWave=true; // track for mini-objective
-  doNuke(G,30);
-  flashEl('spec-fx');
-  sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200);
-  showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff');
+  G._usedSpecThisWave=true;
+  // ✅ Gravity Well relic: pull enemies to center before exploding
+  if(p.gravityNuke){
+    let pulled=0;
+    for(const e of G.enemies){
+      if(e.dead) continue;
+      const dx=p.x-e.x, dy=p.y-e.y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d>10){ const pull=Math.min(d, 180); e.x+=dx/d*pull; e.y+=dy/d*pull; pulled++; }
+    }
+    showPopup('🌀 GRAVITÉ !','#b44fff');
+    spawnFx(p.x,p.y,'#b44fff',12);
+    setTimeout(()=>{ if(G&&G.running){ doNuke(G,30); flashEl('spec-fx'); sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200); showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff'); }},350);
+  } else {
+    doNuke(G,30);
+    flashEl('spec-fx');
+    sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200);
+    showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff');
+  }
 }
 
 function doNuke(g,dmg){
@@ -3765,6 +3826,10 @@ function update(now){
     // Hide objective HUD
     const objHud=document.getElementById('hud-objective');
     if(objHud) objHud.style.display='none';
+    // Clear wave weather effects when wave clears
+    if(G._weather==='darkness') G.player.fogCurse=false;
+    if(G._weather==='bouncy'){ G.player.ricochet=G._weatherPrevRicochet||false; }
+    G._weather=null; G._weatherActive=null;
     // Check mini-objective
     if(G._currentObjective){
       const obj=G._currentObjective;
@@ -3801,11 +3866,10 @@ function update(now){
   }
   // Relic: ghost step — next shot piercing after dash ends
   if(p._dashJustEnded){ p._ghostStepReady = p.ghostStepRelic; p._dashJustEnded=false; }
-  // Regen : ralentit aux hautes vagues
+  // Regen: fixed 2s interval, regen scales with p.regen value
   if(p.regen>0){
-    const regenInterval = Math.min(360, 180 + G.wave*8);
     p.regenTimer++;
-    if(p.regenTimer>=regenInterval){ p.regenTimer=0; p.hp=Math.min(p.maxHp,p.hp+p.regen); updateHPBar(); }
+    if(p.regenTimer>=120){ p.regenTimer=0; p.hp=Math.min(p.maxHp,p.hp+p.regen); updateHPBar(); }
   }
   // Overheat curse mechanic
   if(p.overheatCurse){
@@ -3850,6 +3914,21 @@ function update(now){
 
   if(G.freeze>0) G.freeze--;
   if(G.magnet>0) G.magnet--;
+
+  // ── Weather effects processing ──
+  if(G._weather && G.waveActive){
+    if(G._weather==='meteor' && frame%180===0){
+      // Random explosion on map
+      const mx=G.player.x+(Math.random()-.5)*W*.6;
+      const my=G.player.y+(Math.random()-.5)*H*.6;
+      doNuke({enemies:G.enemies.filter(e=>Math.hypot(e.x-mx,e.y-my)<80),shk:0},8);
+      spawnFx(mx,my,'#ff9f1c',12);
+      if(Math.hypot(G.player.x-mx,G.player.y-my)<60) dmgPlayer(6);
+    }
+    if(G._weather==='regen' && frame%60===0){
+      G.player.hp=Math.min(G.player.maxHp, G.player.hp+5); updateHPBar();
+    }
+  }
   _dom['frz-fx'].style.opacity=G.freeze>0?(.08+Math.min(G.freeze/200,.1)).toFixed(3):'0';
 
   // ── PRESSION DE VAGUE : à partir de la vague 15, les ennemis proches brûlent le joueur ──
@@ -4273,8 +4352,11 @@ function hitEnemy(e,b){
 // ─── ON KILL ───
 function onKill(e){
   const p=G.player;
-  const mult=1+G.combo*.12;
-  const pts=Math.round(e.pts*mult);
+  // Combo cap at ×8 max multiplier (was unbounded, became absurd)
+  const comboCap=Math.min(G.combo, 58); // ×8 max: 1+58*0.12 = 7.96
+  const mult=1+comboCap*.12;
+  const hardMult=G._hardcoreScoreMult||1;
+  const pts=Math.round(e.pts*mult*hardMult);
   G.score+=pts; G.totalKills++; G.sessionKills++;
   G.combo++; G.comboTimer=215;
   updateCombo();
@@ -4290,7 +4372,7 @@ function onKill(e){
     else if(G._ksCount===5) showPopup('👑 PENTA KILL !!','#b44fff');
     else if(G._ksCount>5&&G._ksCount%5===0) showPopup(`👑 ×${G._ksCount} KILLS !!!`,'#b44fff');
   }
-  // Combo milestone shoutouts
+  // Combo milestones
   if(G.combo===10) showPopup('🔥 COMBO ×10 !','#ffbe0b');
   else if(G.combo===25) showPopup('⚡ COMBO ×25 !','#ff9f1c');
   else if(G.combo===50) showPopup('💥 COMBO ×50 !!','#ff1a6e');
@@ -4300,41 +4382,62 @@ function onKill(e){
   if(p.lifesteal>0){ p.hp=Math.min(p.maxHp,p.hp+p.lifesteal); updateHPBar(); }
   p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate);
   updateSpecBar();
-  // P2 bomb charge on kills
   if(_duoActive&&P2&&!P2._dead){
     P2.specCharge=Math.min(P2.specMax,P2.specCharge+(e.boss?28:e.mini?15:7)*P2.specRate);
   }
   if(e.boss||e.mini){ gStats.bossKills=(gStats.bossKills||0)+1; checkAch('boss_kill',gStats.bossKills); checkAch('boss_5',gStats.bossKills); saveGStats(); }
-  // Elite kill: bonus coins + guaranteed powerup
   if(e.elite){ awardCoins(15); addKF(`⭐ ÉLITE +15🪙`,'g'); showPopup(`⭐ ${e.lbl} vaincu !`,e.col); }
   const cls=e.boss?'g':e.mini?'p':pts>50?'g':'';
   addKF(`+${pts} ${e.lbl}`, cls);
   checkAch('first_kill',1); checkAch('kills_100',G.sessionKills); checkAch('kills_500',G.sessionKills);
-  // Max combo tracking
   G.maxComboThisRun = Math.max(G.maxComboThisRun||0, G.combo);
   // Relic: vampire
   if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
-  // Relic: chain kill — every 5 kills in a row triggers mini nuke
+  // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
   if(p.chainKill && G._chainKillCount>=5 && !e._fromNuke){ 
     G._chainKillCount=0; 
-    // Mark enemies killed by nuke so they don't re-trigger chain
     const nukeKills=G.enemies.filter(en=>!en.dead);
     nukeKills.forEach(en=>en._fromNuke=true);
     doNuke(G,18+(p.berserkerRelic?10:0)); 
     setTimeout(()=>{ if(G) G.enemies.forEach(en=>en._fromNuke=false); },100);
     spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); 
   }
+  // ✅ NEW: Foudre Chain (p.chain) — arc électrique vers l'ennemi le plus proche
+  if(p.chain && !e._fromNuke){
+    const others=G.enemies.filter(en=>!en.dead&&en!==e);
+    if(others.length>0){
+      // Find nearest alive enemy to the killed one
+      let closest=others[0], minD=Math.hypot(e.x-others[0].x,e.y-others[0].y);
+      for(const en of others){ const d=Math.hypot(e.x-en.x,e.y-en.y); if(d<minD){minD=d;closest=en;} }
+      if(minD<200){
+        const chainDmg=Math.round(p.bulletDmg*3);
+        closest.hp-=chainDmg; closest.flash=12;
+        // Visual arc particle trail
+        const steps=8;
+        for(let i=0;i<=steps;i++){
+          const t=i/steps;
+          const jx=(Math.random()-.5)*20;
+          const jy=(Math.random()-.5)*20;
+          spawnFx(e.x+(closest.x-e.x)*t+jx, e.y+(closest.y-e.y)*t+jy,'#00bbf9',2);
+        }
+        if(closest.hp<=0&&!closest.dead){closest.dead=true;onKill(closest);spawnDeathFx(closest.x,closest.y,closest.col);dropPowerup(closest.x,closest.y);}
+      }
+    }
+  }
+  // ✅ NEW: Time Thief — chaque kill pendant Time Slow prolonge l'effet de 0.5s (30 frames)
+  if(p.timeThiefRelic && G.timeSlow>0 && !e._fromNuke){
+    G.timeSlow=Math.min(G.timeSlow+30, 420); // max 7s
+    addKF('⏳ +0.5s','p');
+  }
   // Relic: coin magnet bonus
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
-  // Relic: scavenger — 20% coin drop on kill
+  // Relic: scavenger
   if(p.scavengerRelic && Math.random()<0.20){ awardCoins(2); }
-  // Relic: soul harvest — boss/miniboss kill restores HP + charges bomb
+  // Relic: soul harvest
   if(p.soulHarvestRelic && (e.boss||e.mini)){ p.hp=Math.min(p.maxHp,p.hp+30); updateHPBar(); p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.4); updateSpecBar(); showPopup('💀 MOISSON !','#b44fff'); }
-  // Relic: overload core — kills charge bomb 2× faster
+  // Relic: overload core
   if(p.overloadCoreRelic){ p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate); updateSpecBar(); }
-  // Relic: berserker — dégâts augmentent par vague (appliqué à chaque début de vague, pas ici)
-  // Daily mode score tracking
   if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
 }
 
@@ -4917,13 +5020,44 @@ function togglePause(){
   G.paused=!G.paused;
   if(G.paused){
     const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
+    const p=G.player;
     document.getElementById('pause-stats').innerHTML=`
       <div class="pst"><div class="pst-v">${G.wave}</div><div class="pst-l">VAGUE</div></div>
-      <div class="pst"><div class="pst-v">${G.score}</div><div class="pst-l">SCORE</div></div>
+      <div class="pst"><div class="pst-v">${G.score.toLocaleString('fr-FR')}</div><div class="pst-l">SCORE</div></div>
       <div class="pst"><div class="pst-v">${G.totalKills}</div><div class="pst-l">KILLS</div></div>
-      <div class="pst"><div class="pst-v">${G.player.level}</div><div class="pst-l">NIVEAU</div></div>
-      <div class="pst"><div class="pst-v">${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}</div><div class="pst-l">TEMPS</div></div>`;
-    document.getElementById('pause-upg').textContent=G.player.upgrades.length?'Upgrades : '+G.player.upgrades.join(' · '):'Aucun upgrade encore.';
+      <div class="pst"><div class="pst-v">${Math.ceil(p.hp)}/${p.maxHp}</div><div class="pst-l">VIE</div></div>
+      <div class="pst"><div class="pst-v">${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}</div><div class="pst-l">TEMPS</div></div>
+      <div class="pst"><div class="pst-v">×${(1+Math.min(G.combo,58)*.12).toFixed(1)}</div><div class="pst-l">COMBO</div></div>`;
+
+    // Active run relics
+    const relicsEl=document.getElementById('pause-relics');
+    const relicsListEl=document.getElementById('pause-relics-list');
+    if(activeRelics.length>0){
+      relicsListEl.innerHTML=activeRelics.map(r=>
+        `<div style="border:1px solid rgba(255,190,11,.35);background:rgba(255,190,11,.04);padding:7px 12px;font-size:9px;color:var(--c3);display:flex;align-items:center;gap:6px;">
+          <span style="font-size:16px;">${r.ico}</span><span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.06em;">${r.name}</span>
+        </div>`
+      ).join('');
+      relicsEl.style.display='block';
+    } else {
+      relicsEl.style.display='none';
+    }
+
+    // Upgrades summary
+    const upgsEl=document.getElementById('pause-upgs-wrap');
+    const upgEl=document.getElementById('pause-upg');
+    if(p.upgrades?.length>0){
+      // Count duplicates
+      const counts={};
+      p.upgrades.forEach(u=>counts[u]=(counts[u]||0)+1);
+      upgEl.innerHTML=Object.entries(counts).map(([name,count])=>
+        `<div style="border:1px solid var(--border);background:var(--dim2);padding:4px 8px;font-size:8px;color:var(--txt);">${name}${count>1?` ×${count}`:''}</div>`
+      ).join('');
+      upgsEl.style.display='block';
+    } else {
+      upgsEl.style.display='none';
+    }
+
     show('s-pause');
   } else {
     show('__none__');
@@ -4951,7 +5085,7 @@ function gameOver(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
   const m=Math.floor(elapsed/60), s=elapsed%60;
-  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arène':'Arène'):_duoActive?'Duo Classique':'Classique';
+  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arène':'Arène'):currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo Classique':'Classique';
   const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
   addToHistory(entry);
   if(currentMode==='daily') saveDailyScore(G.score);
@@ -5742,6 +5876,13 @@ function startGame(){
     const r = RELIC_DEFS.find(x => x.id === id);
     if(r && !activeRelics.find(a => a.id === r.id)){ activeRelics.push(r); r.apply(G.player); }
   });
+  // Hardcore mode: override — 1 life, no regen, no lifesteal
+  if(currentMode==='hardcore'){
+    G.player.hp=1; G.player.maxHp=1;
+    G.player.regen=0; G.player.lifesteal=0; G.player.armor=0;
+    G._hardcoreScoreMult=3;
+    showPopup('💀 HARDCORE — 1 VIE','#ff1a6e');
+  }
   updateRelicHud();
   updateHPBar();
   document.getElementById('hv-wave').textContent='—';
