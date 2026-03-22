@@ -5810,13 +5810,6 @@ function showArenaVictory(){
 
   // Apply reward
   applyArenaReward(reward);
-  const level=arenaLevel;
-  const lvlDef=ARENA_LEVELS[(level-1)%ARENA_LEVELS.length];
-  const cycleBonus=Math.floor((level-1)/ARENA_LEVELS.length);
-  const reward=lvlDef.reward;
-
-  // Apply reward
-  applyArenaReward(reward);
 
   // Update best
   if(level>arenaBestLevel){
