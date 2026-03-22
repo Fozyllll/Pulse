@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
-<title>PULSE v21 — Twin-Stick Survivor</title>
+<title>PULSE v22 — Twin-Stick Survivor</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -944,6 +944,68 @@ body.touch #minimap{display:none;}
 /* Speed setting */
 .speed-select{background:var(--dim2);border:1px solid var(--border);color:var(--txt);font-family:'Orbitron',monospace;font-size:9px;padding:6px 10px;letter-spacing:.1em;outline:none;cursor:pointer;}
 
+
+/* ═══ BACK BUTTON — FIXED TOP LEFT ═══ */
+.scr-back{position:fixed;top:clamp(8px,2vmin,14px);left:clamp(8px,2vmin,14px);z-index:600;
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.18em;
+  padding:7px 14px;border:1px solid var(--border);color:var(--txt2);
+  background:rgba(3,3,10,.85);cursor:pointer;transition:all .15s;
+  display:none;backdrop-filter:blur(8px);}
+.scr-back:hover{border-color:var(--c1);color:var(--c1);}
+.scr.on .scr-back{display:block;}
+/* Ne pas afficher sur les écrans sans retour */
+#s-title .scr-back, #s-auth .scr-back, #s-go .scr-back, #s-pause .scr-back{display:none !important;}
+
+
+/* ═══ PREMIUM PASS ═══ */
+.bp-premium-banner{border:2px solid var(--c3);background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(180,79,255,.06));
+  padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;}
+.bp-premium-banner:hover{box-shadow:0 0 28px rgba(255,190,11,.2);}
+.bp-premium-ico{font-size:clamp(28px,6vmin,36px);}
+.bp-premium-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(12px,3vmin,16px);color:var(--c3);letter-spacing:.1em;}
+.bp-premium-sub{font-size:7px;color:var(--txt2);letter-spacing:.15em;margin-top:3px;}
+.bp-premium-price{font-family:'Orbitron',monospace;font-size:11px;color:var(--c3);margin-left:auto;white-space:nowrap;}
+.bp-premium-owned{font-size:8px;color:var(--c1);letter-spacing:.2em;margin-left:auto;}
+/* Card locked overlay */
+.bp-card.premium-locked{position:relative;border-color:rgba(255,190,11,.25);}
+.bp-card.premium-locked::after{content:'⭐ PREMIUM';position:absolute;inset:0;background:rgba(3,3,10,.82);
+  display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;
+  font-size:7px;letter-spacing:.2em;color:rgba(255,190,11,.6);backdrop-filter:blur(2px);}
+.bp-card.premium-locked:hover::after{background:rgba(3,3,10,.7);}
+
+
+/* ═══ RELIC EQUIP SYSTEM ═══ */
+#s-relics{background:rgba(3,3,10,.98);}
+.relic-eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,30vw,180px),1fr));gap:8px;width:min(600px,96vw);margin-top:12px;}
+.relic-eq-card{border:1px solid var(--border);background:var(--dim2);padding:12px;cursor:pointer;transition:all .15s;position:relative;}
+.relic-eq-card.selected{border-color:var(--c3);background:rgba(255,190,11,.06);box-shadow:0 0 16px rgba(255,190,11,.2);}
+.relic-eq-card.locked{opacity:.4;cursor:not-allowed;}
+.relic-eq-ico{font-size:clamp(22px,5vmin,28px);}
+.relic-eq-name{font-family:'Orbitron',monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.1em;color:var(--txt);margin:4px 0 2px;}
+.relic-eq-desc{font-size:7px;color:var(--txt2);line-height:1.55;}
+.relic-eq-tag{font-size:6px;letter-spacing:.18em;padding:2px 6px;border:1px solid rgba(255,190,11,.3);color:var(--c3);display:inline-block;margin-top:4px;}
+.relic-eq-sel{position:absolute;top:6px;right:6px;font-size:14px;}
+.relic-slots{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;}
+.relic-slot{width:52px;height:52px;border:2px dashed rgba(255,190,11,.3);display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;}
+.relic-slot.filled{border-style:solid;border-color:rgba(255,190,11,.5);background:rgba(255,190,11,.06);}
+.relic-slot-lbl{position:absolute;bottom:-14px;font-size:6px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;}
+
+
+/* ═══ SYSTÈME DE CADEAUX ═══ */
+#s-gift{background:radial-gradient(ellipse 80% 60% at 50% 30%,#0d0a14 0%,var(--bg) 70%);}
+.gift-box{width:min(440px,94vw);display:flex;flex-direction:column;gap:10px;}
+.gift-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+.gift-type-card{border:1px solid var(--border);background:var(--dim2);padding:12px;cursor:pointer;transition:all .12s;text-align:center;}
+.gift-type-card.sel{border-color:var(--c4);background:rgba(180,79,255,.06);}
+.gift-type-card:hover{border-color:var(--txt2);}
+.gift-type-ico{font-size:24px;margin-bottom:4px;}
+.gift-type-name{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.12em;color:var(--txt);}
+.gift-notif{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid rgba(180,79,255,.3);background:rgba(180,79,255,.06);margin-bottom:6px;}
+.gift-notif-ico{font-size:20px;}
+.gift-notif-text{flex:1;font-size:8px;color:var(--txt2);letter-spacing:.08em;line-height:1.5;}
+.gift-notif-accept{font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;border:1px solid var(--c1);color:var(--c1);cursor:pointer;transition:all .12s;}
+.gift-notif-accept:hover{background:var(--c1);color:var(--bg);}
+
 </style>
 </head>
 <body>
@@ -952,6 +1014,15 @@ body.touch #minimap{display:none;}
 <div class="scr" id="s-bp">
   <div class="scr-inner" style="align-items:center;padding:12px 8px;">
     <div class="bp-wrap">
+      <!-- Premium banner -->
+      <div class="bp-premium-banner" id="bp-premium-banner" onclick="buyPremiumPass()">
+        <div class="bp-premium-ico">⭐</div>
+        <div>
+          <div class="bp-premium-title">PASSE AMÉLIORÉ — SAISON <span id="bp-prem-season">1</span></div>
+          <div class="bp-premium-sub" id="bp-prem-sub">Reliques exclusives · Skins uniques · Bonus temporaires</div>
+        </div>
+        <div class="bp-premium-price" id="bp-prem-price">1500 🪙</div>
+      </div>
       <!-- Hero header -->
       <div class="bp-hero">
         <div>
@@ -1177,7 +1248,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 21.1</div>
+    <div class="logo-ver">VERSION 22.0</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1185,6 +1256,8 @@ body.touch #minimap{display:none;}
       <button class="btn btn-p" onclick="showModeSelect()"><span>▶ JOUER</span></button>
       <button class="btn btn-p" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
       <button class="btn btn-g" onclick="show('s-daily');initDailyChallenge()"><span>⚡ DÉFI DU JOUR</span></button>
+      <button class="btn btn-s" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
+      <button class="btn btn-s" onclick="show('s-gift');initGift()"><span>🎁 CADEAUX</span></button>
       <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 CLASSEMENT</span></button>
       <button class="btn btn-s" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
@@ -1352,7 +1425,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v21.1</div>
+<div id="watermark">PULSE v22.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1820,6 +1893,10 @@ async function afterLogin(isNewAccount=false){
       if(profile.stats) gStats=profile.stats;
       if(profile.ach) achDone=profile.ach;
       // Load battle pass
+      if(profile.premium_pass && profile.premium_pass.season===BP_SEASON){
+        hasPremiumPass=profile.premium_pass;
+        saveData('pulse_premium_v1',hasPremiumPass);
+      }
       if(profile.battle_pass && profile.battle_pass.season===BP_SEASON){
         battlePass=Object.assign({level:0,xp:0,season:BP_SEASON,claimed:{}},profile.battle_pass);
         saveData('pulse_bp_v1',battlePass);
@@ -3082,7 +3159,7 @@ function update(now){
       mvx=0; mvy=0; // drones don't move
     } else if(e.ghostEnemy){
       // Ghost: ignores obstacles, phases through
-      const _gs=getGameSpeed(); mvx=nx*e.spd*slowFactor*_gs; mvy=ny*e.spd*slowFactor*_gs;
+      const _gs=getGameSpeed()*getEnemySpeedMult(); mvx=nx*e.spd*slowFactor*_gs; mvy=ny*e.spd*slowFactor*_gs;
       e.x+=mvx; e.y+=mvy;
       // Ghost blink effect
       e.wobT+=.06;
@@ -4420,8 +4497,14 @@ function startGame(){
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
+  // Apply daily challenge mods
+  if(currentMode==='daily'&&window._pendingDailyMods){
+    window._pendingDailyMods.forEach(m=>{try{m.apply(G);}catch(e){}});
+    window._pendingDailyMods=null;
+  }
   P2=null; initModeHud();
   resetRelics();
+  applyEquippedRelics(); // Apply the 2 pre-equipped relics
   initDomCache();
   // Apply permanent upgrades
   applyPermaUpgrades(G.player, G);
@@ -4643,9 +4726,32 @@ document.getElementById('mb-dash').addEventListener('touchstart',e=>{ e.preventD
 // ═══════════════════════════════════════════════════════
 //  BATTLE PASS
 // ═══════════════════════════════════════════════════════
-const BP_SEASON = 1;
+// ── Système de saisons dynamiques ──
+// La saison = (année-2025)*12 + mois (commence à 1 en mars 2025)
+function getCurrentSeason(){
+  const d = new Date();
+  return Math.max(1, (d.getFullYear()-2025)*12 + d.getMonth()+1);
+}
+const BP_SEASON = getCurrentSeason();
 const BP_MAX_LEVEL = 30;
-const BP_XP_PER_LEVEL = 500; // XP per level
+const BP_XP_PER_LEVEL = 500;
+
+// Thèmes par saison (cycliques tous les 6)
+const SEASON_THEMES = [
+  {name:'NEON CITY',   bg:'#0a0e1a', accent:'#00f5d4', accent2:'#b44fff', desc:'Mégapole cybernétique'},
+  {name:'BLOOD MOON',  bg:'#150508', accent:'#ff1a6e', accent2:'#ffbe0b', desc:'Lune de sang'},
+  {name:'VOID',        bg:'#080810', accent:'#b44fff', accent2:'#00bbf9', desc:'Le vide intersidéral'},
+  {name:'SOLAR STORM', bg:'#140a00', accent:'#ff6b1a', accent2:'#ffbe0b', desc:'Tempête solaire'},
+  {name:'DEEP SEA',    bg:'#000d14', accent:'#00bbf9', accent2:'#00f5d4', desc:'Abysses'},
+  {name:'GLITCH',      bg:'#050514', accent:'#ff1a6e', accent2:'#00f5d4', desc:'Corruption système'},
+];
+function getSeasonTheme(){ return SEASON_THEMES[(BP_SEASON-1)%SEASON_THEMES.length]; }
+function applySeasonTheme(){
+  const t = getSeasonTheme();
+  document.documentElement.style.setProperty('--bg', t.bg);
+  document.documentElement.style.setProperty('--c1', t.accent);
+  document.documentElement.style.setProperty('--c2', t.accent2);
+}
 
 const BP_REWARDS = [
   {lv:1,  type:'coins',  value:75,    label:'+75 pièces',        icon:'🪙', rarity:'common'},
@@ -4678,6 +4784,23 @@ const BP_REWARDS = [
   {lv:28, type:'perma',  value:'p_coins',label:'Fortune +',      icon:'💰', rarity:'rare'},
   {lv:29, type:'coins',  value:500,   label:'+500 pièces',       icon:'🪙', rarity:'common'},
   {lv:30, type:'skin',   value:'rainbow',label:'Arc-en-ciel',    icon:'🌈', rarity:'legendary'},
+];
+
+// Premium pass ownership
+let hasPremiumPass = loadData('pulse_premium_v1', {season:0, owned:false});
+if(hasPremiumPass.season !== BP_SEASON){ hasPremiumPass = {season:BP_SEASON, owned:false}; }
+const PREMIUM_PASS_COST = 1500;
+
+// Premium BP rewards (interleaved with free ones, shown as locked to non-premium)
+const BP_PREMIUM_REWARDS = [
+  {lv:2,  ico:'⚡', name:'BOOST TEMPORAIRE',  desc:'Cadence de tir ×1.5 pendant 3 vagues', temp:true, duration:3, apply:(p)=>{ p.tempFireBoost=(p.tempFireBoost||0)+3; }},
+  {lv:5,  ico:'🔴', name:'SKIN SANG NOIR',    desc:'Skin exclusif Saison '+BP_SEASON, type:'skin', value:'crimson_ex_s'+BP_SEASON},
+  {lv:8,  ico:'🛡', name:'BOUCLIER RENFORCÉ', desc:'Commence chaque vague avec 1 bouclier temporaire', temp:true, apply:(p,g)=>{ if(!g._premShieldApplied){ p.tempShield=true; p.tempShieldHp=2; g._premShieldApplied=true; } }},
+  {lv:10, ico:'💜', name:'RELIQUE: FANTÔME',  desc:'EXCLUSIVE: Le joueur peut traverser les murs et les ennemis ne te voient plus pendant le dash', relic:true, relicId:'ghost_walk', exclusive:true},
+  {lv:15, ico:'🌈', name:'SKIN PRISME',       desc:'Skin holographique exclusif Saison '+BP_SEASON, type:'skin', value:'prism_s'+BP_SEASON},
+  {lv:20, ico:'💥', name:'MEGA NUKE',         desc:'Bombe fait 2× les dégâts ce run', temp:true, apply:(p)=>{ p.nukeMult=(p.nukeMult||1)*2; }},
+  {lv:25, ico:'👑', name:'TITRE: LÉGENDE S'+BP_SEASON, desc:'Titre de saison exclusif', type:'title', value:'legend_s'+BP_SEASON},
+  {lv:30, ico:'✨', name:'RELIQUE: TRANSCENDANCE', desc:'EXCLUSIVE ULTIME: à chaque vague 5, régénère 50% des PV', relic:true, relicId:'transcend', exclusive:true},
 ];
 
 let battlePass = loadData('pulse_bp_v1', {
@@ -4742,6 +4865,8 @@ function claimBpReward(level){
       saveData('pulse_skins_v3', ownedSkins);
       if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
     }
+    // Show it in shop — update equipped skin desc
+    document.getElementById('bp-claim-desc').textContent = reward.label+' · Équipe depuis la Boutique !';
   } else if(reward.type==='perma'){
     const def=PERMA_DEFS.find(d=>d.id===reward.value);
     if(def){ const lvl=getPermaLvl(reward.value); if(lvl<def.maxLvl){ permaUpgrades[reward.value]=(lvl+1); saveData('pulse_perma_v3',permaUpgrades); if(currentUser&&SB) saveCloudProfile({perma_upgrades:permaUpgrades}); } }
@@ -4782,34 +4907,73 @@ function closeBpClaim(){
 
 function renderBP(){
   const lvl=battlePass.level, xp=battlePass.xp;
-  // Header
   document.getElementById('bp-level-badge').textContent=lvl;
-  document.getElementById('bp-season-lbl').textContent='SAISON '+BP_SEASON;
+  const theme=getSeasonTheme();
+  document.getElementById('bp-season-lbl').textContent=theme.name+' · S'+BP_SEASON;
   document.getElementById('bp-season-badge').textContent='SAISON '+BP_SEASON;
   const pct=lvl>=BP_MAX_LEVEL?100:Math.round(xp/BP_XP_PER_LEVEL*100);
   document.getElementById('bp-xp-fill').style.width=pct+'%';
   document.getElementById('bp-xp-label').textContent=lvl>=BP_MAX_LEVEL?'MAX ATTEINT':xp+' / '+BP_XP_PER_LEVEL+' XP';
+  updatePremiumBanner();
 
-  // Unclaimed section
+  // Section "À réclamer"
   const unclaimed=BP_REWARDS.filter(r=>r.lv<=lvl&&!battlePass.claimed[r.lv]);
+  const premUnclaimed=hasPremiumPass.owned?BP_PREMIUM_REWARDS.filter(r=>r.lv<=lvl&&!battlePass.claimed['prem_'+r.lv]):[];
+  const allUnclaimed=[...unclaimed,...premUnclaimed];
   const unclaimedSec=document.getElementById('bp-unclaimed-section');
   const unclaimedGrid=document.getElementById('bp-unclaimed-grid');
   const hint=document.getElementById('bp-unclaimed-hint');
-  if(unclaimed.length>0){
+  if(allUnclaimed.length>0){
     unclaimedSec.style.display='block';
-    hint.textContent=unclaimed.length+' récompense'+(unclaimed.length>1?'s':'')+' à réclamer !';
+    hint.textContent=allUnclaimed.length+' récompense'+(allUnclaimed.length>1?'s':'')+' à réclamer !';
     hint.style.color='var(--c3)';
     unclaimedGrid.innerHTML='';
-    for(const r of unclaimed) unclaimedGrid.appendChild(makeBpCard(r,lvl));
+    for(const r of unclaimed) unclaimedGrid.appendChild(makeBpCard(r,lvl,false));
+    for(const r of premUnclaimed) unclaimedGrid.appendChild(makePremiumCard(r,lvl,true));
   } else {
     unclaimedSec.style.display='none';
     hint.textContent='';
   }
 
-  // Full track
+  // Grille complète — mélanger free + premium
   const track=document.getElementById('bp-track');
   track.innerHTML='';
-  for(const r of BP_REWARDS) track.appendChild(makeBpCard(r,lvl));
+  // Merge and sort by level
+  const allRewards=[
+    ...BP_REWARDS.map(r=>({...r,_premium:false})),
+    ...BP_PREMIUM_REWARDS.map(r=>({...r,_premium:true}))
+  ].sort((a,b)=>a.lv-b.lv);
+  for(const r of allRewards){
+    if(r._premium) track.appendChild(makePremiumCard(r,lvl,false));
+    else track.appendChild(makeBpCard(r,lvl,false));
+  }
+}
+
+function makePremiumCard(r,lvl,inUnclaimed){
+  const key='prem_'+r.lv;
+  const claimed=battlePass.claimed[key];
+  const unlocked=lvl>=r.lv;
+  const claimable=unlocked&&!claimed&&hasPremiumPass.owned;
+  const div=document.createElement('div');
+  if(!hasPremiumPass.owned){
+    div.className='bp-card premium-locked';
+    div.innerHTML=`<div class="bp-card-lv">NIV.${r.lv}</div>
+      <div class="bp-card-icon">${r.ico}</div>
+      <div class="bp-card-name">${r.name}</div>
+      <div class="bp-card-type skin" style="background:rgba(255,190,11,.1);border-color:rgba(255,190,11,.4);color:var(--c3);">PREMIUM</div>`;
+  } else {
+    div.className='bp-card'+(claimable?' claimable':unlocked?' unlocked':' locked');
+    div.style.borderColor=claimable?'rgba(255,190,11,.6)':unlocked?'rgba(255,190,11,.25)':'';
+    div.innerHTML=`<div class="bp-card-lv">NIV.${r.lv}</div>
+      <div class="bp-card-icon">${r.ico}</div>
+      <div class="bp-card-name">${r.name}</div>
+      <div class="bp-card-type skin" style="color:var(--c3);border-color:rgba(255,190,11,.4);">PREMIUM${r.exclusive?' ★':''}</div>
+      <div style="font-size:6px;color:var(--txt2);text-align:center;line-height:1.4;">${r.desc}</div>
+      ${claimable?`<button class="bp-card-claim" style="border-color:var(--c3);color:var(--c3);" onclick="claimPremiumReward(${r.lv})">RÉCLAMER</button>`:''}
+      ${claimed?`<div class="bp-claimed-check">✓</div>`:''}`;
+    if(claimable) div.onclick=function(e){ if(e.target.tagName!=='BUTTON') claimPremiumReward(r.lv); };
+  }
+  return div;
 }
 
 function makeBpCard(r,lvl){
@@ -5443,6 +5607,7 @@ function adminPlayerCard(p){
       <button class="admin-btn save" onclick="adminSave('${p.id}')">💾 SAUVEGARDER</button>
       <button class="admin-btn warn" onclick="adminGiveAllSkins('${p.id}')">🎨 TOUS LES SKINS</button>
       <button class="admin-btn warn" onclick="adminMaxPerma('${p.id}')">⬆ MAX PERMA</button>
+      <button class="admin-btn warn" style="border-color:var(--c3);color:var(--c3);" onclick="adminGivePremium('${p.id}')">⭐ OFFRIR PASSE</button>
       <button class="admin-btn danger" onclick="adminReset('${p.id}')">🗑 RESET JOUEUR</button>
     </div>
     <div class="admin-status" id="adm-status-${p.id}"></div>
@@ -5537,6 +5702,18 @@ async function adminReset(playerId){
 function adminStatus(msg, cls){
   const el = document.getElementById('admin-search-status');
   if(el){ el.textContent=msg; el.className='admin-status '+(cls||''); }
+}
+
+async function adminGivePremium(playerId){
+  if(!isAdmin()) return;
+  const statusEl=document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Envoi du passe premium…'; statusEl.className='admin-status wait';
+  try{
+    const prem={season:BP_SEASON,owned:true};
+    const {error}=await SB.from('profiles').update({premium_pass:prem}).eq('id',playerId);
+    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; }
+    else { statusEl.textContent='✓ Passe Amélioré offert !'; statusEl.className='admin-status ok'; }
+  }catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
 }
 
 
@@ -5713,15 +5890,9 @@ async function loadDailyLeaderboard(dateStr){
 
 function startDailyChallenge(){
   currentMode='daily';
-  const mods=getDailyModifiers();
-  G=null;
+  window._pendingDailyMods=getDailyModifiers();
+  show('s-mode'); // hide daily screen
   startGame();
-  // Apply mods after game starts
-  setTimeout(()=>{
-    if(!G) return;
-    mods.forEach(m=>m.apply(G));
-  },100);
-  show('s-mode'); // will be overridden by startGame
 }
 
 async function saveDailyScore(score){
@@ -5791,6 +5962,324 @@ function renderDetailedStats(G){
 //  VITESSE DE JEU — appliquée dans update()
 // ═══════════════════════════════════════════════════════
 function getGameSpeed(){ return settings.gameSpeed||1; }
+
+
+// ═══════════════════════════════════════════════════════
+//  PASSE AMÉLIORÉ (PREMIUM)
+// ═══════════════════════════════════════════════════════
+function updatePremiumBanner(){
+  const banner=document.getElementById('bp-premium-banner');
+  const priceEl=document.getElementById('bp-prem-price');
+  const subEl=document.getElementById('bp-prem-sub');
+  const seasonEl=document.getElementById('bp-prem-season');
+  if(!banner) return;
+  if(seasonEl) seasonEl.textContent=BP_SEASON;
+  if(hasPremiumPass.owned){
+    if(priceEl){ priceEl.className='bp-premium-owned'; priceEl.textContent='✓ POSSÉDÉ'; }
+    if(subEl) subEl.textContent='Toutes les récompenses premium débloquées !';
+    banner.style.cursor='default';
+    banner.onclick=null;
+  } else {
+    if(priceEl){ priceEl.className='bp-premium-price'; priceEl.textContent='1 500 🪙'; }
+    banner.onclick=buyPremiumPass;
+  }
+}
+
+function buyPremiumPass(){
+  if(hasPremiumPass.owned){ showPopup('Déjà possédé !','#00f5d4'); return; }
+  if(coins < PREMIUM_PASS_COST){ showPopup('Pas assez de pièces ! ('+PREMIUM_PASS_COST+' requis)','#ff1a6e'); return; }
+  if(!confirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?')) return;
+  coins -= PREMIUM_PASS_COST;
+  saveData('pulse_coins_v3', coins);
+  if(currentUser&&SB) saveCloudProfile({coins});
+  updateCoinsHUD();
+  hasPremiumPass = {season:BP_SEASON, owned:true};
+  saveData('pulse_premium_v1', hasPremiumPass);
+  if(currentUser&&SB) saveCloudProfile({premium_pass:hasPremiumPass});
+  showPopup('⭐ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b');
+  updatePremiumBanner();
+  renderBP();
+}
+
+function claimPremiumReward(lv){
+  if(!hasPremiumPass.owned) return;
+  const reward=BP_PREMIUM_REWARDS.find(r=>r.lv===lv);
+  if(!reward) return;
+  const key='prem_'+lv;
+  if(battlePass.claimed[key]) return;
+  if(battlePass.level<lv) return;
+  battlePass.claimed[key]=true;
+  if(reward.type==='skin'){
+    if(!ownedSkins.includes(reward.value)){ ownedSkins.push(reward.value); saveData('pulse_skins_v3',ownedSkins); if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins}); }
+  }
+  saveBP();
+  renderBP();
+  // Show claim animation
+  const ov=document.getElementById('bp-claim-overlay');
+  document.getElementById('bp-claim-icon').textContent=reward.ico;
+  document.getElementById('bp-claim-title').textContent='⭐ PREMIUM DÉBLOQUÉ !';
+  document.getElementById('bp-claim-desc').textContent=reward.name;
+  const card=ov.querySelector('.bp-claim-card');
+  if(card){card.style.animation='none';void card.offsetWidth;card.style.animation='';}
+  ov.classList.add('on');
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  RELIQUES — ÉQUIPEMENT AVANT PARTIE (MAX 2)
+// ═══════════════════════════════════════════════════════
+let equippedRelics = loadData('pulse_eq_relics_v1', []); // stored relic IDs
+
+// All obtainable relics (from RELIC_DEFS + premium exclusive ones)
+const ALL_RELICS_POOL = [
+  // Free relics (accessible à tous — elles apparaissent pendant la partie)
+  {id:'dash_trail',ico:'💫',name:'TRAÎNE DE DASH',desc:'Dash blesse les ennemis (15 dmg).',tag:'MOBILITÉ',premium:false},
+  {id:'chain_kill',ico:'⚡',name:'RÉACTION EN CHAÎNE',desc:'5 kills d\'affilée = mini-nuke.',tag:'OFFENSIF',premium:false},
+  {id:'armor_regen',ico:'🛡',name:'BLINDAGE RÉGÉNÉRANT',desc:'Chaque upgrade restore 15 PV.',tag:'DÉFENSIF',premium:false},
+  {id:'coin_magnet',ico:'🧲',name:'MAGNÉTISME MONÉTAIRE',desc:'+50% pièces gagnées.',tag:'ÉCONOMIE',premium:false},
+  {id:'vampire',ico:'🩸',name:'VAMPIRISME',desc:'+2 PV par kill.',tag:'SURVIE',premium:false},
+  {id:'double_dash',ico:'⚡⚡',name:'DOUBLE DASH',desc:'+1 charge de dash.',tag:'MOBILITÉ',premium:false},
+  {id:'berserker',ico:'😡',name:'BERSERKER',desc:'Dégâts +5% par vague.',tag:'SCALING',premium:false},
+  {id:'overclock',ico:'⚙',name:'SURCHAUFFE',desc:'Cadence +30%, bombe -20%.',tag:'RISQUE',premium:false},
+  // Premium exclusives
+  {id:'ghost_walk',ico:'👻',name:'FANTÔME',desc:'EXCLUSIVE: Traverse les murs pendant le dash. Ennemis ne te voient plus 2s après le dash.',tag:'PREMIUM ★',premium:true},
+  {id:'transcend',ico:'✨',name:'TRANSCENDANCE',desc:'EXCLUSIVE ULTIME: Régénère 50% des PV toutes les 5 vagues.',tag:'PREMIUM ★',premium:true},
+];
+
+function renderRelicEquip(){
+  const grid=document.getElementById('relic-eq-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+
+  ALL_RELICS_POOL.forEach(r=>{
+    const isPremLocked = r.premium && !hasPremiumPass.owned;
+    const isSelected = equippedRelics.includes(r.id);
+    const div=document.createElement('div');
+    div.className='relic-eq-card'+(isSelected?' selected':'')+(isPremLocked?' locked':'');
+    div.innerHTML=`<div class="relic-eq-sel">${isSelected?'✓':''}</div>
+      <div class="relic-eq-ico">${r.ico}</div>
+      <div class="relic-eq-name">${r.name}</div>
+      <div class="relic-eq-desc">${r.desc}</div>
+      <div class="relic-eq-tag">${r.tag}</div>
+      ${isPremLocked?`<div style="font-size:7px;color:var(--c3);margin-top:4px;">⭐ Passe Amélioré requis</div>`:''}`;
+    if(!isPremLocked){
+      div.onclick=()=>toggleEquipRelic(r.id);
+    }
+    grid.appendChild(div);
+  });
+  updateRelicSlots();
+}
+
+function toggleEquipRelic(id){
+  if(equippedRelics.includes(id)){
+    equippedRelics=equippedRelics.filter(r=>r!==id);
+  } else {
+    if(equippedRelics.length>=2){ showPopup('Maximum 2 reliques équipées !','#ff1a6e'); return; }
+    equippedRelics.push(id);
+  }
+  saveData('pulse_eq_relics_v1', equippedRelics);
+  renderRelicEquip();
+}
+
+function updateRelicSlots(){
+  for(let i=0;i<2;i++){
+    const slot=document.getElementById('relic-slot-'+i);
+    if(!slot) continue;
+    const relicId=equippedRelics[i];
+    const relic=relicId?ALL_RELICS_POOL.find(r=>r.id===relicId):null;
+    slot.className='relic-slot'+(relic?' filled':'');
+    slot.querySelector('span').textContent=relic?relic.ico:'?';
+  }
+}
+
+// Apply equipped relics at game start
+function applyEquippedRelics(){
+  equippedRelics.forEach(id=>{
+    const relicDef=RELIC_DEFS.find(r=>r.id===id)||ALL_RELICS_POOL.find(r=>r.id===id);
+    if(relicDef&&relicDef.apply&&G){
+      activeRelics.push(relicDef);
+      try{ relicDef.apply(G.player); }catch(e){}
+    }
+  });
+  updateRelicHud();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DIFFICULTÉ ADAPTATIVE — scaling avec les upgrades
+// ═══════════════════════════════════════════════════════
+function getDifficultyMult(){
+  if(!G||!G.player) return 1;
+  const upgradeCount=Object.keys(G.player.upgradeCounts||{}).length;
+  const permaTotal=Object.values(permaUpgrades||{}).reduce((a,b)=>a+(b||0),0);
+  // +5% difficulté par upgrade unique, +3% par niveau perma, max +80%
+  const mult=1+Math.min(0.8, upgradeCount*0.05+permaTotal*0.03);
+  return mult;
+}
+
+// Hook difficultyMult into enemy speed
+// (called from existing enemy spawn code)
+function getEnemySpeedMult(){
+  return getDifficultyMult();
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  BOUTON RETOUR — HAUT GAUCHE GLOBAL
+// ═══════════════════════════════════════════════════════
+const BACK_ACTIONS = {
+  's-bp':    ()=>show('s-title'),
+  's-shop':  ()=>show('s-title'),
+  's-lb':    ()=>show('s-title'),
+  's-ach':   ()=>show('s-title'),
+  's-stats': ()=>show('s-title'),
+  's-settings': ()=>show('s-title'),
+  's-keybinds': ()=>{show('s-settings');renderSettings();},
+  's-gpmap': ()=>{show('s-settings');renderSettings();},
+  's-mode':  ()=>show('s-title'),
+  's-duo-config': ()=>show('s-mode'),
+  's-online': ()=>{olLeave();show('s-mode');},
+  's-daily': ()=>show('s-title'),
+  's-relics': ()=>show('s-title'),
+  's-reset': ()=>show('s-auth'),
+  's-onboard': ()=>show('s-title'),
+  's-admin': ()=>show('s-title'),
+};
+
+// Inject a global back button that appears on every screen
+const _backBtn = document.createElement('button');
+_backBtn.id = 'global-back-btn';
+_backBtn.innerHTML = '← RETOUR';
+_backBtn.style.cssText = 'display:none;position:fixed;top:clamp(8px,2vmin,14px);left:clamp(8px,2vmin,14px);z-index:700;font-family:Orbitron,monospace;font-size:8px;letter-spacing:.18em;padding:7px 14px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);background:rgba(3,3,10,.88);cursor:pointer;transition:all .15s;backdrop-filter:blur(8px);';
+_backBtn.onmouseover = ()=>{ _backBtn.style.borderColor='var(--c1)'; _backBtn.style.color='var(--c1)'; };
+_backBtn.onmouseout  = ()=>{ _backBtn.style.borderColor='rgba(255,255,255,.15)'; _backBtn.style.color='rgba(255,255,255,.5)'; };
+document.body.appendChild(_backBtn);
+
+// Override show() to update back button visibility
+const _origShow = show;
+function show(id){
+  _origShow(id);
+  const action = BACK_ACTIONS[id];
+  const noBack = ['s-title','s-auth','s-go','s-pause','__none__'];
+  if(action && !noBack.includes(id)){
+    _backBtn.style.display = 'block';
+    _backBtn.onclick = ()=>{ action(); };
+  } else {
+    _backBtn.style.display = 'none';
+    _backBtn.onclick = null;
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  SYSTÈME DE CADEAUX
+// ═══════════════════════════════════════════════════════
+let _giftType = 'coins';
+const GIFT_COSTS = {coins:0, skin:0, premium:1500, relics:500};
+
+function selectGiftType(type){
+  _giftType=type;
+  document.querySelectorAll('.gift-type-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('gift-t-'+type)?.classList.add('sel');
+  const el=document.getElementById('gift-content');
+  if(!el) return;
+  if(type==='coins'){
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+      <span style="font-size:8px;color:var(--txt2);">MONTANT</span>
+      <input class="admin-field-input" id="gift-coins-amt" type="number" min="10" max="10000" value="100" style="width:100px;">
+      <span style="font-size:8px;color:var(--txt2);">🪙</span>
+    </div><div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Prélevé de ton solde · Min: 10, Max: 10 000</div>`;
+  } else if(type==='skin'){
+    const skins=ownedSkins.filter(s=>s!=='default');
+    el.innerHTML=`<select class="speed-select" id="gift-skin-sel" style="width:100%;font-size:9px;padding:8px;">
+      ${skins.map(s=>`<option value="${s}">${SKIN_DEFS.find(d=>d.id===s)?.name||s}</option>`).join('')}
+    </select><div style="font-size:7px;color:var(--dim);margin-top:4px;letter-spacing:.1em;">Le skin sera retiré de ton inventaire</div>`;
+  } else if(type==='premium'){
+    el.innerHTML=`<div style="font-size:8px;color:var(--txt2);margin:4px 0;">Offre le Passe Amélioré (1 500 🪙)</div>`;
+  } else if(type==='relics'){
+    el.innerHTML=`<div style="font-size:8px;color:var(--txt2);margin:4px 0;">Pack de 3 reliques aléatoires (500 🪙)</div>`;
+  }
+}
+
+async function initGift(){
+  if(!SB||!currentUser){ document.getElementById('gift-status').textContent='Connexion requise.'; return; }
+  selectGiftType('coins');
+  await loadGiftInbox();
+}
+
+async function loadGiftInbox(){
+  if(!SB||!currentUser) return;
+  try{
+    const {data}=await SB.from('profiles').select('gifts').eq('id',currentUser.id).single();
+    const gifts=(data?.gifts||[]).filter(g=>!g.claimed);
+    const inbox=document.getElementById('gift-inbox');
+    const list=document.getElementById('gift-inbox-list');
+    if(!gifts.length){ inbox.style.display='none'; return; }
+    inbox.style.display='block'; list.innerHTML='';
+    gifts.forEach(g=>{
+      const div=document.createElement('div'); div.className='gift-notif';
+      div.innerHTML=`<div class="gift-notif-ico">${g.type==='coins'?'🪙':g.type==='premium'?'⭐':g.type==='skin'?'🎨':'✨'}</div>
+        <div class="gift-notif-text">De <strong>${g.from||'?'}</strong> · ${g.desc}</div>
+        <button class="gift-notif-accept" onclick="claimGift('${g.id}')">ACCEPTER</button>`;
+      list.appendChild(div);
+    });
+  }catch(e){}
+}
+
+async function claimGift(giftId){
+  if(!SB||!currentUser) return;
+  try{
+    const {data}=await SB.from('profiles').select('gifts').eq('id',currentUser.id).single();
+    const gifts=data?.gifts||[];
+    const gift=gifts.find(g=>g.id===giftId);
+    if(!gift||gift.claimed) return;
+    gift.claimed=true;
+    // Apply gift
+    if(gift.type==='coins'){ coins+=gift.value; saveData('pulse_coins_v3',coins); if(currentUser&&SB) saveCloudProfile({coins}); updateCoinsHUD(); showPopup('+'+gift.value+' 🪙 Cadeau!','#ffbe0b'); }
+    else if(gift.type==='premium'){ hasPremiumPass={season:BP_SEASON,owned:true}; saveData('pulse_premium_v1',hasPremiumPass); saveCloudProfile({premium_pass:hasPremiumPass}); showPopup('⭐ Passe Amélioré reçu!','#ffbe0b'); }
+    else if(gift.type==='skin'){ if(!ownedSkins.includes(gift.value)){ownedSkins.push(gift.value);saveData('pulse_skins_v3',ownedSkins);saveCloudProfile({owned_skins:ownedSkins});}showPopup('🎨 Skin reçu!','#00f5d4'); }
+    await SB.from('profiles').update({gifts}).eq('id',currentUser.id);
+    loadGiftInbox();
+  }catch(e){}
+}
+
+async function sendGift(){
+  if(!SB||!currentUser){ showPopup('Connexion requise','#ff1a6e'); return; }
+  const recipient=document.getElementById('gift-recipient')?.value?.trim();
+  if(!recipient){ document.getElementById('gift-status').textContent='Saisis un pseudo.'; return; }
+  document.getElementById('gift-status').textContent='Envoi…';
+  try{
+    // Find recipient
+    const {data:recData}=await SB.from('profiles').select('id,gifts,owned_skins').eq('pseudo',recipient).single();
+    if(!recData){ document.getElementById('gift-status').textContent='Joueur introuvable.'; document.getElementById('gift-status').className='online-status err'; return; }
+    let giftObj={id:Date.now()+'_'+Math.random().toString(36).slice(2,7),from:userPseudo||'Anonyme',claimed:false};
+    // Validate and deduct from sender
+    if(_giftType==='coins'){
+      const amt=parseInt(document.getElementById('gift-coins-amt')?.value)||0;
+      if(amt<10||coins<amt){ document.getElementById('gift-status').textContent='Solde insuffisant ou montant invalide.'; document.getElementById('gift-status').className='online-status err'; return; }
+      coins-=amt; saveData('pulse_coins_v3',coins); saveCloudProfile({coins}); updateCoinsHUD();
+      Object.assign(giftObj,{type:'coins',value:amt,desc:'+'+amt+' pièces'});
+    } else if(_giftType==='skin'){
+      const skinId=document.getElementById('gift-skin-sel')?.value;
+      if(!skinId||!ownedSkins.includes(skinId)){ document.getElementById('gift-status').textContent='Skin invalide.'; return; }
+      ownedSkins=ownedSkins.filter(s=>s!==skinId); saveData('pulse_skins_v3',ownedSkins); saveCloudProfile({owned_skins:ownedSkins});
+      Object.assign(giftObj,{type:'skin',value:skinId,desc:'Skin '+SKIN_DEFS.find(s=>s.id===skinId)?.name});
+    } else if(_giftType==='premium'){
+      if(coins<1500){ document.getElementById('gift-status').textContent='1500 🪙 requis.'; return; }
+      coins-=1500; saveData('pulse_coins_v3',coins); saveCloudProfile({coins}); updateCoinsHUD();
+      Object.assign(giftObj,{type:'premium',value:BP_SEASON,desc:'Passe Amélioré Saison '+BP_SEASON});
+    } else if(_giftType==='relics'){
+      if(coins<500){ document.getElementById('gift-status').textContent='500 🪙 requis.'; return; }
+      coins-=500; saveData('pulse_coins_v3',coins); saveCloudProfile({coins}); updateCoinsHUD();
+      Object.assign(giftObj,{type:'relics',value:3,desc:'Pack de 3 reliques'});
+    }
+    // Add to recipient's gift list
+    const recGifts=[...(recData.gifts||[]),giftObj];
+    await SB.from('profiles').update({gifts:recGifts}).eq('id',recData.id);
+    document.getElementById('gift-status').textContent='✓ Cadeau envoyé à '+recipient+' !';
+    document.getElementById('gift-status').className='online-status ok';
+    document.getElementById('gift-recipient').value='';
+  }catch(e){ document.getElementById('gift-status').textContent='Erreur: '+e.message; document.getElementById('gift-status').className='online-status err'; }
+}
 
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
@@ -6458,6 +6947,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('title-best').textContent=best>0?`🏆 MEILLEUR SCORE : ${best}`:'';
   }
 
+  // Apply season theme
+  applySeasonTheme();
+  // Load premium pass from cloud if logged in
   // Wire up leaderboard button
   document.querySelector('.btn-g[onclick*="s-lb"]').addEventListener('click',renderLeaderboard);
 
@@ -6510,6 +7002,63 @@ document.addEventListener('DOMContentLoaded',()=>{
     </div>
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- RELIC EQUIP SCREEN -->
+<div class="scr" id="s-relics">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="scr-h">✨ RELIQUES</div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin:4px 0 10px;">Choisis 2 reliques à équiper · Les autres apparaissent en jeu (vague 5, 10...)</div>
+    <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.25em;color:var(--txt2);margin-bottom:6px;">ÉQUIPÉES</div>
+    <div class="relic-slots" id="relic-slots-display">
+      <div class="relic-slot" id="relic-slot-0"><span>?</span><div class="relic-slot-lbl">SLOT 1</div></div>
+      <div class="relic-slot" id="relic-slot-1"><span>?</span><div class="relic-slot-lbl">SLOT 2</div></div>
+    </div>
+    <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.25em;color:var(--txt2);margin:10px 0 4px;">DISPONIBLES</div>
+    <div class="relic-eq-grid" id="relic-eq-grid"></div>
+    <div class="btn-row" style="margin-top:16px;gap:10px;">
+      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
+      <button class="btn btn-p" onclick="show('s-title')"><span>✓ CONFIRMER</span></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- SYSTÈME DE CADEAUX -->
+<div class="scr" id="s-gift">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="gift-box">
+      <div class="scr-h" style="font-size:clamp(16px,4vmin,22px);">🎁 ENVOYER UN CADEAU</div>
+      <div style="font-size:8px;letter-spacing:.18em;color:var(--txt2);text-align:center;">Les cadeaux sont prélevés de ton compte</div>
+      <!-- Incoming gifts -->
+      <div id="gift-inbox" style="display:none;">
+        <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.25em;color:var(--c4);margin-bottom:6px;">📬 CADEAUX REÇUS</div>
+        <div id="gift-inbox-list"></div>
+      </div>
+      <!-- Type select -->
+      <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.25em;color:var(--txt2);">TYPE DE CADEAU</div>
+      <div class="gift-type-grid">
+        <div class="gift-type-card sel" id="gift-t-coins" onclick="selectGiftType('coins')">
+          <div class="gift-type-ico">🪙</div><div class="gift-type-name">PIÈCES</div>
+        </div>
+        <div class="gift-type-card" id="gift-t-skin" onclick="selectGiftType('skin')">
+          <div class="gift-type-ico">🎨</div><div class="gift-type-name">SKIN</div>
+        </div>
+        <div class="gift-type-card" id="gift-t-premium" onclick="selectGiftType('premium')">
+          <div class="gift-type-ico">⭐</div><div class="gift-type-name">PASSE AMÉLIORÉ</div>
+        </div>
+        <div class="gift-type-card" id="gift-t-relics" onclick="selectGiftType('relics')">
+          <div class="gift-type-ico">✨</div><div class="gift-type-name">PACK RELIQUE</div>
+        </div>
+      </div>
+      <!-- Dynamic content -->
+      <div id="gift-content"></div>
+      <input class="online-room-name" id="gift-recipient" placeholder="PSEUDO DU DESTINATAIRE" oninput="this.value=this.value.toUpperCase()">
+      <div class="online-status" id="gift-status"></div>
+      <button class="btn btn-p" onclick="sendGift()"><span>🎁 ENVOYER</span></button>
     </div>
   </div>
 </div>
