@@ -619,6 +619,7 @@ body.touch #minimap{display:none;}
 .shop-tab.active{color:var(--c1);border-bottom-color:var(--c1);}
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(148px,41vw),1fr));gap:10px;width:min(720px,96vw);max-height:52vh;overflow-y:auto;padding-right:4px;}
 .shop-grid::-webkit-scrollbar{width:3px;}.shop-grid::-webkit-scrollbar-track{background:var(--dim2);}.shop-grid::-webkit-scrollbar-thumb{background:var(--c1);}
+.pup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(148px,41vw),1fr));gap:10px;width:100%;}
 .skin-card{border:1px solid var(--border);background:var(--dim2);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .13s;position:relative;overflow:hidden;}
 .skin-card:hover{border-color:var(--c1);transform:translateY(-2px);}
 .skin-card.owned{border-color:rgba(0,245,212,.25);}
@@ -1197,6 +1198,8 @@ body.touch #minimap{display:none;}
     <div class="hb" style="text-align:right"><div class="hl">ENNEMIS</div><div class="hv" style="color:var(--c6)" id="hv-enemies">0</div></div>
     <button id="hud-pause-btn" onclick="togglePause()">❙❙</button>
   </div>
+  <!-- Mini-objective bar -->
+  <div id="hud-objective" style="display:none;position:fixed;bottom:clamp(100px,20vmin,130px);left:50%;transform:translateX(-50%);z-index:105;background:rgba(3,3,10,.82);border:1px solid rgba(255,190,11,.35);padding:5px 14px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.18em;color:var(--c3);pointer-events:none;white-space:nowrap;border-radius:2px;"></div>
   <div id="hud-passives"></div>
   <!-- P2 HP bar — visible only in duo -->
   <div id="hud-p2" style="display:none;position:absolute;top:0;right:0;padding:clamp(4px,1.5vmin,10px) clamp(8px,2.5vmin,16px);pointer-events:none;">
@@ -1207,12 +1210,14 @@ body.touch #minimap{display:none;}
     </div>
   </div>
 </div>
+<!-- Danger edge vignette -->
+<div id="danger-edge" style="position:fixed;inset:0;pointer-events:none;z-index:103;opacity:0;background:radial-gradient(ellipse at center, transparent 55%, rgba(255,26,110,.35) 100%);transition:opacity .3s;"></div>
 <div id="boss-hud"><div id="boss-lbl">BOSS</div><div id="boss-track"><div id="boss-fill"></div></div></div>
 <div id="wbanner"><div id="wb-num"></div><div id="wb-sub"></div><div id="wb-tip"></div></div>
 <div id="cd"></div>
 <div id="popup"></div>
 <div id="kfeed"></div>
-<div id="combo"><div id="cval">0</div><div id="cmul"></div><div id="clbl">COMBO</div></div>
+<div id="combo"><div id="cval">0</div><div id="cmul"></div><div id="clbl">COMBO</div><div id="combo-timer-bar" style="height:3px;background:var(--c1);width:100%;margin-top:3px;transform-origin:right;transition:none;border-radius:2px;"></div></div>
 <div id="dmg-fx"></div><div id="heal-fx"></div><div id="spec-fx"></div><div id="frz-fx"></div><div id="lvup-fx"></div><div id="wave-clear-fx"></div>
 <div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div><div class="at-reward" id="at-reward"></div></div></div>
 
@@ -1910,6 +1915,7 @@ body.touch #minimap{display:none;}
     <div class="shop-tabs">
       <button class="shop-tab active" onclick="shopTab('skins',this)">🎨 SKINS</button>
       <button class="shop-tab" onclick="shopTab('perma',this)">⬆ AMÉLIORATIONS</button>
+      <button class="shop-tab" onclick="shopTab('lottery',this)">🎰 LOTERIE</button>
     </div>
     <div class="shop-grid" id="shop-grid"></div>
     
@@ -2345,11 +2351,15 @@ const PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITÉ+',      desc:'+8 PV max de départ par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% dégâts de départ par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
   {id:'p_spd',   ico:'💨', name:'AGILITÉ+',       desc:'+3% vitesse de départ par niveau.',   maxLvl:5, costs:[40,70,100,140,190], apply:(p,lvl)=>{ p.speed*=(1+.03*lvl); }},
-  {id:'p_coins', ico:'🪙', name:'FORTUNE',        desc:'+15% pièces gagnées par niveau.',     maxLvl:5, costs:[60,100,150,210,280], apply:()=>{}}, // applied at game over
+  {id:'p_coins', ico:'🪙', name:'FORTUNE',        desc:'+15% pièces gagnées par niveau.',     maxLvl:5, costs:[60,100,150,210,280], apply:()=>{}},
   {id:'p_spec',  ico:'💜', name:'BOMBE+',         desc:'Bombe démarre chargée à 20% par lvl.',maxLvl:3, costs:[80,140,220],         apply:(p,lvl)=>{ p.specCharge+=20*lvl; }},
   {id:'p_dash',  ico:'⚡', name:'DASH+',          desc:'-10% recharge dash par niveau.',      maxLvl:3, costs:[70,120,180],         apply:(p,lvl)=>{ p.dashCd=Math.max(400,p.dashCd*(1-.10*lvl)); }},
   {id:'p_regen', ico:'💚', name:'RÉGÉNÉ+',        desc:'+0.5 regen/s de départ par niveau.',  maxLvl:3, costs:[90,150,230],         apply:(p,lvl)=>{ p.regen+=0.5*lvl; }},
   {id:'p_magnet',ico:'🧲', name:'MAGNÉTISME',     desc:'Commence avec aimant actif 3s.',      maxLvl:1, costs:[100],                apply:(_,__,g)=>{ g.magnet=180; }},
+  // ── BONUS DE SOL ──
+  {id:'p_pu_heal',ico:'💊',name:'SOIN+',          desc:'Soins au sol donnent +15 PV supplémentaires par niveau.',maxLvl:3,costs:[80,130,200], apply:()=>{}},
+  {id:'p_pu_dur', ico:'⏱', name:'DURÉE BONUS+',   desc:'Vitesse/Tir rapide durent 30% plus longtemps par niveau.',maxLvl:3,costs:[70,120,180],apply:()=>{}},
+  {id:'p_pu_rate',ico:'🎲', name:'BONUS FRÉQUENCE+',desc:'+15% de chance de drop de bonus au sol par niveau.',maxLvl:3,costs:[90,160,250],apply:()=>{}},
 ];
 
 function getPermaLvl(id){ return permaUpgrades[id]||0; }
@@ -2438,7 +2448,6 @@ function renderShop(tab){
       const equipped=equippedSkin===sk.id;
       const card=document.createElement('div');
       card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
-      // Preview canvas
       const wrap=document.createElement('div');
       wrap.className='skin-preview';
       wrap.style.cssText='width:54px;height:54px;display:flex;align-items:center;justify-content:center;';
@@ -2446,11 +2455,9 @@ function renderShop(tab){
       wrap.appendChild(cvs);
       card.appendChild(wrap);
       drawSkinPreview(cvs,sk.id);
-      // Name
       const nm=document.createElement('div');
       nm.className='skin-name'; nm.textContent=sk.name;
       card.appendChild(nm);
-      // Price / status
       const pr=document.createElement('div');
       if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='ÉQUIPÉ'; }
       else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSÉDÉ'; }
@@ -2466,7 +2473,20 @@ function renderShop(tab){
       });
       grid.appendChild(card);
     }
+  } else if(tab==='lottery'){
+    renderLotteryTab(grid);
   } else {
+    // Perma upgrades — split into two sections
+    const puSection=document.createElement('div');
+    puSection.style.cssText='width:100%;';
+    puSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">⬆ AMÉLIORATIONS PERMANENTES</div>';
+    const puGrid=document.createElement('div');
+    puGrid.className='pup-grid';
+    const bonusSection=document.createElement('div');
+    bonusSection.style.cssText='width:100%;margin-top:16px;';
+    bonusSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">🎁 AMÉLIORATIONS DES BONUS AU SOL</div>';
+    const bonusGrid=document.createElement('div');
+    bonusGrid.className='pup-grid';
     for(const def of PERMA_DEFS){
       const lvl=getPermaLvl(def.id);
       const maxed=lvl>=def.maxLvl;
@@ -2483,9 +2503,72 @@ function renderShop(tab){
           ? '<div class="pup-cost maxed-lbl">NIVEAU MAX</div>'
           : `<div class="pup-cost" style="color:${canAfford?'var(--c3)':'var(--c2)'}">🪙 ${cost}</div>`}`;
       if(!maxed) card.addEventListener('click',()=>buyPermaUpgrade(def.id));
-      grid.appendChild(card);
+      const isBonus=def.id.startsWith('p_pu_');
+      (isBonus?bonusGrid:puGrid).appendChild(card);
     }
+    puSection.appendChild(puGrid);
+    bonusSection.appendChild(bonusGrid);
+    grid.appendChild(puSection);
+    grid.appendChild(bonusSection);
   }
+}
+
+// ─── LOTTERY ───
+const LOTTERY_COST=50;
+const LOTTERY_PRIZES=[
+  {w:40, ico:'🪙', lbl:'+80 pièces',      fn:()=>{ awardCoins(80); }},
+  {w:25, ico:'🪙', lbl:'+200 pièces',     fn:()=>{ awardCoins(200); }},
+  {w:15, ico:'🪙', lbl:'+500 pièces',     fn:()=>{ awardCoins(500); }},
+  {w:8,  ico:'🪙', lbl:'+1000 pièces',    fn:()=>{ awardCoins(1000); }},
+  {w:6,  ico:'✨', lbl:'Relique aléatoire', fn:()=>{
+    const ul=loadData('pulse_unlocked_relics_v1',[]);
+    const avail=RELIC_DEFS.filter(r=>!r.premium&&!ul.includes(r.id));
+    if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); showPopup('✨ '+r.name+' débloquée !','#ffbe0b'); }
+    else awardCoins(300);
+  }},
+  {w:4,  ico:'🎨', lbl:'Skin aléatoire',   fn:()=>{
+    const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
+    if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; buySkin(sk.id); showPopup('🎨 '+sk.name+' !','#b44fff'); }
+    else awardCoins(500);
+  }},
+  {w:2,  ico:'👑', lbl:'JACKPOT +3000🪙!', fn:()=>{ awardCoins(3000); showPopup('👑 JACKPOT !','#ffbe0b'); }},
+];
+
+function renderLotteryTab(grid){
+  const totalW=LOTTERY_PRIZES.reduce((s,p)=>s+p.w,0);
+  const lastWin=loadData('pulse_lottery_last','');
+  grid.style.cssText='display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;';
+  grid.innerHTML=`
+    <div style="font-size:28px;margin-top:8px;">🎰</div>
+    <div style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:.2em;color:var(--c3);">LOTERIE PULSE</div>
+    <div style="font-size:8px;color:var(--txt2);text-align:center;max-width:320px;line-height:1.6;">Tente ta chance pour 50🪙.<br>Gagne des pièces, des skins ou des reliques !</div>
+    <div style="width:min(360px,90vw);border:1px solid var(--border);background:var(--dim2);">
+      ${LOTTERY_PRIZES.map(p=>{
+        const pct=(p.w/totalW*100).toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);">
+          <div style="font-size:16px;">${p.ico}</div>
+          <div style="flex:1;font-size:8px;color:var(--txt);">${p.lbl}</div>
+          <div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">${pct}%</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${lastWin?`<div style="font-size:8px;color:var(--c3);">Dernier gain : ${lastWin}</div>`:''}
+    <button class="btn btn-g" style="min-width:200px;" onclick="spinLottery()"><span>🎰 JOUER — 50🪙</span></button>
+    <div id="lottery-result" style="font-family:'Orbitron',monospace;font-size:14px;color:var(--c3);letter-spacing:.1em;min-height:24px;text-align:center;"></div>`;
+}
+
+function spinLottery(){
+  if(coins<LOTTERY_COST){ showPopup('Pas assez de pièces !','#ff1a6e'); return; }
+  spendCoins(LOTTERY_COST);
+  // Weighted random
+  const totalW=LOTTERY_PRIZES.reduce((s,p)=>s+p.w,0);
+  let r=Math.random()*totalW, prize=LOTTERY_PRIZES[LOTTERY_PRIZES.length-1];
+  for(const p of LOTTERY_PRIZES){ r-=p.w; if(r<=0){ prize=p; break; } }
+  prize.fn();
+  saveData('pulse_lottery_last', prize.ico+' '+prize.lbl);
+  const res=document.getElementById('lottery-result');
+  if(res){ res.textContent=prize.ico+' '+prize.lbl; res.classList.remove('pop'); void res.offsetWidth; res.classList.add('pop'); }
+  document.getElementById('shop-coins-display').textContent=coins;
 }
 
 
@@ -2508,6 +2591,10 @@ const ENEMY_DEFS = [
   {id:'drone',    col:'#00f5d4', r:8,  hp:3,   spd:0.3,  pts:25,  dmg:16, lbl:'DRONE',    shape:'diamond', ranged:true, turret:true},
   {id:'leech',    col:'#ff88aa', r:9,  hp:5,   spd:1.6,  pts:35,  dmg:12, lbl:'SANGSUE',  shape:'circle', leech:true},
   {id:'titan',    col:'#cc44ff', r:26, hp:60,  spd:0.65, pts:200, dmg:40, lbl:'TITAN',    shape:'hex',   mini:true, armored:true},
+  // ── NEW v6 ENEMIES ──
+  {id:'shielder', col:'#22ddff', r:13, hp:7,   spd:1.0,  pts:50,  dmg:14, lbl:'SHIELDER', shape:'hex', shieldBearer:true, shieldRange:90},
+  {id:'lurker',   col:'#8844ff', r:10, hp:5,   spd:2.0,  pts:55,  dmg:18, lbl:'LURKER',   shape:'diamond', lurker:true, lurkerRevealRange:80},
+  {id:'mimic',    col:'#00ff88', r:10, hp:6,   spd:1.5,  pts:60,  dmg:12, lbl:'MIMIC',    shape:'circle', mimic:true},
 ];
 
 // ─── POWER-UP DROPS ───
@@ -2894,6 +2981,10 @@ function buildWavePool(w){
   if(w>=4)  pool.push(...Array(Math.floor(w*0.4*mult)).fill(D[12])); // ghost
   if(w>=6)  pool.push(...Array(Math.floor(w*0.25*mult)).fill(D[13])); // drone turret
   if(w>=8)  pool.push(...Array(Math.floor(w*0.3*mult)).fill(D[14])); // leech
+  // NEW v6 enemies
+  if(w>=7)  pool.push(...Array(Math.floor(w*0.25*mult)).fill(D[16])); // shielder
+  if(w>=9)  pool.push(...Array(Math.floor(w*0.2*mult)).fill(D[17]));  // lurker
+  if(w>=11) pool.push(...Array(Math.floor(w*0.18*mult)).fill(D[18])); // mimic
   // Mini-boss plus fréquents aux hautes vagues
   if(w%2===0 && w>=4 && w%5!==0){
     const miniBossCount = 1 + Math.floor(w/15);
@@ -2933,12 +3024,30 @@ function startWave(){
   else if(w===1||w%3===1) G.obstacles=[];
   document.getElementById('hv-wave').textContent=w;
   const isBoss=w%5===0, isMini=w%2===0&&w>=4&&w%5!==0;
-  const tip=Math.random()<.4 ? TIPS[Math.floor(Math.random()*TIPS.length)] : '';
-  showBanner(
-    `VAGUE ${w}`,
-    isBoss?'⚠ BOSS WAVE !': isMini?'⚡ MINI-BOSS !': `${G.spawnPool.length} ENNEMIS`,
-    tip
-  );
+
+  // Mini-objective every 3 waves (not on boss waves)
+  if(w%3===0 && !isBoss && currentMode!=='arena'){
+    const OBJECTIVES=[
+      {lbl:'⚡ SANS BOMBE',   desc:'Ne pas utiliser la bombe',  check:()=>!G._usedSpecThisWave,  reward:60,  setup:()=>{ G._usedSpecThisWave=false; }},
+      {lbl:'🛡 SANS DÉGÂTS',  desc:'Finir sans prendre de dmg', check:()=>G.waveHitsReceived===0, reward:80,  setup:()=>{}},
+      {lbl:'💨 SPEED RUN',    desc:'Finir en moins de 30s',     check:()=>G._waveElapsed<30*60,   reward:70,  setup:()=>{ G._waveElapsed=0; }},
+      {lbl:'🔥 COMBO ×15',   desc:'Maintenir un combo de ×15',  check:()=>G._waveMaxCombo>=15,   reward:55,  setup:()=>{ G._waveMaxCombo=0; }},
+    ];
+    const obj=OBJECTIVES[w/3%OBJECTIVES.length|0];
+    G._currentObjective=obj;
+    if(obj.setup) obj.setup();
+    const tip='🎯 OBJECTIF : '+obj.desc+' → +'+obj.reward+'🪙';
+    showBanner(`VAGUE ${w}`, isMini?'⚡ MINI-BOSS !': `${G.spawnPool.length} ENNEMIS`, tip);
+    // Show objective in persistent HUD bar
+    const objHud=document.getElementById('hud-objective');
+    if(objHud){ objHud.textContent='🎯 '+obj.lbl+' : '+obj.desc+' → +'+obj.reward+'🪙'; objHud.style.display='block'; }
+  } else {
+    G._currentObjective=null;
+    const objHud=document.getElementById('hud-objective');
+    if(objHud) objHud.style.display='none';
+    const tip=Math.random()<.4 ? TIPS[Math.floor(Math.random()*TIPS.length)] : '';
+    showBanner(`VAGUE ${w}`, isBoss?'⚠ BOSS WAVE !': isMini?'⚡ MINI-BOSS !': `${G.spawnPool.length} ENNEMIS`, tip);
+  }
   sfxWave();
 }
 
@@ -3014,16 +3123,28 @@ function spawnEnemy(def){
   else if(side===2){x=Math.random()*W;y=H+pad;}
   else{x=-pad;y=Math.random()*H;}
   const w = G.wave;
-  // Scaling exponentiel : linéaire jusqu'à vague 10, puis accélère fortement
   const hpScale  = w<=10 ? 1+w*0.12 : (1+10*0.12) * Math.pow(1.10, w-10);
   const dmgScale = w<=10 ? 1+w*0.08 : (1+10*0.08) * Math.pow(1.08, w-10);
-  const spdScale = 1 + w*0.028 + Math.max(0,(w-10)*0.015); // vitesse s'accélère après vague 10
-  if(G.enemies.length>=120) return; // hard cap for performance
+  const spdScale = 1 + w*0.028 + Math.max(0,(w-10)*0.015);
+  if(G.enemies.length>=120) return;
+
+  // Elite system: 1 in 15 enemies (from wave 3+) gets an elite modifier
+  const ELITE_TYPES = [
+    {id:'enrage',  lbl:'⚡ENRAGÉ',   col:'#ff5500', hpMult:1.4, spdMult:1.5, dmgMult:1.2, pts:2.5},
+    {id:'armored', lbl:'🛡BLINDÉ',   col:'#8899ff', hpMult:2.5, spdMult:0.8, dmgMult:1.3, pts:3.0},
+    {id:'swift',   lbl:'💨RAPIDE',   col:'#ffee00', hpMult:0.8, spdMult:2.2, dmgMult:0.9, pts:2.0},
+    {id:'giant',   lbl:'💀GÉANT',    col:'#ff44aa', hpMult:3.5, spdMult:0.7, dmgMult:2.0, pts:4.0},
+  ];
+  const isElite = !def.boss && !def.mini && w>=3 && Math.random()<(1/15);
+  const elite = isElite ? ELITE_TYPES[Math.floor(Math.random()*ELITE_TYPES.length)] : null;
+
+  const baseHp = Math.round(def.hp*hpScale*(elite?.hpMult||1));
   G.enemies.push({
-    x,y,r:def.r,
-    hp:Math.round(def.hp*hpScale), maxHp:Math.round(def.hp*hpScale),
-    spd:def.spd*spdScale,
-    col:def.col, pts:Math.round(def.pts*(1+w*0.05)), dmg:Math.round(def.dmg*dmgScale),
+    x,y,r:elite?.id==='giant'?def.r*1.5:def.r,
+    hp:baseHp, maxHp:baseHp,
+    spd:def.spd*spdScale*(elite?.spdMult||1),
+    col:elite?.col||def.col, pts:Math.round(def.pts*(1+w*0.05)*(elite?.pts||1)),
+    dmg:Math.round(def.dmg*dmgScale*(elite?.dmgMult||1)),
     id:def.id, boss:def.boss||false, mini:def.mini||false,
     shape:def.shape||'circle',
     explodes:def.explodes||false,
@@ -3032,22 +3153,27 @@ function spawnEnemy(def){
     zigzag:def.zigzag||false, zigDir:1, zigTimer:0,
     ranged:def.ranged||false,
     splits:def.splits||false,
-    lbl:def.lbl, flash:0, dead:false,
+    lbl:elite?elite.lbl:def.lbl,
+    elite:elite?.id||null,
+    flash:0, dead:false,
     bossTimer:0, wobT:Math.random()*Math.PI*2, wobAmp:(Math.random()-.5)*1.2,
   });
 }
 
 function dropPowerup(x,y){
-  if(G._dailyMod_noPowerups) return; // Défi: sans bonus
-  if(G.powerups.length>=6) return; // max 6 sur la map à la fois
-  // 30% de chance de ne rien dropper (réduction globale)
-  if(Math.random()>0.30) return;
+  if(G._dailyMod_noPowerups) return;
+  if(G.powerups.length>=6) return;
+  // Base 30% drop chance + p_pu_rate upgrade bonus
+  const rateBonus = getPermaLvl('p_pu_rate') * 0.15;
+  if(Math.random() > 0.30 + rateBonus) return;
   const roll=Math.random();
   let cumul=0;
   for(const pt of POWERUP_DEFS){
     cumul+=pt.ch;
     if(roll<cumul){
-      G.powerups.push({x,y,type:pt,r:11,life:420,age:0,bph:Math.random()*Math.PI*2});
+      // Apply duration upgrade to timed powerups
+      const durMult = 1 + getPermaLvl('p_pu_dur') * 0.30;
+      G.powerups.push({x,y,type:pt,r:11,life:Math.round(420*durMult),age:0,bph:Math.random()*Math.PI*2});
       return;
     }
   }
@@ -3149,7 +3275,8 @@ function useSpecial(){
   const p=G.player;
   if(p.specCharge<p.specMax){ showPopup('BOMBE NON CHARGÉE','#b44fff'); return; }
   p.specCharge=0; updateSpecBar();
-  doNuke(G,30); // Dégâts réduits — boss résistent en plus
+  G._usedSpecThisWave=true; // track for mini-objective
+  doNuke(G,30);
   flashEl('spec-fx');
   sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200);
   showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff');
@@ -3216,6 +3343,9 @@ function doDash(){
 function update(now){
   if(!G||!G.running||G.paused) return;
   frame++;
+  // Track per-wave stats for mini-objectives
+  if(G.waveActive){ G._waveElapsed=(G._waveElapsed||0)+1; }
+  if(G.combo>(G._waveMaxCombo||0)) G._waveMaxCombo=G.combo;
   const p=G.player;
 
   // FPS counter with real delta time
@@ -3242,7 +3372,21 @@ function update(now){
   if(G.waveActive&&G.spawnIdx>=G.spawnPool.length&&G.enemies.length===0){
     G.waveActive=false; G.waveCooldown=22;
     flashEl('wave-clear-fx');
-    if(G.waveHitsReceived===0){ gStats.noHitWaves=(gStats.noHitWaves||0)+1; checkAch('no_dmg_wave',gStats.noHitWaves); checkAch('no_hit_5',gStats.noHitWaves); saveGStats(); showPopup('🛡 VAGUE PARFAITE !','#00f5d4'); }
+    // Hide objective HUD
+    const objHud=document.getElementById('hud-objective');
+    if(objHud) objHud.style.display='none';
+    // Check mini-objective
+    if(G._currentObjective){
+      const obj=G._currentObjective;
+      if(obj.check&&obj.check()){ awardCoins(obj.reward); showPopup('✅ '+obj.lbl+' +'+obj.reward+'🪙','#00f5d4'); }
+      G._currentObjective=null;
+    }
+    // Wave score summary
+    const waveScore=G.score-(G._waveStartScore||0);
+    G._waveStartScore=G.score;
+    const noHit=G.waveHitsReceived===0;
+    if(noHit){ gStats.noHitWaves=(gStats.noHitWaves||0)+1; checkAch('no_dmg_wave',gStats.noHitWaves); checkAch('no_hit_5',gStats.noHitWaves); saveGStats(); showPopup('🛡 VAGUE PARFAITE ! +'+(waveScore).toLocaleString()+'pts','#00f5d4'); }
+    else { showPopup(`✓ VAGUE ${G.wave} — +${waveScore.toLocaleString()}pts`, '#00f5d4'); }
   }
   if(!G.waveActive&&G.waveCooldown>0){ G.waveCooldown--; if(G.waveCooldown===0){
     // Every 3 waves (but not on boss waves), offer a curse
@@ -3442,11 +3586,44 @@ function update(now){
       const _gs2=getGameSpeed();
       mvx = nx*e.spd*slowFactor*_gs2 + (-ny*e.zigDir*1.8);
       mvy = ny*e.spd*slowFactor*_gs2 + (nx*e.zigDir*1.8);
+    } else if(e.lurker){
+      // Lurker: invisible until close, then charge
+      const distP=Math.hypot(e.x-p.x,e.y-p.y);
+      e._lurkerAlpha = distP < (e.lurkerRevealRange||80) ? 1 : 0.08;
+      e._lurkerCharging = distP < (e.lurkerRevealRange||80);
+      const spd2 = e._lurkerCharging ? e.spd*2.2 : e.spd*0.4;
+      const _gs3=getGameSpeed();
+      mvx = nx*spd2*slowFactor*_gs3;
+      mvy = ny*spd2*slowFactor*_gs3;
+    } else if(e.mimic){
+      // Mimic: copies player bullet color, fires back periodically
+      e._mimicTimer=(e._mimicTimer||0)+1;
+      if(e._mimicTimer>=(e._mimicInterval||180)){
+        e._mimicTimer=0;
+        // Fire toward player
+        const ang=Math.atan2(p.y-e.y,p.x-e.x);
+        G.bullets.push({x:e.x,y:e.y,vx:Math.cos(ang)*6,vy:Math.sin(ang)*6,
+          dmg:e.dmg,r:5,life:120,dead:false,enemy:true,piercing:0,pierced:0,trail:[],big:false});
+      }
+      e.wobT+=.045;
+      const wob=Math.cos(e.wobT)*e.wobAmp;
+      mvx = nx*e.spd*slowFactor + (-ny*wob);
+      mvy = ny*e.spd*slowFactor + (nx*wob);
     } else {
       e.wobT+=.045;
       const wob=Math.cos(e.wobT)*e.wobAmp;
       mvx = nx*e.spd*slowFactor + (-ny*wob);
       mvy = ny*e.spd*slowFactor + (nx*wob);
+    }
+
+    // Shielder: nearby allies take -50% damage
+    if(e.shieldBearer && !e.dead){
+      const range=e.shieldRange||90;
+      for(const ally of G.enemies){
+        if(ally!==e && !ally.dead && Math.hypot(e.x-ally.x,e.y-ally.y)<range){
+          ally._shielded=2; // frames of shield — refreshed each frame
+        }
+      }
     }
 
     if(!e.ghostEnemy && !e.turret){
@@ -3555,6 +3732,11 @@ function update(now){
     pu.life--; pu.age++;
     if(Math.hypot(pu.x-p.x,pu.y-p.y)<p.r+pu.r+6){
       pu.type.apply(p,G);
+      // p_pu_heal upgrade: extra HP on heal pickups
+      if((pu.type.id==='heal')&&getPermaLvl('p_pu_heal')>0){
+        const bonus=getPermaLvl('p_pu_heal')*15;
+        p.hp=Math.min(p.maxHp,p.hp+bonus);
+      }
       showPopup(pu.type.icon+' '+pu.type.lbl, pu.type.col);
       updateHPBar(); sfxPowerup();
       return false;
@@ -3588,6 +3770,18 @@ function update(now){
     _dom['hv-kills'].textContent=G.totalKills;
     const enemyCount=G.enemies.filter(e=>!e.dead).length;
     if(_dom['hv-enemies']) _dom['hv-enemies'].textContent=enemyCount+(G.waveActive&&G.spawnIdx<G.spawnPool.length?'+':'');
+    // Objective HUD
+    const objEl=document.getElementById('hud-objective');
+    if(objEl){
+      if(G._currentObjective && G.waveActive){ objEl.style.display='block'; objEl.textContent='🎯 '+G._currentObjective.lbl+' — +'+G._currentObjective.reward+'🪙'; }
+      else objEl.style.display='none';
+    }
+    // Danger edge — pulse when many enemies near player
+    const dangerEl=document.getElementById('danger-edge');
+    if(dangerEl && !settings.lowQuality){
+      const nearCount=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<120).length;
+      dangerEl.style.opacity=nearCount>=4?Math.min(1,nearCount/8).toFixed(2):'0';
+    }
   }
   // Wave progress bar
   const wbf=_dom['wave-bar-fill'];
@@ -3694,6 +3888,18 @@ function onKill(e){
   G.score+=pts; G.totalKills++; G.sessionKills++;
   G.combo++; G.comboTimer=215;
   updateCombo();
+  // Kill streak — kills within 2 seconds
+  const now2=performance.now();
+  if(!G._ksTimer||now2-G._ksTimer>2000){ G._ksCount=1; }
+  else { G._ksCount=(G._ksCount||1)+1; }
+  G._ksTimer=now2;
+  if(!e._fromNuke){
+    if(G._ksCount===2) showPopup('💥 DOUBLE KILL !','#ffbe0b');
+    else if(G._ksCount===3) showPopup('⚡ TRIPLE KILL !','#ff9f1c');
+    else if(G._ksCount===4) showPopup('🔥 QUAD KILL !','#ff1a6e');
+    else if(G._ksCount===5) showPopup('👑 PENTA KILL !!','#b44fff');
+    else if(G._ksCount>5&&G._ksCount%5===0) showPopup(`👑 ×${G._ksCount} KILLS !!!`,'#b44fff');
+  }
   // Combo milestone shoutouts
   if(G.combo===10) showPopup('🔥 COMBO ×10 !','#ffbe0b');
   else if(G.combo===25) showPopup('⚡ COMBO ×25 !','#ff9f1c');
@@ -3709,6 +3915,8 @@ function onKill(e){
     P2.specCharge=Math.min(P2.specMax,P2.specCharge+(e.boss?28:e.mini?15:7)*P2.specRate);
   }
   if(e.boss||e.mini){ gStats.bossKills=(gStats.bossKills||0)+1; checkAch('boss_kill',gStats.bossKills); checkAch('boss_5',gStats.bossKills); saveGStats(); }
+  // Elite kill: bonus coins + guaranteed powerup
+  if(e.elite){ awardCoins(15); addKF(`⭐ ÉLITE +15🪙`,'g'); showPopup(`⭐ ${e.lbl} vaincu !`,e.col); }
   const cls=e.boss?'g':e.mini?'p':pts>50?'g':'';
   addKF(`+${pts} ${e.lbl}`, cls);
   checkAch('first_kill',1); checkAch('kills_100',G.sessionKills); checkAch('kills_500',G.sessionKills);
@@ -3993,6 +4201,13 @@ function draw(){
       ctx.globalAlpha=1; ctx.shadowBlur=0;
       ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(e.x-bw/2,e.y-e.r-9,bw,3);
       ctx.fillStyle=e.col; ctx.fillRect(e.x-bw/2,e.y-e.r-9,bw*(e.hp/e.maxHp),3);
+    }
+    // Elite crown badge
+    if(e.elite && !settings.lowQuality){
+      ctx.globalAlpha=0.9; ctx.shadowBlur=0;
+      ctx.font=`${Math.max(8,e.r*.7)}px monospace`;
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillText('★',e.x,e.y-e.r-11);
     }
     ctx.restore();
   }
@@ -5174,6 +5389,16 @@ function updateCombo(){
   cval.classList.remove('bump'); void cval.offsetWidth; cval.classList.add('bump');
   const mul=(1+G.combo*.12).toFixed(2);
   document.getElementById('cmul').textContent=`×${mul} SCORE`;
+  // Color tier
+  const col=G.combo>=100?'#b44fff':G.combo>=50?'#ff1a6e':G.combo>=25?'#ff9f1c':G.combo>=10?'#ffbe0b':'var(--c1)';
+  cval.style.color=col; cval.style.textShadow=`0 0 20px ${col}`;
+  // Timer bar
+  const timerBar=document.getElementById('combo-timer-bar');
+  if(timerBar){
+    const pct=Math.max(0,G.comboTimer/215*100);
+    timerBar.style.width=pct+'%';
+    timerBar.style.background=col;
+  }
   el.classList.add('on');
 }
 function resetCombo(){ G.combo=0; document.getElementById('combo').classList.remove('on'); }
