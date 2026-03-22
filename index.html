@@ -39,8 +39,40 @@ canvas{display:block;position:absolute;top:0;left:0;}
 body.touch #xhair{display:none !important;}
 body.game-active:not(.touch) #xhair{display:block;}
 body:not(.game-active) #xhair{visibility:hidden;}
-/* Hide system cursor in-game */
-body.game-active,body.game-active *{cursor:none !important;}
+/* ── GAME-ONLY ELEMENTS: hidden outside of active gameplay ── */
+/* These elements should ONLY be visible while game-active */
+#hud,
+#mob,
+#boss-hud,
+#wbanner,
+#cd,
+#combo,
+#kfeed,
+#minimap,
+#overheat-bar,
+#relic-hud,
+#danger-edge,
+#hud-objective,
+[id^="mode-hud-"] {
+  display:none;
+}
+/* Popup is visible everywhere (wave clear, combo, etc. also show outside game) */
+#popup{ pointer-events:none; display:block; }
+
+/* While game is active, restore visibility */
+body.game-active #hud,
+body.game-active #wbanner,
+body.game-active #cd,
+body.game-active #combo,
+body.game-active #kfeed,
+body.game-active #minimap,
+body.game-active #overheat-bar,
+body.game-active #danger-edge,
+body.game-active #hud-objective,
+body.game-active #boss-hud { display:block; }
+body.game-active #relic-hud { display:flex; }
+/* boss-hud still needs .on to be visible (opacity) */
+/* mob: handled by touch-specific rule below */
 
 /* BUTTONS — kept in main block below */
 /* ── cursor rules ── cleaned up ── */
@@ -376,7 +408,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   padding-bottom:env(safe-area-inset-bottom,0px);
   padding-left:env(safe-area-inset-left,0px);
   padding-right:env(safe-area-inset-right,0px);}
-body:not(.touch) #mob{display:none;}
+body:not(.touch) #mob,
+body.touch:not(.game-active) #mob { display:none !important; }
+body.game-active.touch #mob { display:flex !important; }
 
 /* Joy left — LANDSCAPE */
 #joy-zone{position:absolute;bottom:0;left:0;width:50%;height:58%;pointer-events:all;touch-action:none;}
@@ -5020,9 +5054,7 @@ function gameOver(){
   // Hide game canvas so it doesn't bleed through
   const _gw=document.getElementById('game-wrap');
   if(_gw) _gw.style.opacity='0';
-  const _hud=document.getElementById('hud');
-  if(_hud) _hud.style.display='none';
-  document.body.classList.remove('game-active');
+  document.body.classList.remove('game-active'); // CSS handles hiding all HUD elements
   vib([100,50,100,50,200]); vibGp(1.0,1.0,400);
   if(currentMode==='online'&&olChannel) olSend({t:'death',uid:olMyUid,name:olGetName()});
   newAchThisRun=[];
@@ -5675,9 +5707,7 @@ function show(id){
 // ═══════════════════════════════════════════════════════
 function startGame(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
-  // Restore any hidden elements
-  const hud=document.getElementById('hud');
-  if(hud) hud.style.display='';
+  // Restore canvas opacity (hidden during arena victory / game over)
   const gameWrap=document.getElementById('game-wrap');
   if(gameWrap) gameWrap.style.opacity='1';
   show('__none__');
@@ -6456,9 +6486,7 @@ function showArenaVictory(){
   clearTimeout(cdTm);
   if(G) G.running=false;
 
-  // Hide game HUD and game canvas
-  const hud=document.getElementById('hud');
-  if(hud) hud.style.display='none';
+  // Hide game canvas + remove active class (CSS hides all HUD automatically)
   const gameWrap=document.getElementById('game-wrap');
   if(gameWrap) gameWrap.style.opacity='0';
   const bossHud=document.getElementById('boss-hud');
@@ -6536,11 +6564,9 @@ function showArenaVictory(){
 
 // Lance le niveau suivant
 function arenaNextLevel(){
-  // Restore game elements hidden by showArenaVictory
-  const hud=document.getElementById('hud');
-  if(hud) hud.style.display='';
+  // Restore canvas opacity (CSS handles HUD visibility via game-active)
   const gameWrap=document.getElementById('game-wrap');
-  if(gameWrap) gameWrap.style.opacity='';
+  if(gameWrap) gameWrap.style.opacity='1';
   currentMode='arena';
   _duoActive=false;
   startGame();
