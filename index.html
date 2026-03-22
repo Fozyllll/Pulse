@@ -1022,6 +1022,17 @@ body.touch #minimap{display:none;}
 .gift-notif-accept{font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;border:1px solid var(--c1);color:var(--c1);cursor:pointer;transition:all .12s;}
 .gift-notif-accept:hover{background:var(--c1);color:var(--bg);}
 
+
+/* ═══ INVENTAIRE SKINS ═══ */
+#s-inventory{background:rgba(3,3,10,.98);}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(90px,20vw,120px),1fr));gap:8px;width:min(680px,96vw);margin-top:12px;}
+.inv-card{border:1px solid var(--border);background:var(--dim2);padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .15s;position:relative;}
+.inv-card.equipped{border-color:var(--c1);background:rgba(0,245,212,.05);}
+.inv-card.equipped::after{content:'ÉQUIPÉ';position:absolute;top:4px;right:4px;font-size:5px;letter-spacing:.2em;color:var(--c1);background:rgba(0,245,212,.12);padding:2px 4px;}
+.inv-card:hover{border-color:var(--txt2);transform:translateY(-2px);}
+.inv-card-name{font-family:'Orbitron',monospace;font-size:clamp(6px,1.5vmin,8px);letter-spacing:.08em;color:var(--txt);text-align:center;}
+.inv-section-title{grid-column:1/-1;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3em;color:var(--txt2);padding:6px 0 4px;border-bottom:1px solid var(--border);}
+
 </style>
 </head>
 <body>
@@ -1264,7 +1275,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 23.0</div>
+    <div class="logo-ver">VERSION 23.1</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1276,6 +1287,7 @@ body.touch #minimap{display:none;}
       <button class="btn btn-s" onclick="show('s-gift');initGift()"><span>🎁 CADEAUX</span></button>
       <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 CLASSEMENT</span></button>
       <button class="btn btn-s" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
+      <button class="btn btn-s" onclick="openInventory()"><span>🎨 MES SKINS</span></button>
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
       <button class="btn btn-s" onclick="show('s-stats');renderStats()"><span>📊 STATISTIQUES</span></button>
       <button class="btn btn-s" onclick="show('s-settings');renderSettings()"><span>⚙ PARAMÈTRES</span></button>
@@ -1441,7 +1453,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v23.0</div>
+<div id="watermark">PULSE v23.1</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1761,8 +1773,8 @@ body.touch #minimap{display:none;}
     <div class="scr-h">🛒 BOUTIQUE</div>
     <div class="shop-coins-bar"><span>🪙</span><span id="shop-coins-display">0</span><span style="font-size:8px;letter-spacing:.2em;color:var(--txt2);">PIÈCES</span></div>
     <div class="shop-tabs">
-      <button class="shop-tab active" onclick="shopTab('skins',this)">🎨 SKINS</button>
-      <button class="shop-tab" onclick="shopTab('perma',this)">⬆ AMÉLIORATIONS</button>
+      <button class="shop-tab active" data-tab="skins" onclick="shopTab('skins',this)">🎨 SKINS</button>
+      <button class="shop-tab" data-tab="relics" onclick="shopTab('relics',this)">✨ RELIQUES</button>
     </div>
     <div class="shop-grid" id="shop-grid"></div>
     <div class="btn-row" style="margin-top:14px;">
@@ -2206,6 +2218,10 @@ let currentShopTab = 'skins';
 
 function openShop(){
   updateCoinsHUD();
+  // Reset tab to skins
+  document.querySelectorAll('.shop-tab').forEach(b=>b.classList.remove('active'));
+  const firstTab=document.querySelector('.shop-tab');
+  if(firstTab) firstTab.classList.add('active');
   renderShop('skins');
   show('s-shop');
 }
@@ -2266,25 +2282,57 @@ function renderShop(tab){
       });
       grid.appendChild(card);
     }
-  } else {
-    for(const def of PERMA_DEFS){
-      const lvl=getPermaLvl(def.id);
-      const maxed=lvl>=def.maxLvl;
-      const cost=maxed?0:def.costs[lvl];
+  } else if(tab==='relics'){
+    // Onglet Reliques — acheter les reliques contre des pièces
+    const BUYABLE_RELICS = [
+      {id:'dash_trail',  ico:'💫', name:'TRAÎNE DE DASH',    desc:'Dash blesse les ennemis (15 dmg).', price:800},
+      {id:'chain_kill',  ico:'⚡', name:'RÉACTION EN CHAÎNE',desc:'5 kills d'affilée = mini-nuke auto.', price:900},
+      {id:'armor_regen', ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',desc:'Chaque upgrade restore 15 PV.', price:700},
+      {id:'coin_magnet', ico:'🧲', name:'MAGNÉTISME',        desc:'+50% pièces gagnées.', price:600},
+      {id:'vampire',     ico:'🩸', name:'VAMPIRISME',         desc:'+2 PV par kill.', price:750},
+      {id:'double_dash', ico:'⚡⚡',name:'DOUBLE DASH',       desc:'+1 charge de dash.', price:850},
+      {id:'berserker',   ico:'😡', name:'BERSERKER',          desc:'Dégâts +5% par vague.', price:1000},
+      {id:'overclock',   ico:'⚙',  name:'SURCHAUFFE',         desc:'Cadence +30%, bombe -20%.', price:700},
+    ];
+    const unlockedRelics = loadData('pulse_unlocked_relics_v1', []);
+    // Header
+    const hdr=document.createElement('div');
+    hdr.style.cssText='grid-column:1/-1;font-size:7px;letter-spacing:.2em;color:var(--txt2);padding:0 0 8px;border-bottom:1px solid var(--border);margin-bottom:4px;';
+    hdr.textContent='Achète des reliques · Équipe-les dans le menu RELIQUES avant de jouer';
+    grid.appendChild(hdr);
+    BUYABLE_RELICS.forEach(r=>{
+      const owned = unlockedRelics.includes(r.id);
+      const canAfford = coins>=r.price;
       const card=document.createElement('div');
-      card.className='pup-card'+(maxed?' maxed':'');
-      const canAfford=!maxed&&coins>=cost;
-      card.innerHTML=`
-        <div class="pup-ico">${def.ico}</div>
-        <div class="pup-name">${def.name}</div>
-        <div class="pup-desc">${def.desc}</div>
-        <div class="pup-lvl">${Array.from({length:def.maxLvl},(_,i)=>`<div class="pup-dot${i<lvl?' filled':''}"></div>`).join('')}</div>
-        ${maxed
-          ? '<div class="pup-cost maxed-lbl">NIVEAU MAX</div>'
-          : `<div class="pup-cost" style="color:${canAfford?'var(--c3)':'var(--c2)'}">🪙 ${cost}</div>`}`;
-      if(!maxed) card.addEventListener('click',()=>buyPermaUpgrade(def.id));
+      card.className='pup-card'+(owned?' maxed':'');
+      card.innerHTML=`<div class="pup-ico">${r.ico}</div>
+        <div class="pup-name">${r.name}</div>
+        <div class="pup-desc">${r.desc}</div>
+        <div class="pup-cost ${owned?'maxed-lbl':canAfford?'':''}">
+          ${owned?'POSSÉDÉE':`🪙 ${r.price}`}
+        </div>`;
+      if(!owned) card.addEventListener('click',()=>{
+        if(coins<r.price){ const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); return; }
+        coins-=r.price; saveData('pulse_coins_v3',coins); if(currentUser&&SB) saveCloudProfile({coins}); updateCoinsHUD();
+        const ul=loadData('pulse_unlocked_relics_v1',[]); if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+        showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
+        renderShop('relics');
+      });
       grid.appendChild(card);
-    }
+    });
+    // Premium relics — locked
+    const premHdr=document.createElement('div');
+    premHdr.style.cssText='grid-column:1/-1;font-size:7px;letter-spacing:.2em;color:var(--c3);padding:10px 0 6px;border-bottom:1px solid rgba(255,190,11,.2);margin-top:4px;';
+    premHdr.textContent='⭐ RELIQUES PREMIUM (Passe Amélioré requis)';
+    grid.appendChild(premHdr);
+    [{id:'ghost_walk',ico:'👻',name:'FANTÔME',desc:'Traverse les murs pendant le dash.'},{id:'transcend',ico:'✨',name:'TRANSCENDANCE',desc:'Régénère 50% PV toutes les 5 vagues.'}].forEach(r=>{
+      const owned=hasPremiumPass.owned;
+      const card=document.createElement('div');
+      card.className='pup-card'+(owned?'':' maxed');
+      card.style.borderColor=owned?'':'rgba(255,190,11,.2)';
+      card.innerHTML=`<div class="pup-ico">${r.ico}</div><div class="pup-name">${r.name}</div><div class="pup-desc">${r.desc}</div><div class="pup-cost maxed-lbl" style="color:var(--c3)">${owned?'POSSÉDÉE':'⭐ PASSE AMÉLIORÉ'}</div>`;
+      grid.appendChild(card);
+    });
   }
 }
 
@@ -4389,7 +4437,7 @@ function renderSettings(){
     const emailShort = currentUser.email||'';
     accDiv.innerHTML = `
       <div class="acc-section-title">👤 COMPTE — ${emailShort}</div>
-      ${currentUser&&currentUser.email===ADMIN_EMAIL?'<button class="admin-btn save" style="margin-bottom:8px;width:100%;" onclick="openAdmin()">⚡ PANEL ADMIN</button>':''}
+      ${currentUser&&ADMIN_EMAILS.includes(currentUser.email)?'<button class="admin-btn save" style="margin-bottom:8px;width:100%;" onclick="openAdmin()">⚡ PANEL ADMIN</button>':''}
       <div class="acc-field">
         <div class="acc-label">PSEUDO (affiché dans le classement)</div>
         <div class="acc-row">
@@ -5614,10 +5662,10 @@ function olDrawPeers(){
 //  ADMIN PANEL
 //  Accessible uniquement pour fozyllll.yt@gmail.com
 // ═══════════════════════════════════════════════════════
-const ADMIN_EMAIL = 'fozyllll.yt@gmail.com';
+const ADMIN_EMAILS = ['fozyllll.yt@gmail.com', 'tcb.theo@gmail.com'];
 
 function isAdmin(){
-  return currentUser && currentUser.email === ADMIN_EMAIL;
+  return currentUser && ADMIN_EMAILS.includes(currentUser.email);
 }
 
 function openAdmin(){
@@ -6258,6 +6306,8 @@ const BACK_ACTIONS = {
   's-online': ()=>{olLeave();show('s-mode');},
   's-daily': ()=>show('s-title'),
   's-relics': ()=>show('s-title'),
+  's-gift':  ()=>show('s-title'),
+  's-inventory': ()=>show('s-title'),
   's-reset': ()=>show('s-auth'),
   's-onboard': ()=>show('s-title'),
   's-admin': ()=>show('s-title'),
@@ -6451,6 +6501,60 @@ function applyTempBonuses(p){
   });
   // Remove used ones (keep remainder for later)
   saveData('pulse_temp_bonuses_v1', used);
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  INVENTAIRE SKINS
+// ═══════════════════════════════════════════════════════
+function openInventory(){
+  renderInventory();
+  show('s-inventory');
+}
+
+function renderInventory(){
+  const grid = document.getElementById('inv-grid');
+  if(!grid) return;
+  grid.innerHTML = '';
+
+  const myFree  = SKIN_DEFS.filter(sk=>!sk.bpOnly && ownedSkins.includes(sk.id));
+  const myBP    = SKIN_DEFS.filter(sk=> sk.bpOnly && ownedSkins.includes(sk.id));
+  const notOwned= SKIN_DEFS.filter(sk=>!sk.bpOnly && !ownedSkins.includes(sk.id));
+
+  function addSection(title, skins){
+    if(!skins.length) return;
+    const hdr=document.createElement('div'); hdr.className='inv-section-title'; hdr.textContent=title;
+    grid.appendChild(hdr);
+    skins.forEach(sk=>{
+      const card=document.createElement('div');
+      const eq = equippedSkin===sk.id;
+      card.className='inv-card'+(eq?' equipped':'');
+      const cvs=document.createElement('canvas');
+      card.appendChild(cvs);
+      setTimeout(()=>drawSkinPreview(cvs,sk.id,54),0);
+      const nm=document.createElement('div'); nm.className='inv-card-name'; nm.textContent=sk.name;
+      card.appendChild(nm);
+      card.onclick=()=>{ equipSkin(sk.id); renderInventory(); updateUserBar(); };
+      grid.appendChild(card);
+    });
+  }
+
+  addSection('✓ MES SKINS', myFree);
+  if(myBP.length) addSection('⭐ PASSE AMÉLIORÉ', myBP);
+  if(notOwned.length){
+    const hdr=document.createElement('div'); hdr.className='inv-section-title'; hdr.style.color='var(--dim)'; hdr.textContent='🔒 À DÉBLOQUER (Boutique)';
+    grid.appendChild(hdr);
+    notOwned.forEach(sk=>{
+      const card=document.createElement('div'); card.className='inv-card'; card.style.opacity='.35';
+      const cvs=document.createElement('canvas');
+      card.appendChild(cvs);
+      setTimeout(()=>drawSkinPreview(cvs,sk.id,54),0);
+      const nm=document.createElement('div'); nm.className='inv-card-name'; nm.textContent=sk.name+'  🪙'+sk.price;
+      card.appendChild(nm);
+      card.onclick=()=>openShop();
+      grid.appendChild(card);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7248,6 +7352,16 @@ document.addEventListener('DOMContentLoaded',()=>{
       <div class="online-status" id="gift-status"></div>
       <button class="btn btn-p" onclick="sendGift()"><span>🎁 ENVOYER</span></button>
     </div>
+  </div>
+</div>
+
+
+<!-- INVENTAIRE SKINS -->
+<div class="scr" id="s-inventory">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="scr-h">🎨 MES SKINS</div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin:4px 0 6px;">Clique pour équiper · <span style="color:var(--c3);" onclick="openShop()">Boutique →</span></div>
+    <div class="inv-grid" id="inv-grid"></div>
   </div>
 </div>
 
