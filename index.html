@@ -3449,6 +3449,7 @@ function hitEnemy(e,b){
       dropPowerup(e.x,e.y);
       return;
     }
+    if(e.splits&&e.r>7){
       for(let i=0;i<2;i++){
         const a=Math.random()*Math.PI*2;
         G.enemies.push({...e,dead:false,r:e.r*.6,hp:e.maxHp*.4,maxHp:e.maxHp*.4,
