@@ -35,7 +35,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #xhair::before{width:1px;height:22px;left:10.5px;top:0;}
 #xhair::after{width:22px;height:1px;top:10.5px;left:0;}
 .xdot{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--c1);top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px var(--c1);}
-body.touch #xhair{display:none;}body:not(.touch){cursor:none;}
+body.touch #xhair{display:none;}body.game-active:not(.touch){cursor:none;}
 body.gamepad-active{cursor:none;}
 
 /* GAMEPAD INDICATOR */
@@ -53,10 +53,14 @@ body.gamepad-active{cursor:none;}
 }
 /* iOS WebView fix — remove tap delay everywhere */
 * { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-body.touch button, body.touch [onclick] { cursor:pointer; }
-body:not(.touch) button, body:not(.touch) [onclick],
-body:not(.touch) input, body:not(.touch) select,
-body:not(.touch) a, body:not(.touch) [role="button"] { cursor:none !important; }
+/* Custom crosshair only when game is active */
+body.game-active:not(.touch) { cursor:none; }
+body.game-active:not(.touch) button,
+body.game-active:not(.touch) [onclick],
+body.game-active:not(.touch) a,
+body.game-active:not(.touch) [role="button"] { cursor:none !important; }
+/* Normal cursor on menus and inputs always */
+body:not(.game-active) #xhair { display:none !important; }
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
@@ -323,6 +327,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .at-icon{font-size:22px;}
 .at-name{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c3);}
 .at-desc{font-size:8px;letter-spacing:.1em;color:var(--txt2);margin-top:2px;}
+.at-reward{font-size:9px;letter-spacing:.14em;color:var(--c3);margin-top:3px;font-family:'Orbitron',monospace;}
 
 /* FX overlays */
 #dmg-fx{position:fixed;inset:0;z-index:95;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(255,26,110,.28) 100%);}
@@ -904,10 +909,8 @@ body.touch #minimap{display:none;}
 
 
 /* ═══ CONFIRM CUSTOM ═══ */
-#pulse-confirm{position:fixed;inset:0;z-index:99999;background:rgba(3,3,10,.88);display:none;align-items:center;justify-content:center;cursor:none !important;}
+#pulse-confirm{position:fixed;inset:0;z-index:99999;background:rgba(3,3,10,.88);display:none;align-items:center;justify-content:center;}
 #pulse-confirm.on{display:flex;}
-#pulse-confirm *{cursor:none !important;}
-body:not(.touch) #pulse-confirm button{cursor:none !important;}
 .pc-box{background:var(--dim2);border:1px solid var(--border);padding:28px 28px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;width:min(340px,88vw);box-shadow:0 0 60px rgba(0,245,212,.08);}
 .pc-msg{font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vmin,13px);letter-spacing:.12em;color:var(--txt);text-align:center;line-height:1.6;}
 .pc-btns{display:flex;gap:12px;width:100%;}
@@ -923,10 +926,18 @@ body:not(.touch) #pulse-confirm button{cursor:none !important;}
 .relic-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 .relic-card{width:clamp(120px,28vw,160px);border:1px solid rgba(255,190,11,.4);background:rgba(255,190,11,.05);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;}
 .relic-card:hover{border-color:var(--c3);transform:translateY(-4px);box-shadow:0 8px 28px rgba(255,190,11,.2);}
+.relic-card.rarity-rare{border-color:rgba(0,187,249,.5);background:rgba(0,187,249,.05);}
+.relic-card.rarity-rare:hover{border-color:#00bbf9;box-shadow:0 8px 28px rgba(0,187,249,.25);}
+.relic-card.rarity-epic{border-color:rgba(180,79,255,.6);background:rgba(180,79,255,.07);}
+.relic-card.rarity-epic:hover{border-color:#b44fff;box-shadow:0 8px 28px rgba(180,79,255,.3);}
 .relic-card-ico{font-size:clamp(28px,7vmin,38px);}
 .relic-card-name{font-family:'Orbitron',monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.1em;color:var(--c3);text-align:center;}
+.relic-card.rarity-rare .relic-card-name{color:#00bbf9;}
+.relic-card.rarity-epic .relic-card-name{color:#b44fff;}
 .relic-card-desc{font-size:clamp(7px,1.6vmin,8px);color:var(--txt2);text-align:center;line-height:1.6;}
 .relic-card-tag{font-size:6px;letter-spacing:.2em;padding:2px 7px;border:1px solid rgba(255,190,11,.3);color:var(--c3);}
+.relic-card-rarity{font-size:6px;letter-spacing:.25em;padding:1px 6px;margin-top:-2px;font-family:'Orbitron',monospace;}
+.relic-card-price{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;color:var(--c3);margin-top:2px;}
 /* Active relics HUD */
 #relic-hud{position:fixed;bottom:clamp(80px,18vmin,110px);right:clamp(8px,2vw,14px);z-index:104;display:flex;flex-direction:column;gap:3px;pointer-events:none;}
 .relic-hud-item{display:flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(3,3,10,.8);border:1px solid rgba(255,190,11,.25);font-size:7px;letter-spacing:.1em;color:var(--c3);}
@@ -1124,7 +1135,7 @@ body:not(.touch) #pulse-confirm button{cursor:none !important;}
 <div id="kfeed"></div>
 <div id="combo"><div id="cval">0</div><div id="cmul"></div><div id="clbl">COMBO</div></div>
 <div id="dmg-fx"></div><div id="heal-fx"></div><div id="spec-fx"></div><div id="frz-fx"></div><div id="lvup-fx"></div><div id="wave-clear-fx"></div>
-<div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div></div></div>
+<div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div><div class="at-reward" id="at-reward"></div></div></div>
 
 <!-- PORTRAIT CONTROLS BG -->
 <div id="portrait-ctrl-bg">
@@ -1799,15 +1810,23 @@ async function doAuth(){
       // Determine if input is email or pseudo
       let emailToUse = input;
       if(!input.includes('@')){
-        // Lookup email by pseudo
-        const {data:rows, error:lookupErr} = await SB.from('profiles').select('id,email').ilike('pseudo', input).limit(1);
-        if(lookupErr||!rows||rows.length===0){
-          errEl.textContent='Pseudo introuvable. Essaie avec ton email.';
-          btn.style.opacity=''; btn.style.pointerEvents=''; return;
-        }
-        emailToUse = rows[0].email;
-        if(!emailToUse){
-          errEl.textContent='Compte sans email associé — connecte-toi avec ton email.';
+        // Lookup email by pseudo — try email column first, fallback to auth lookup
+        try {
+          const {data:rows} = await SB.from('profiles').select('id,email').ilike('pseudo', input).limit(1);
+          if(rows&&rows.length>0&&rows[0].email){
+            emailToUse = rows[0].email;
+          } else if(rows&&rows.length>0){
+            // Profile found but no email — try to get email from auth via a sign-in attempt won't work
+            // Ask user to use their email instead
+            errEl.textContent='Pseudo trouvé, mais email non synchronisé. Connecte-toi avec ton email cette fois.';
+            btn.style.opacity=''; btn.style.pointerEvents=''; return;
+          } else {
+            errEl.textContent='Pseudo introuvable. Vérifie l\'orthographe ou utilise ton email.';
+            btn.style.opacity=''; btn.style.pointerEvents=''; return;
+          }
+        } catch(lookupErr){
+          // Column 'email' might not exist yet — tell user to use email
+          errEl.textContent='Connecte-toi avec ton email (migration pseudo en cours).';
           btn.style.opacity=''; btn.style.pointerEvents=''; return;
         }
       }
@@ -2348,28 +2367,28 @@ const CURSE_DEFS = [
 
 // ─── ACHIEVEMENTS ───
 const ACH_DEFS = [
-  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',   d:'Tuer son premier ennemi.',          goal:1,    stat:'totalKills'},
-  {id:'kills_100',    ico:'💀',  n:'Centurion',      d:'Tuer 100 ennemis en une partie.',   goal:100,  stat:'sessionKills'},
-  {id:'kills_500',    ico:'🔥',  n:'Exterminateur',  d:'Tuer 500 ennemis en une partie.',   goal:500,  stat:'sessionKills'},
-  {id:'wave_10',      ico:'🌊',  n:'Surfeur',         d:'Atteindre la vague 10.',             goal:10,   stat:'maxWave'},
-  {id:'wave_20',      ico:'🏄',  n:'Pro de la vague', d:'Atteindre la vague 20.',             goal:20,   stat:'maxWave'},
-  {id:'wave_30',      ico:'👑',  n:'Maître des vagues', d:'Atteindre la vague 30.',           goal:30,   stat:'maxWave'},
-  {id:'score_10k',    ico:'💎',  n:'10 000 pts',      d:'Atteindre 10 000 points.',           goal:10000,stat:'maxScore'},
-  {id:'score_50k',    ico:'💠',  n:'50 000 pts',      d:'Atteindre 50 000 points.',           goal:50000,stat:'maxScore'},
-  {id:'score_100k',   ico:'💜',  n:'100 000 pts',     d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore'},
-  {id:'combo_20',     ico:'🔥',  n:'Combo x20',       d:'Atteindre un combo de 20.',          goal:20,   stat:'maxCombo'},
-  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',       d:'Atteindre un combo de 50.',          goal:50,   stat:'maxCombo'},
-  {id:'combo_100',    ico:'👑',  n:'Combo x100',      d:'Atteindre un combo de 100.',         goal:100,  stat:'maxCombo'},
-  {id:'level_10',     ico:'⭐',  n:'Niveau 10',       d:'Atteindre le niveau 10.',            goal:10,   stat:'maxLevel'},
-  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',   d:'Vaincre un boss.',                   goal:1,    stat:'bossKills'},
-  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',     d:'Vaincre 5 boss.',                    goal:5,    stat:'bossKills'},
-  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',     d:'Finir une vague sans prendre de dmg.',goal:1,  stat:'noHitWaves'},
-  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',  d:'Obtenir 10 upgrades différents.',    goal:10,   stat:'uniqueUpgrades'},
-  {id:'games_10',     ico:'🎮',  n:'Accro',           d:'Jouer 10 parties.',                  goal:10,   stat:'gamesPlayed'},
-  {id:'cursed',       ico:'😈',  n:'Maudit',          d:'Accepter une malédiction.',          goal:1,    stat:'cursesAccepted'},
-  {id:'curse_5',      ico:'🔥',  n:'Masochiste',      d:'Accepter 5 malédictions.',           goal:5,    stat:'cursesAccepted'},
-  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantômes', d:'Tuer 10 fantômes.',            goal:10,   stat:'ghostKills'},
-  {id:'no_hit_5',     ico:'💎',  n:'Perfection',      d:'5 vagues sans dégâts.',             goal:5,    stat:'noHitWaves'},
+  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',      d:'Tuer son premier ennemi.',           goal:1,     stat:'totalKills',      reward:25},
+  {id:'kills_100',    ico:'💀',  n:'Centurion',          d:'Tuer 100 ennemis en une partie.',    goal:100,   stat:'sessionKills',    reward:50},
+  {id:'kills_500',    ico:'🔥',  n:'Exterminateur',      d:'Tuer 500 ennemis en une partie.',    goal:500,   stat:'sessionKills',    reward:150},
+  {id:'wave_10',      ico:'🌊',  n:'Surfeur',             d:'Atteindre la vague 10.',             goal:10,    stat:'maxWave',         reward:75},
+  {id:'wave_20',      ico:'🏄',  n:'Pro de la vague',    d:'Atteindre la vague 20.',             goal:20,    stat:'maxWave',         reward:150},
+  {id:'wave_30',      ico:'👑',  n:'Maître des vagues',  d:'Atteindre la vague 30.',             goal:30,    stat:'maxWave',         reward:300},
+  {id:'score_10k',    ico:'💎',  n:'10 000 pts',          d:'Atteindre 10 000 points.',           goal:10000, stat:'maxScore',        reward:50},
+  {id:'score_50k',    ico:'💠',  n:'50 000 pts',          d:'Atteindre 50 000 points.',           goal:50000, stat:'maxScore',        reward:100},
+  {id:'score_100k',   ico:'💜',  n:'100 000 pts',         d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore',        reward:250},
+  {id:'combo_20',     ico:'🔥',  n:'Combo x20',           d:'Atteindre un combo de 20.',          goal:20,    stat:'maxCombo',        reward:40},
+  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',           d:'Atteindre un combo de 50.',          goal:50,    stat:'maxCombo',        reward:100},
+  {id:'combo_100',    ico:'👑',  n:'Combo x100',          d:'Atteindre un combo de 100.',         goal:100,   stat:'maxCombo',        reward:250},
+  {id:'level_10',     ico:'⭐',  n:'Niveau 10',           d:'Atteindre le niveau 10.',            goal:10,    stat:'maxLevel',        reward:60},
+  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',       d:'Vaincre un boss.',                   goal:1,     stat:'bossKills',       reward:75},
+  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',         d:'Vaincre 5 boss.',                    goal:5,     stat:'bossKills',       reward:200},
+  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',         d:'Finir une vague sans prendre de dmg.',goal:1,   stat:'noHitWaves',      reward:50},
+  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades différents.',    goal:10,    stat:'uniqueUpgrades',  reward:80},
+  {id:'games_10',     ico:'🎮',  n:'Accro',               d:'Jouer 10 parties.',                  goal:10,    stat:'gamesPlayed',     reward:100},
+  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malédiction.',          goal:1,     stat:'cursesAccepted',  reward:30},
+  {id:'curse_5',      ico:'🔥',  n:'Masochiste',          d:'Accepter 5 malédictions.',           goal:5,     stat:'cursesAccepted',  reward:120},
+  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantômes',d:'Tuer 10 fantômes.',                  goal:10,    stat:'ghostKills',      reward:80},
+  {id:'no_hit_5',     ico:'💎',  n:'Perfection',          d:'5 vagues sans dégâts.',              goal:5,     stat:'noHitWaves',      reward:200},
 ];
 
 // ─── TIP MESSAGES ───
@@ -2696,6 +2715,10 @@ function startWave(){
   G.wave++;
   const w=G.wave;
   G.waveHitsReceived=0;
+  // Relic: berserker — +6% damage per wave
+  if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
+  // Relic: ghost step reset per wave
+  G.player._ghostStepReady=false;
   G.spawnPool=(currentMode==='arena'&&w===1)?buildArenaWave():buildWavePool(w);
   G.spawnIdx=0; G.spawnTimer=0;
   G.spawnInterval=Math.max(6, Math.round(56 - w*2.8 - Math.pow(Math.max(0,w-10),1.3)));
@@ -2831,10 +2854,16 @@ function tryShoot(now){
   const p=G.player;
   // Overheat curse: block shooting when locked
   if(p.overheatLocked) return;
-  const rate=p.rapidFire>0 ? Math.max(32,Math.round(p.fireRate*.42)) : p.fireRate;
+  // Adrenaline relic: firerate +30% at low HP
+  const adrenalineBoost = p._adrenalineActive ? 0.70 : 1.0;
+  const rate=p.rapidFire>0 ? Math.max(32,Math.round(p.fireRate*.42*adrenalineBoost)) : Math.round(p.fireRate*adrenalineBoost);
   if(now-p.lastShot<rate) return;
   p.lastShot=now;
   G.shotsFired=(G.shotsFired||0)+1;
+
+  // Ghost step relic: next shot after dash is piercing
+  const ghostPiercing = p._ghostStepReady ? 99 : 0;
+  if(p._ghostStepReady) p._ghostStepReady=false;
 
   // Determine aim direction — mobile touch OR gamepad → use stored aimDx/aimDy; mouse → compute from cursor
   let dx,dy;
@@ -2859,8 +2888,9 @@ function tryShoot(now){
 
   const fireBullet=(ax,ay,isLaserShot=false)=>{
     if(G.bullets.length>=200) return; // hard cap bullets
+    const effectivePiercing = isLaserShot ? 99 : Math.max(p.piercing, ghostPiercing);
     G.bullets.push({x:p.x,y:p.y,vx:ax*p.bulletSpeed,vy:ay*p.bulletSpeed,dmg:isLaserShot?bd*3:bd,r:isLaserShot?3:br,
-      piercing:isLaserShot?99:(p.piercing),pierced:0,aoe:p.aoe&&!isLaserShot,homing:p.homing&&!isLaserShot,ricochet:p.ricochet,ricocheted:false,
+      piercing:effectivePiercing,pierced:0,aoe:p.aoe&&!isLaserShot,homing:p.homing&&!isLaserShot,ricochet:p.ricochet,ricocheted:false,
       life:isLaserShot?p.bulletLife*2:p.bulletLife,dead:false,big:isLaserShot?false:big,enemy:false,
       isLaser:isLaserShot, gravity:p.gravity,afterburn:p.afterburn,
       trail:[{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y}]});
@@ -3023,6 +3053,13 @@ function update(now){
   if(p.invincible>0) p.invincible--;
   if(p.dashTimer>0){ p.dashTimer-=16; if(p.dashTimer<=0){ p.dashTimer=0; p.dashChargesLeft=p.dashCharges; } }
   if(G.timeSlow>0){ G.timeSlow--; if(G.timeSlow===0) showPopup('⏱ TEMPS NORMAL','#88aaff'); }
+  // Relic: adrenaline — boost speed and firerate under 30% HP
+  if(p.adrenalineRelic){
+    const lowHP = p.hp/p.maxHp < 0.30;
+    p._adrenalineActive = lowHP;
+  }
+  // Relic: ghost step — next shot piercing after dash ends
+  if(p._dashJustEnded){ p._ghostStepReady = p.ghostStepRelic; p._dashJustEnded=false; }
   // Regen : ralentit aux hautes vagues
   if(p.regen>0){
     const regenInterval = Math.min(360, 180 + G.wave*8);
@@ -3095,13 +3132,13 @@ function update(now){
   if(kkeys.some(key=>kbIsMove(key,'down')))  my+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
 
-  const spd=p.speed*(p.speedBoost>0?1.65:1)*getGameSpeed();
+  const spd=p.speed*(p.speedBoost>0?1.65:1)*(p._adrenalineActive?1.5:1)*getGameSpeed();
   if(p.dashing){
     const nx=p.x+p.dashVx, ny=p.y+p.dashVy;
     if(!blocked(nx,p.y,p.r)) p.x=nx;
     if(!blocked(p.x,ny,p.r)) p.y=ny;
     p.dashFrames--;
-    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; }
+    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; }
     spawnFx(p.x,p.y,'#00f5d4',2);
   } else {
     const nx=p.x+mx*spd, ny=p.y+my*spd;
@@ -3469,9 +3506,16 @@ function onKill(e){
   if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
   // Relic: chain kill — every 5 kills in a row triggers mini nuke
   G._chainKillCount=(G._chainKillCount||0)+1;
-  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
+  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18+(p.berserkerRelic?10:0)); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
   // Relic: coin magnet bonus
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
+  // Relic: scavenger — 20% coin drop on kill
+  if(p.scavengerRelic && Math.random()<0.20){ awardCoins(2); }
+  // Relic: soul harvest — boss/miniboss kill restores HP + charges bomb
+  if(p.soulHarvestRelic && (e.boss||e.mini)){ p.hp=Math.min(p.maxHp,p.hp+30); updateHPBar(); p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.4); updateSpecBar(); showPopup('💀 MOISSON !','#b44fff'); }
+  // Relic: overload core — kills charge bomb 2× faster
+  if(p.overloadCoreRelic){ p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate); updateSpecBar(); }
+  // Relic: berserker — dégâts augmentent par vague (appliqué à chaque début de vague, pas ici)
   // Daily mode score tracking
   if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
 }
@@ -3490,6 +3534,11 @@ function dmgPlayer(raw){
   flashEl('dmg-fx');
   if(settings.screenshake) G.shk=Math.max(G.shk,10);
   updateHPBar(); vib(60); vibGp(0.7,0.3,100);
+  // Relic: thorns — reflect 30% dmg to all nearby enemies
+  if(p.thornsRelic){
+    const thornsDmg=Math.max(1,Math.round(raw*0.30));
+    for(const e of G.enemies){ if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<180){ e.hp-=thornsDmg; e.flash=6; spawnFx(e.x,e.y,'#00f5d4',2); if(e.hp<=0&&!e.dead){e.dead=true;onKill(e);spawnDeathFx(e.x,e.y,e.col);dropPowerup(e.x,e.y);} } }
+  }
   if(p.hp<=0) gameOver();
 }
 
@@ -4120,6 +4169,11 @@ function checkAch(id,val){
   if(val>=def.goal){
     achDone[id]=true; saveAch();
     newAchThisRun.push(def.n);
+    // Award coins reward
+    if(def.reward&&def.reward>0){
+      awardCoins(def.reward);
+      addKF(`🏆 +${def.reward}🪙 ${def.n}`,'g');
+    }
     showAchToast(def);
     sfxAch();
   }
@@ -4130,6 +4184,8 @@ function showAchToast(def){
   document.getElementById('at-ico').textContent=def.ico;
   document.getElementById('at-name').textContent=def.n;
   document.getElementById('at-desc').textContent=def.d;
+  const rewardEl=document.getElementById('at-reward');
+  if(rewardEl) rewardEl.textContent=def.reward?`+${def.reward} 🪙`:'';
   t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
 }
 
@@ -4142,7 +4198,9 @@ function renderAch(){
     const progress=a.stat&&gStats[a.stat]?Math.min(1,gStats[a.stat]/a.goal):0;
     const c=document.createElement('div');
     c.className='ach-card'+(isDone?' done':'');
-    c.innerHTML=`<div class="ach-icon">${a.ico}</div><div><div class="ach-name">${a.n}</div><div class="ach-desc">${a.d}</div>${!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DÉBLOQUÉ</div>'}</div>`;
+    const rewardBadge=a.reward?`<span style="font-size:7px;color:var(--c3);letter-spacing:.1em;margin-left:6px;">+${a.reward}🪙</span>`:'';
+    const progressBar=!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div><div style="font-size:7px;color:var(--dim);margin-top:2px;">${Math.min(gStats[a.stat]||0,a.goal)} / ${a.goal}</div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DÉBLOQUÉ</div>';
+    c.innerHTML=`<div class="ach-icon">${a.ico}</div><div style="flex:1"><div style="display:flex;align-items:center;""><div class="ach-name">${a.n}</div>${rewardBadge}</div><div class="ach-desc">${a.d}</div>${progressBar}</div>`;
     grid.appendChild(c);
   }
 }
@@ -4713,6 +4771,8 @@ function show(id){
   if(id!=='__none__') document.getElementById(id)?.classList.add('on');
   const noBack=['s-title','s-auth','s-go','s-pause','__none__'];
   if(_backBtn) _backBtn.style.display=(BACK_MAP[id]&&!noBack.includes(id))?'block':'none';
+  // Remove game-active when any menu screen shown (not pause/none)
+  if(id!=='__none__'&&id!=='s-pause') document.body.classList.remove('game-active');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4721,6 +4781,7 @@ function show(id){
 function startGame(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   show('__none__');
+  document.body.classList.add('game-active');
   document.getElementById('wbanner').classList.remove('show');
   document.getElementById('kfeed').innerHTML='';
   document.getElementById('combo').classList.remove('on');
@@ -5916,26 +5977,51 @@ function adminStatus(msg, cls){
 //  SYSTÈME DE RELIQUES
 // ═══════════════════════════════════════════════════════
 const RELIC_DEFS = [
-  {id:'dash_trail',  ico:'💫', name:'TRAÎNE DE DASH',    desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',
+  // ── COMMUN ──
+  {id:'dash_trail',   ico:'💫', name:'TRAÎNE DE DASH',      desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',  rarity:'common',  price:300,
     apply:(p)=>{ p.dashTrail=true; }},
-  {id:'chain_kill',  ico:'⚡', name:'RÉACTION EN CHAÎNE', desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke automatique.', tag:'OFFENSIF',
-    apply:(p)=>{ p.chainKill=true; }},
-  {id:'armor_regen', ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT', desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',
-    apply:(p)=>{ p.armorRegen=true; }},
-  {id:'coin_magnet', ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE',
-    apply:(p)=>{ p.coinMagnet=true; }},
-  {id:'bullet_nova',  ico:'💥', name:'NOVA DE BALLES',     desc:'Mourir déclenche une explosion de 12 balles. (Oui, mourir.)', tag:'ULTIME',
-    apply:(p)=>{ p.bulletNova=true; }},
-  {id:'vampire',     ico:'🩸', name:'VAMPIRISME',          desc:'Chaque kill restaure 2 PV. Max 5 kills par seconde.', tag:'SURVIE',
+  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:300,
     apply:(p)=>{ p.vampireRelic=true; }},
-  {id:'overclock',   ico:'⚙',  name:'SURCHAUFFE',          desc:'Cadence de tir +30% mais la bombe se recharge 20% plus lentement.', tag:'RISQUE',
-    apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); p.specRate*=0.8; }},
-  {id:'gravity_well',ico:'🌀', name:'PUITS GRAVITATIONNEL',desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATÉGIQUE',
-    apply:(p)=>{ p.gravityNuke=true; }},
-  {id:'double_dash',  ico:'⚡⚡',name:'DOUBLE DASH',        desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',
+  {id:'coin_magnet',  ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE', rarity:'common',  price:350,
+    apply:(p)=>{ p.coinMagnet=true; }},
+  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',   rarity:'common',  price:300,
+    apply:(p)=>{ p.armorRegen=true; }},
+  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',  rarity:'common',  price:350,
     apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
-  {id:'berserker',   ico:'😡', name:'BERSERKER',            desc:'Dégâts +5% par vague jouée. (Cumulatif — dangereux en fin de run.)', tag:'SCALING',
-    apply:(p)=>{ p.berserkerStacks=(p.berserkerStacks||0)+1; p.bulletDmg*=(1+0.05*((p.berserkerStacks||1))); }},
+  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tué a 20% de chance de dropper des pièces.', tag:'ÉCONOMIE',    rarity:'common',  price:280,
+    apply:(p)=>{ p.scavengerRelic=true; }},
+  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est réduite de 25%.', tag:'MOBILITÉ',   rarity:'common',  price:300,
+    apply:(p)=>{ p.dashCd=Math.max(350, Math.round(p.dashCd*0.75)); }},
+  {id:'thorns',       ico:'🌵', name:'ÉPINES',               desc:'Renvoie 30% des dégâts reçus aux ennemis.', tag:'DÉFENSIF',  rarity:'common',  price:320,
+    apply:(p)=>{ p.thornsRelic=true; }},
+
+  // ── RARE ──
+  {id:'chain_kill',   ico:'⚡', name:'RÉACTION EN CHAÎNE',  desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:550,
+    apply:(p)=>{ p.chainKill=true; }},
+  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser. Synergie : Nova de Balles.', tag:'STRATÉGIQUE',rarity:'rare',    price:600,
+    apply:(p)=>{ p.gravityNuke=true; }},
+  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Dégâts +6% par vague jouée. Cumulatif — devient dévastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:500,
+    apply:(p)=>{ p.berserkerRelic=true; }},
+  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doublés par la cadence.', tag:'RISQUE',     rarity:'rare',    price:500,
+    apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); }},
+  {id:'ghost_step',   ico:'👟', name:'PAS FANTÔME',          desc:'Après un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITÉ',   rarity:'rare',    price:550,
+    apply:(p)=>{ p.ghostStepRelic=true; }},
+  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'ÂMES',    desc:'Chaque boss ou mini-boss tué restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:600,
+    apply:(p)=>{ p.soulHarvestRelic=true; }},
+  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGÉ',     desc:'La bombe se recharge 2× plus vite grâce aux kills. Synergie : Puits Gravitationnel.', tag:'OFFENSIF',  rarity:'rare',    price:580,
+    apply:(p)=>{ p.overloadCoreRelic=true; }},
+
+  // ── ÉPIQUE ──
+  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles qui ricochent une fois. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:900,
+    apply:(p)=>{ p.bulletNova=true; }},
+  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s. Synergie : Cœur Surchargé.', tag:'STRATÉGIQUE',rarity:'epic',   price:850,
+    apply:(p)=>{ p.timeThiefRelic=true; }},
+  {id:'mirror_dash',   ico:'🪞', name:'DASH MIROIR',         desc:'Le dash crée un double fantôme pendant 3s qui tire automatiquement. Synergie : Traîne de Dash.', tag:'MOBILITÉ', rarity:'epic', price:1000,
+    apply:(p)=>{ p.mirrorDashRelic=true; }},
+  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, mais dégâts doublés. Synergie : Vampirisme + Épines.', tag:'RISQUE',     rarity:'epic',    price:800,
+    apply:(p)=>{ p.maxHp=40; p.hp=Math.min(p.hp,40); p.bulletDmg*=2; }},
+  {id:'adrenaline',    ico:'💉', name:'ADRÉNALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:950,
+    apply:(p)=>{ p.adrenalineRelic=true; }},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -5983,8 +6069,12 @@ function offerRelic(){
   const container = document.getElementById('relic-cards');
   container.innerHTML='';
   shuffled.forEach(r=>{
-    const div=document.createElement('div'); div.className='relic-card';
+    const rarityClass = r.rarity ? `rarity-${r.rarity}` : '';
+    const rarityLabel = r.rarity==='epic'?'ÉPIQUE':r.rarity==='rare'?'RARE':'COMMUN';
+    const rarityCol = r.rarity==='epic'?'#b44fff':r.rarity==='rare'?'#00bbf9':'#ffbe0b';
+    const div=document.createElement('div'); div.className=`relic-card ${rarityClass}`;
     div.innerHTML=`<div class="relic-card-ico">${r.ico}</div>
+      <div class="relic-card-rarity" style="color:${rarityCol};border:1px solid ${rarityCol}40;">${rarityLabel}</div>
       <div class="relic-card-name">${r.name}</div>
       <div class="relic-card-desc">${r.desc}</div>
       <div class="relic-card-tag">${r.tag}</div>`;
@@ -6239,13 +6329,9 @@ function renderRelicEquip(){
   const slots=document.getElementById('relic-slots-display');
   if(slots){
     slots.innerHTML='';
-    const RDEF=[
-      {id:'dash_trail',ico:'💫'},{id:'chain_kill',ico:'⚡'},{id:'armor_regen',ico:'🛡'},
-      {id:'coin_magnet',ico:'🧲'},{id:'vampire',ico:'🩸'},{id:'double_dash',ico:'⚡⚡'},
-      {id:'berserker',ico:'😡'},{id:'overclock',ico:'⚙'},{id:'ghost_walk',ico:'👻'},{id:'transcend',ico:'✨'}
-    ];
     for(let i=0;i<2;i++){
-      const r=equipped[i]?RDEF.find(x=>x.id===equipped[i]):null;
+      const eqId=equipped[i];
+      const r=eqId?RELIC_DEFS.find(x=>x.id===eqId):null;
       const sl=document.createElement('div');
       sl.style.cssText='width:52px;height:52px;border:2px '+(r?'solid rgba(255,190,11,.5)':'dashed rgba(255,190,11,.3)')+';display:flex;align-items:center;justify-content:center;font-size:22px;background:'+(r?'rgba(255,190,11,.06)':'transparent')+';position:relative;';
       sl.innerHTML='<span>'+(r?r.ico:'?')+'</span><div style="position:absolute;bottom:-14px;font-size:6px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;">SLOT '+(i+1)+'</div>';
@@ -6253,34 +6339,49 @@ function renderRelicEquip(){
     }
   }
 
-  const ALL=[
-    {id:'dash_trail',ico:'💫',name:'TRAÎNE DE DASH',desc:'Dash blesse les ennemis (15 dmg).',tag:'MOBILITÉ',price:800},
-    {id:'chain_kill',ico:'⚡',name:'RÉACTION EN CHAÎNE',desc:'5 kills = mini-nuke auto.',tag:'OFFENSIF',price:900},
-    {id:'armor_regen',ico:'🛡',name:'BLINDAGE RÉGÉNÉRANT',desc:'Chaque upgrade restore 15 PV.',tag:'DÉFENSIF',price:700},
-    {id:'coin_magnet',ico:'🧲',name:'MAGNÉTISME',desc:'+50% pièces gagnées.',tag:'ÉCONOMIE',price:600},
-    {id:'vampire',ico:'🩸',name:'VAMPIRISME',desc:'+2 PV par kill.',tag:'SURVIE',price:750},
-    {id:'double_dash',ico:'⚡⚡',name:'DOUBLE DASH',desc:'+1 charge de dash.',tag:'MOBILITÉ',price:850},
-    {id:'berserker',ico:'😡',name:'BERSERKER',desc:'Dégâts +5% par vague.',tag:'SCALING',price:1000},
-    {id:'overclock',ico:'⚙',name:'SURCHAUFFE',desc:'Cadence +30%, bombe -20%.',tag:'RISQUE',price:700},
-    {id:'ghost_walk',ico:'👻',name:'FANTÔME',desc:'Traverse les murs pendant le dash. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
-    {id:'transcend',ico:'✨',name:'TRANSCENDANCE',desc:'Régénère 50% HP toutes les 5 vagues. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
-  ];
+  // Sort: equipped first, then owned, then by rarity (epic→rare→common)
+  const rarityOrder={epic:0,rare:1,common:2};
+  const sorted=[...RELIC_DEFS].sort((a,b)=>{
+    const aEq=equipped.includes(a.id), bEq=equipped.includes(b.id);
+    if(aEq&&!bEq) return -1; if(bEq&&!aEq) return 1;
+    const aOwn=unlocked.includes(a.id), bOwn=unlocked.includes(b.id);
+    if(aOwn&&!bOwn) return -1; if(bOwn&&!aOwn) return 1;
+    return (rarityOrder[a.rarity]||2)-(rarityOrder[b.rarity]||2);
+  });
 
-  ALL.forEach(r=>{
-    const owned=unlocked.includes(r.id)||(r.premium&&typeof hasPremiumPass!=='undefined'&&hasPremiumPass.owned);
+  const rarityCol={common:'var(--c3)',rare:'#00bbf9',epic:'#b44fff'};
+  const rarityLbl={common:'COMMUN',rare:'RARE',epic:'ÉPIQUE'};
+
+  sorted.forEach(r=>{
+    const owned=unlocked.includes(r.id);
     const isEq=equipped.includes(r.id);
+    const rc=rarityCol[r.rarity]||'var(--c3)';
+    const rl=rarityLbl[r.rarity]||'COMMUN';
+    const borderCol=isEq?'rgba(255,190,11,.7)':owned?(r.rarity==='epic'?'rgba(180,79,255,.4)':r.rarity==='rare'?'rgba(0,187,249,.35)':'var(--border)'):'rgba(255,255,255,.05)';
+    const bgCol=isEq?'rgba(255,190,11,.06)':owned?(r.rarity==='epic'?'rgba(180,79,255,.05)':r.rarity==='rare'?'rgba(0,187,249,.04)':'var(--dim2)'):'var(--dim2)';
     const div=document.createElement('div');
-    div.style.cssText='border:1px solid '+(isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)')+';background:'+(isEq?'rgba(255,190,11,.06)':'var(--dim2)')+';padding:12px 10px;cursor:pointer;transition:all .15s;';
-    div.innerHTML=`<div style="font-size:22px;margin-bottom:4px;">${r.ico}</div>
-      <div style="font-family:Orbitron,monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.08em;color:${owned?'var(--txt)':'var(--dim)'};">${r.name}</div>
-      <div style="font-size:7px;color:var(--txt2);margin:3px 0;line-height:1.4;">${r.desc}</div>
-      <div style="font-size:6px;letter-spacing:.2em;padding:2px 6px;border:1px solid rgba(255,190,11,.3);color:var(--c3);display:inline-block;margin-top:3px;">${r.tag}</div>
-      ${owned?'':'<div style="margin-top:5px;font-size:8px;color:'+(r.premium?'var(--c3)':coins>=r.price?'var(--c1)':'var(--c2)')+';">'+(r.premium?'⭐ Passe Amélioré requis':'🪙 '+r.price)+'</div>'}
-      ${isEq?'<div style="margin-top:5px;font-size:7px;color:var(--c1);">✓ ÉQUIPÉE</div>':''}`;
-    div.onmouseover=()=>div.style.borderColor='var(--c1)';
-    div.onmouseout=()=>div.style.borderColor=isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)';
+    div.style.cssText=`border:1px solid ${borderCol};background:${bgCol};padding:12px 10px;transition:all .15s;cursor:pointer;`;
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+        <span style="font-size:20px;">${r.ico}</span>
+        <div>
+          <div style="font-family:Orbitron,monospace;font-size:clamp(7px,1.8vmin,9px);letter-spacing:.07em;color:${owned?rc:'var(--dim)'};">${r.name}</div>
+          <div style="font-size:5px;letter-spacing:.2em;color:${rc};opacity:.8;">${rl}</div>
+        </div>
+      </div>
+      <div style="font-size:7px;color:var(--txt2);line-height:1.45;margin-bottom:5px;">${r.desc}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:5px;letter-spacing:.18em;padding:2px 5px;border:1px solid ${rc}40;color:${rc};">${r.tag}</span>
+        ${owned
+          ? (isEq?'<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;">✓ ÉQUIPÉE</span>':'<span style="font-size:7px;color:var(--txt2);">Cliquer pour équiper</span>')
+          : `<span style="font-size:7px;color:${coins>=(r.price||0)?'var(--c3)':'var(--c2)'};">🪙 ${r.price||0}</span>`
+        }
+      </div>`;
+    div.onmouseover=()=>div.style.borderColor=rc;
+    div.onmouseout=()=>div.style.borderColor=borderCol;
     div.onclick=()=>{
-      if(!owned&&!r.premium){
+      if(!owned){
+        if(!r.price){showPopup('Relique non disponible à l\'achat','#ff1a6e');return;}
         if(coins<r.price){showPopup('Pas assez de pièces ! ('+r.price+' requis)','#ff1a6e');return;}
         pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
           if(!ok) return;
@@ -6291,16 +6392,15 @@ function renderRelicEquip(){
         });
         return;
       }
-      if(owned){
-        const eq2=[...equipped];
-        if(eq2.includes(r.id)){
-          saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
-        } else {
-          if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
-          eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
-        }
-        renderRelicEquip();
+      // Equip / unequip
+      const eq2=[...equipped];
+      if(eq2.includes(r.id)){
+        saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
+      } else {
+        if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
+        eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
       }
+      renderRelicEquip();
     };
     grid.appendChild(div);
   });
