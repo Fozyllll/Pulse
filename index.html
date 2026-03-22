@@ -1070,7 +1070,6 @@ body.touch #minimap{display:none;}
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
       <button class="btn btn-s" onclick="show('s-stats');renderStats()"><span>📊 STATISTIQUES</span></button>
       <button class="btn btn-s" onclick="show('s-settings');renderSettings()"><span>⚙ PARAMÈTRES</span></button>
-      <button class="btn btn-p" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
       <button class="btn btn-s" style="opacity:.55;font-size:clamp(8px,2vw,10px);" onclick="obInit();show('s-onboard')"><span>📖 REVOIR LE TUTORIEL</span></button>
     </div>
     <div class="ctrl-hint" id="ctrl-hint">
@@ -3946,6 +3945,7 @@ function renderSettings(){
     const emailShort = currentUser.email||'';
     accDiv.innerHTML = `
       <div class="acc-section-title">👤 COMPTE — ${emailShort}</div>
+      ${(typeof ADMIN_EMAILS!=='undefined'&&ADMIN_EMAILS.includes(currentUser.email))?'<button class=\"btn btn-d\" style=\"margin-bottom:8px;width:100%;max-width:280px;\" onclick=\"openAdmin()\"><span>⚡ PANEL ADMIN</span></button>':''}
       <div class="acc-field">
         <div class="acc-label">PSEUDO (affiché dans le classement)</div>
         <div class="acc-row">
@@ -4483,42 +4483,7 @@ function claimBpReward(level, auto=false){
   renderBP();
 }
 
-function openBP(){
-  renderBP();
-  show('s-bp');
-}
-
-function renderBP(){
-  const lvl = battlePass.level;
-  const xp = battlePass.xp;
-  document.getElementById('bp-level-badge').textContent='NIV. '+lvl;
-  document.getElementById('bp-season-lbl').textContent='SAISON '+BP_SEASON;
-  const pct = lvl>=BP_MAX_LEVEL ? 100 : Math.round(xp/BP_XP_PER_LEVEL*100);
-  document.getElementById('bp-xp-fill').style.width=pct+'%';
-  document.getElementById('bp-xp-label').textContent=lvl>=BP_MAX_LEVEL?'MAX':xp+' / '+BP_XP_PER_LEVEL+' XP';
-
-  const track = document.getElementById('bp-track');
-  track.innerHTML='';
-  for(const r of BP_REWARDS){
-    const done = lvl >= r.lv;
-    const current = lvl+1 === r.lv;
-    const claimed = battlePass.claimed[r.lv];
-    const canClaim = done && !claimed;
-    const node = document.createElement('div');
-    node.className='bp-node'+(done?' done':'')+(current?' current':'');
-    node.innerHTML=`
-      <div class="bp-node-lv">NIV.${r.lv}</div>
-      <div class="bp-circle">${r.icon}</div>
-      <div class="bp-reward-lbl">${r.label}</div>
-      ${canClaim?`<button class="bp-claim-btn" onclick="claimBpReward(${r.lv})">RÉCLAMER</button>`:''}
-      ${claimed?`<div class="bp-earned">✓</div>`:''}
-    `;
-    track.appendChild(node);
-  }
-  // Scroll to current level
-  const currentNode = track.children[Math.max(0,lvl-1)];
-  if(currentNode) setTimeout(()=>currentNode.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}),100);
-}
+// openBP et renderBP définis plus bas
 
 // Hook BP XP gain to end of game
 function grantBpXp(score, wave, kills){
