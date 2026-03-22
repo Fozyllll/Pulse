@@ -47,33 +47,8 @@ body.game-active:not(.touch) *{cursor:none !important;}
 body:not(.game-active):not(.touch) #xhair{visibility:hidden;}
 body.gamepad-active:not(.game-active){cursor:default;}
 
-/* BUTTONS — improved contrast & size */
-.btn{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(9px,2.2vmin,12px);
-  letter-spacing:.18em;padding:clamp(11px,2.8vmin,15px) clamp(20px,5vw,32px);
-  border:1.5px solid;background:transparent;cursor:pointer;
-  transition:all .18s;position:relative;overflow:hidden;text-transform:uppercase;
-  min-width:140px;}
-.btn span{position:relative;z-index:1;pointer-events:none;}
-.btn::before{content:'';position:absolute;inset:0;transform:scaleX(0);transform-origin:left;transition:transform .18s;pointer-events:none;}
-.btn:hover::before,.btn:active::before{transform:scaleX(1);}
-.btn:active{transform:scale(.95);}
-.btn-p{border-color:var(--c1);color:var(--c1);box-shadow:0 0 16px rgba(0,245,212,.15);}
-.btn-p::before{background:var(--c1);}
-.btn-p:hover{box-shadow:0 0 30px rgba(0,245,212,.3);}
-.btn-p:hover span,.btn-p:active span{color:var(--bg);}
-.btn-s{border-color:var(--txt2);color:var(--txt);background:rgba(255,255,255,.03);}
-.btn-s::before{background:rgba(176,221,200,.15);}
-.btn-s:hover{border-color:var(--c1);}
-.btn-s:hover span,.btn-s:active span{color:var(--c1);}
-.btn-g{border-color:var(--c3);color:var(--c3);box-shadow:0 0 12px rgba(255,190,11,.12);}
-.btn-g::before{background:var(--c3);}
-.btn-g:hover{box-shadow:0 0 28px rgba(255,190,11,.25);}
-.btn-g:hover span,.btn-g:active span{color:var(--bg);}
-.btn-d{border-color:var(--c2);color:var(--c2);box-shadow:0 0 10px rgba(255,26,110,.1);}
-.btn-d::before{background:var(--c2);}
-.btn-d:hover span,.btn-d:active span{color:#fff;}
-.btn-col{display:flex;flex-direction:column;gap:8px;width:min(280px,82vw);}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+/* BUTTONS — kept in main block below */
+/* ── cursor rules ── cleaned up ── */
 .hdiv{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--c1)18,transparent);margin:16px 0;}
 .scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5.5vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 30px rgba(0,245,212,.35);}
 .scr-sub{font-size:9px;letter-spacing:.35em;color:var(--txt2);margin-top:4px;text-align:center;margin-bottom:14px;}
@@ -119,32 +94,34 @@ body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
 
 /* BUTTONS */
 .btn{position:relative;overflow:hidden;font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(10px,2.5vw,13px);
-  letter-spacing:.25em;padding:14px 30px;border:1px solid;cursor:pointer;transition:all .18s;background:transparent;
-  -webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation;text-shadow:none;}
-.btn span{position:relative;z-index:1;pointer-events:none;}
+  letter-spacing:.22em;padding:14px 30px;border:1.5px solid;cursor:pointer;transition:all .18s;background:transparent;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation;text-shadow:none;
+  display:flex;align-items:center;justify-content:center;min-width:140px;text-align:center;}
+.btn span{position:relative;z-index:1;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;text-align:center;}
 .btn::before{content:'';position:absolute;inset:0;transform:scaleX(0);transform-origin:left;transition:transform .18s;pointer-events:none;}
 .btn:hover::before,.btn:active::before{transform:scaleX(1);}
 .btn:active{transform:scale(.95);}
-.btn-p{border-color:var(--c1);color:var(--c1);box-shadow:0 0 12px rgba(0,245,212,.12);}
+.btn-p{border-color:var(--c1);color:var(--c1);box-shadow:0 0 16px rgba(0,245,212,.15);}
 .btn-p::before{background:var(--c1);}
-.btn-p:hover{box-shadow:0 0 24px rgba(0,245,212,.25);}
+.btn-p:hover{box-shadow:0 0 30px rgba(0,245,212,.3);}
 .btn-p:hover span,.btn-p:active span{color:var(--bg);}
-.btn-s{border-color:var(--dim);color:var(--txt2);}
-.btn-s::before{background:rgba(78,140,112,.3);}
-.btn-s:hover{border-color:var(--txt2);}
-.btn-s:hover span,.btn-s:active span{color:var(--txt);}
-.btn-g{border-color:var(--c3);color:var(--c3);box-shadow:0 0 12px rgba(255,190,11,.1);}
+.btn-s{border-color:var(--txt2);color:var(--txt);background:rgba(255,255,255,.03);}
+.btn-s::before{background:rgba(176,221,200,.15);}
+.btn-s:hover{border-color:var(--c1);}
+.btn-s:hover span,.btn-s:active span{color:var(--c1);}
+.btn-g{border-color:var(--c3);color:var(--c3);box-shadow:0 0 12px rgba(255,190,11,.12);}
 .btn-g::before{background:var(--c3);}
-.btn-g:hover{box-shadow:0 0 24px rgba(255,190,11,.22);}
+.btn-g:hover{box-shadow:0 0 28px rgba(255,190,11,.25);}
 .btn-g:hover span,.btn-g:active span{color:var(--bg);}
-.btn-d{border-color:var(--c2);color:var(--c2);}
+.btn-d{border-color:var(--c2);color:var(--c2);box-shadow:0 0 10px rgba(255,26,110,.1);}
 .btn-d::before{background:var(--c2);}
 .btn-d:hover span,.btn-d:active span{color:#fff;}
 .btn-col{display:flex;flex-direction:column;gap:8px;width:min(280px,82vw);}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .hdiv{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--c1)18,transparent);margin:16px 0;}
-.scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5.5vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 30px rgba(0,245,212,.3);}
-.scr-sub{font-size:8px;letter-spacing:.4em;color:var(--txt2);margin-top:4px;text-align:center;margin-bottom:14px;}
+.scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5.5vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 30px rgba(0,245,212,.35);}
+.scr-sub{font-size:9px;letter-spacing:.35em;color:var(--txt2);margin-top:4px;text-align:center;margin-bottom:14px;}
 
 /* TITLE */
 #s-title{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a1e16 0%,var(--bg) 70%);}
@@ -652,7 +629,8 @@ body.touch #minimap{display:none;}
 .shop-tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);}
 .shop-tab{font-family:'Orbitron',monospace;font-size:clamp(8px,2vw,10px);letter-spacing:.18em;padding:8px 14px;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;}
 .shop-tab.active{color:var(--c1);border-bottom-color:var(--c1);}
-.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(148px,41vw),1fr));gap:10px;width:min(720px,96vw);max-height:52vh;overflow-y:auto;padding-right:4px;}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(148px,41vw),1fr));gap:10px;width:min(720px,96vw);max-height:55vh;overflow-y:auto;padding-right:4px;}
+.shop-grid.lottery-mode{display:block;max-height:60vh;overflow-y:auto;}
 .shop-grid::-webkit-scrollbar{width:3px;}.shop-grid::-webkit-scrollbar-track{background:var(--dim2);}.shop-grid::-webkit-scrollbar-thumb{background:var(--c1);}
 .pup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(148px,41vw),1fr));gap:10px;width:100%;}
 .skin-card{border:1px solid var(--border);background:var(--dim2);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .13s;position:relative;overflow:hidden;}
@@ -2491,6 +2469,8 @@ function renderShop(tab){
   document.getElementById('shop-coins-display').textContent=coins;
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
+  // Reset class for non-lottery tabs
+  if(tab!=='lottery') grid.className='shop-grid';
   if(tab==='skins'){
     for(const sk of SKIN_DEFS){
       const owned=ownedSkins.includes(sk.id);
@@ -2596,42 +2576,76 @@ function renderLotteryTab(grid){
   const lastResult=loadData('pulse_lottery_last',null);
   const totalSpent=loadData('pulse_lottery_spent',0);
   const totalWon=loadData('pulse_lottery_won',0);
-  grid.style.cssText='display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;padding-bottom:16px;';
-  
-  // Deduplicate losses for display
+
+  // Switch grid to block layout for lottery
+  grid.className='shop-grid lottery-mode';
+  grid.style.cssText='';
+
+  // Deduplicate losses for display — show as single combined row
   const displayPrizes=[];
   let lossW=0;
   LOTTERY_PRIZES.forEach(p=>{ if(p.loss) lossW+=p.w; else displayPrizes.push(p); });
-  
+
+  const roi=totalSpent>0?Math.round(totalWon/totalSpent*100):0;
+
   grid.innerHTML=`
-    <div style="font-size:32px;margin-top:4px;">🎰</div>
-    <div style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.2em;color:var(--c3);">LOTERIE PULSE</div>
-    <div style="font-size:7px;color:var(--c2);letter-spacing:.15em;background:rgba(255,26,110,.1);border:1px solid rgba(255,26,110,.3);padding:5px 12px;">
-      ⚠ AVERTISSEMENT : Probabilité de gain < 50%
-    </div>
-    <div style="display:flex;gap:10px;font-size:7px;color:var(--txt2);letter-spacing:.1em;">
-      <span>Mise : <strong style="color:var(--c3)">${LOTTERY_COST}🪙</strong></span>
-      ${totalSpent>0?`<span>Dépensé : ${totalSpent}🪙</span><span>Gagné : ${totalWon}🪙</span>`:''}
-    </div>
-    <div style="width:min(360px,90vw);border:1px solid var(--border);background:var(--dim2);overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(255,26,110,.15);background:rgba(255,26,110,.05);">
-        <div style="font-size:14px;">💸</div>
-        <div style="flex:1;font-size:8px;color:#ff6688;">PERDU</div>
-        <div style="font-size:7px;color:#ff6688;letter-spacing:.1em;">${(lossW/totalW*100).toFixed(0)}%</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 4px 20px;width:100%;">
+      <div style="font-size:32px;">🎰</div>
+      <div style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.2em;color:var(--c3);">LOTERIE PULSE</div>
+
+      <div style="font-size:7px;color:var(--c2);letter-spacing:.15em;background:rgba(255,26,110,.08);border:1px solid rgba(255,26,110,.25);padding:5px 14px;text-align:center;">
+        ⚠ JEU D'ARGENT FICTIF — PROBABILITÉ DE GAIN &lt; 45%
       </div>
-      ${displayPrizes.map(p=>{
-        const pct=(p.w/totalW*100).toFixed(1);
-        const col=p.ico==='👑'?'var(--c3)':p.ico==='🎨'?'#b44fff':p.ico==='✨'?'#ffbe0b':'var(--txt)';
-        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.03);">
-          <div style="font-size:14px;">${p.ico}</div>
-          <div style="flex:1;font-size:8px;color:${col};">${p.lbl}</div>
-          <div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">${pct}%</div>
-        </div>`;
-      }).join('')}
-    </div>
-    ${lastResult?`<div style="font-size:8px;color:var(--txt2);">Dernier résultat : <span style="color:${lastResult.loss?'#ff6688':'var(--c3)'}">${lastResult.ico} ${lastResult.lbl}</span></div>`:''}
-    <button class="btn btn-g" style="min-width:220px;" onclick="spinLottery()" id="lottery-btn"><span>🎰 JOUER — ${LOTTERY_COST}🪙</span></button>
-    <div id="lottery-result" style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.1em;min-height:22px;text-align:center;"></div>`;
+
+      ${totalSpent>0?`<div style="display:flex;gap:16px;font-size:8px;color:var(--txt2);letter-spacing:.08em;">
+        <span>Dépensé : <b style="color:var(--c2)">${totalSpent}🪙</b></span>
+        <span>Gagné : <b style="color:var(--c3)">${totalWon}🪙</b></span>
+        <span>Rendement : <b style="color:${roi>=100?'var(--c1)':'#ff6688'}">${roi}%</b></span>
+      </div>`:''}
+
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);align-self:flex-start;">TABLEAU DES GAINS</div>
+
+      <div style="width:min(400px,96vw);border:1px solid var(--border);background:var(--dim2);overflow:hidden;">
+        <!-- Pertes -->
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,26,110,.06);border-bottom:1px solid rgba(255,26,110,.2);">
+          <div style="font-size:18px;">💸</div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:#ff8899;letter-spacing:.1em;">PERDU — Rien gagné</div>
+            <div style="font-size:7px;color:var(--txt2);margin-top:2px;">Tu perds ta mise de ${LOTTERY_COST}🪙</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;font-family:'Orbitron',monospace;color:#ff6688;">${(lossW/totalW*100).toFixed(0)}%</div>
+            <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;">CHANCES</div>
+          </div>
+        </div>
+        <!-- Gains -->
+        ${displayPrizes.map((p,i)=>{
+          const pct=(p.w/totalW*100).toFixed(1);
+          const col=p.ico==='👑'?'var(--c3)':p.ico==='🎨'?'#b44fff':p.ico==='✨'?'#ffbe0b':'var(--txt)';
+          const bg=p.ico==='👑'?'rgba(255,190,11,.04)':p.ico==='🎨'?'rgba(180,79,255,.04)':p.ico==='✨'?'rgba(255,190,11,.03)':'transparent';
+          const border=i<displayPrizes.length-1?'border-bottom:1px solid rgba(255,255,255,.04);':'';
+          return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${bg};${border}">
+            <div style="font-size:18px;">${p.ico}</div>
+            <div style="flex:1;">
+              <div style="font-size:9px;color:${col};letter-spacing:.08em;">${p.lbl}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;font-family:'Orbitron',monospace;color:${col};">${pct}%</div>
+              <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;">CHANCES</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      ${lastResult?`<div style="font-size:8px;color:var(--txt2);text-align:center;">
+        Dernier : <span style="color:${lastResult.loss?'#ff6688':'var(--c3)'};font-family:'Orbitron',monospace;">${lastResult.ico} ${lastResult.lbl}</span>
+      </div>`:''}
+
+      <button class="btn btn-g" style="min-width:220px;" onclick="spinLottery()" id="lottery-btn">
+        <span>🎰 TENTER MA CHANCE — ${LOTTERY_COST}🪙</span>
+      </button>
+      <div id="lottery-result" style="font-family:'Orbitron',monospace;font-size:14px;letter-spacing:.1em;min-height:24px;text-align:center;transition:all .3s;"></div>
+    </div>`;
 }
 
 function spinLottery(){
