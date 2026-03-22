@@ -31,7 +31,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #cvs-bg{z-index:0;}#cvs-game{z-index:1;}
 
 /* ═══ RESPONSIVE CANVAS WRAPPER ═══ */
-#game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+#game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
 
 /* CROSSHAIR */
 #xhair{position:fixed;z-index:9999;pointer-events:none;width:22px;height:22px;transform:translate(-50%,-50%);left:-100px;top:-100px;}
@@ -1256,6 +1256,11 @@ body.touch #minimap{display:none;}
         <div class="mode-desc">Niveaux progressifs. Survive chaque vague, gagne des récompenses.</div>
         <div class="mode-tag">NIVEAUX</div>
       </div>
+      <div class="mode-card" style="border-color:rgba(255,26,110,.3);background:rgba(255,26,110,.02);" onclick="show('s-arena-map');renderArenaMap()">
+        <div class="mode-icon" style="font-size:20px;">📋</div><div class="mode-name" style="color:var(--c2);font-size:10px;">CARTE ARÈNE</div>
+        <div class="mode-desc">Voir ta progression, rejouer les niveaux terminés.</div>
+        <div class="mode-tag" style="border-color:rgba(255,26,110,.3);color:var(--c2);">PROGRESSION</div>
+      </div>
       <div class="mode-card c4" onclick="show('s-duo-config');renderDuoConfig()">
         <div class="mode-icon">👥</div><div class="mode-name">DUO LOCAL</div>
         <div class="mode-desc">2 joueurs. Touches configurables pour P2.</div>
@@ -1403,6 +1408,19 @@ body.touch #minimap{display:none;}
   </div>
 </div>
 
+<!-- ARENA LEVELS MAP -->
+<div class="scr" id="s-arena-map">
+  <div class="scr-inner" style="align-items:center;gap:12px;">
+    <div class="scr-h">💀 NIVEAUX ARÈNE</div>
+    <div style="font-size:8px;letter-spacing:.15em;color:var(--txt2);text-align:center;" id="arena-map-sub"></div>
+    <div id="arena-map-grid" style="width:min(640px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,30vw,180px),1fr));gap:8px;max-height:65vh;overflow-y:auto;padding:4px;"></div>
+    <div class="btn-row" style="margin-top:8px;gap:10px;">
+      <button class="btn btn-p" onclick="arenaNextLevel()"><span>▶ CONTINUER</span></button>
+      <button class="btn btn-d" onclick="pulseConfirm('Recommencer l\'Arène depuis le niveau 1 ?').then(ok=>{if(ok){arenaLevel=1;saveData(\'pulse_arena_level_v1\',1);show(\'s-mode\');}})"><span>↺ RECOMMENCER</span></button>
+    </div>
+  </div>
+</div>
+
 <!-- ARENA VICTORY SCREEN -->
 <div class="scr" id="s-arena-win">
   <div class="scr-inner" style="align-items:center;gap:14px;">
@@ -1420,6 +1438,7 @@ body.touch #minimap{display:none;}
     <div id="arena-next-preview" style="width:min(400px,92vw);border:1px solid var(--border);background:var(--dim2);padding:14px;text-align:center;"></div>
     <div class="btn-col" style="width:min(270px,84vw);margin-top:6px;">
       <button class="btn btn-p" id="arena-next-btn" onclick="arenaNextLevel()"><span>▶ NIVEAU SUIVANT</span></button>
+      <button class="btn btn-s" onclick="show('s-arena-map');renderArenaMap()"><span>📋 VOIR LES NIVEAUX</span></button>
       <button class="btn btn-s" onclick="show('s-title')"><span>MENU</span></button>
     </div>
   </div>
@@ -2808,13 +2827,13 @@ function buildWavePool(w){
 
 function startWave(){
   if(!G||!G.running) return;
-  // Relic offer every 5 waves
-  if(G.wave>0 && shouldOfferRelic(G.wave)){
-    offerRelic(); return;
-  }
   G.wave++;
   const w=G.wave;
   G.waveHitsReceived=0;
+  // Relic offer every 5 waves — AFTER incrementing wave
+  if(w>0 && shouldOfferRelic(w)){
+    offerRelic(); return; // wave incremented, relic offered, then resume
+  }
   // Relic: berserker — +6% damage per wave
   if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
   // Relic: ghost step reset per wave
@@ -3575,7 +3594,7 @@ function hitEnemy(e,b){
     }
     if(settings.screenshake) G.shk=Math.max(G.shk,e.boss?20:e.mini?12:4);
     sfxDeath();
-    if(e.boss||e.mini) sfxBossDeath();
+    if(e.boss||e.mini) { sfxBossDeath(); vib([60,30,120]); vibGp(1.0,0.8,250); }
   }
 }
 
@@ -3611,7 +3630,15 @@ function onKill(e){
   if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
   // Relic: chain kill — every 5 kills in a row triggers mini nuke
   G._chainKillCount=(G._chainKillCount||0)+1;
-  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18+(p.berserkerRelic?10:0)); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
+  if(p.chainKill && G._chainKillCount>=5 && !e._fromNuke){ 
+    G._chainKillCount=0; 
+    // Mark enemies killed by nuke so they don't re-trigger chain
+    const nukeKills=G.enemies.filter(en=>!en.dead);
+    nukeKills.forEach(en=>en._fromNuke=true);
+    doNuke(G,18+(p.berserkerRelic?10:0)); 
+    setTimeout(()=>{ if(G) G.enemies.forEach(en=>en._fromNuke=false); },100);
+    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); 
+  }
   // Relic: coin magnet bonus
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
   // Relic: scavenger — 20% coin drop on kill
@@ -4941,7 +4968,7 @@ const BACK_MAP = {
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
-  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title',
+  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title',
   's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth',
 };
 let _backBtn=null;
@@ -5592,7 +5619,6 @@ function showModeSelect(){
 function startMode(mode){
   currentMode = mode;
   _duoActive = false;
-  if(mode==='arena') arenaLevel=1, saveData('pulse_arena_level_v1',1);
   if(mode==='online') return;
   startGame();
 }
@@ -5763,6 +5789,27 @@ function showArenaVictory(){
   const modeHudExtra=document.getElementById('mode-hud-extra');
   if(modeHudExtra) modeHudExtra.remove();
   document.body.classList.remove('game-active');
+
+  const level=arenaLevel;
+  const lvlDef=ARENA_LEVELS[(level-1)%ARENA_LEVELS.length];
+  const cycleBonus=Math.floor((level-1)/ARENA_LEVELS.length);
+  const reward=lvlDef.reward;
+
+  // Replay mode: give small coins reward instead of full reward
+  if(_arenaReplayMode){
+    const replayCoins=Math.round((reward.value||50)*0.2);
+    awardCoins(replayCoins);
+    // Restore actual level
+    arenaLevel=_arenaReplaySavedLevel;
+    saveData('pulse_arena_level_v1',arenaLevel);
+    _arenaReplayMode=false;
+    showPopup('✓ Replay terminé · +'+replayCoins+'🪙','#ffbe0b');
+    show('s-arena-map'); renderArenaMap();
+    return;
+  }
+
+  // Apply reward
+  applyArenaReward(reward);
   const level=arenaLevel;
   const lvlDef=ARENA_LEVELS[(level-1)%ARENA_LEVELS.length];
   const cycleBonus=Math.floor((level-1)/ARENA_LEVELS.length);
@@ -5834,6 +5881,60 @@ function arenaReset(){
   arenaLevel=1;
   saveData('pulse_arena_level_v1',1);
 }
+
+function renderArenaMap(){
+  const grid=document.getElementById('arena-map-grid');
+  const sub=document.getElementById('arena-map-sub');
+  if(!grid) return;
+  const cycle=Math.floor((arenaLevel-1)/ARENA_LEVELS.length);
+  sub.textContent=`Progression : Niveau ${arenaLevel} · Meilleur : ${arenaBestLevel}${cycle>0?' · Cycle '+(cycle+1):''}`;
+  grid.innerHTML='';
+  ARENA_LEVELS.forEach((lvl,i)=>{
+    const lvlNum=i+1;
+    const done=lvlNum<arenaLevel;
+    const current=lvlNum===arenaLevel;
+    const locked=lvlNum>arenaLevel;
+    const borderCol=current?'rgba(255,190,11,.8)':done?'rgba(0,245,212,.4)':'var(--border)';
+    const bg=current?'rgba(255,190,11,.07)':done?'rgba(0,245,212,.04)':'var(--dim2)';
+    const card=document.createElement('div');
+    card.style.cssText=`border:1px solid ${borderCol};background:${bg};padding:12px 10px;transition:all .15s;cursor:${locked?'default':'pointer'};opacity:${locked?.45:1};`;
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:${current?'var(--c3)':done?'var(--c1)':'var(--dim)'};">NIV.${lvlNum}</div>
+        <div style="font-size:7px;">${done?'✓':current?'▶':''}</div>
+      </div>
+      <div style="font-size:20px;margin-bottom:4px;">${lvl.emoji}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.07em;color:${current?'var(--c3)':done?'var(--txt)':'var(--dim)'};">${lvl.n}</div>
+      <div style="font-size:7px;color:var(--txt2);margin-top:3px;line-height:1.4;">${lvl.desc}</div>
+      <div style="font-size:7px;color:${lvl.reward.type==='relic_unlock'?'#b44fff':lvl.reward.type==='skin_unlock'?'#ffbe0b':'var(--c3)'};margin-top:6px;">${lvl.reward.icon} ${lvl.reward.label}</div>
+      ${current?'<div style="font-size:6px;letter-spacing:.2em;color:var(--c3);margin-top:4px;border-top:1px solid rgba(255,190,11,.2);padding-top:4px;">← TON NIVEAU</div>':''}`;
+    // Allow replaying completed levels (smaller rewards)
+    if(done){
+      card.onmouseover=()=>card.style.borderColor='var(--c1)';
+      card.onmouseout=()=>card.style.borderColor=borderCol;
+      card.onclick=()=>{
+        pulseConfirm(`Rejouer le niveau ${lvlNum} — ${lvl.n} ? (récompense réduite : ${Math.round((lvl.reward.value||50)*.2)}🪙)`).then(ok=>{
+          if(!ok) return;
+          // Temporarily set level to replay
+          const savedLevel=arenaLevel;
+          arenaLevel=lvlNum;
+          _arenaReplayMode=true;
+          _arenaReplaySavedLevel=savedLevel;
+          arenaNextLevel();
+        });
+      };
+    } else if(current){
+      card.onclick=()=>arenaNextLevel();
+      card.onmouseover=()=>card.style.borderColor='var(--c3)';
+      card.onmouseout=()=>card.style.borderColor=borderCol;
+    }
+    grid.appendChild(card);
+  });
+}
+
+// Replay mode vars
+let _arenaReplayMode=false;
+let _arenaReplaySavedLevel=1;
 
 const P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
 
@@ -6541,49 +6642,47 @@ function adminStatus(msg, cls){
 // ═══════════════════════════════════════════════════════
 const RELIC_DEFS = [
   // ── COMMUN ──
-  {id:'dash_trail',   ico:'💫', name:'TRAÎNE DE DASH',      desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',  rarity:'common',  price:300,
+  {id:'dash_trail',   ico:'💫', name:'TRAÎNE DE DASH',      desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',  rarity:'common',  price:600,
     apply:(p)=>{ p.dashTrail=true; }},
-  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:300,
+  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:600,
     apply:(p)=>{ p.vampireRelic=true; }},
-  {id:'coin_magnet',  ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE', rarity:'common',  price:350,
+  {id:'coin_magnet',  ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE', rarity:'common',  price:700,
     apply:(p)=>{ p.coinMagnet=true; }},
-  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',   rarity:'common',  price:300,
+  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',   rarity:'common',  price:600,
     apply:(p)=>{ p.armorRegen=true; }},
-  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',  rarity:'common',  price:350,
+  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',  rarity:'common',  price:700,
     apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
-  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tué a 20% de chance de dropper des pièces.', tag:'ÉCONOMIE',    rarity:'common',  price:280,
+  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tué a 20% de chance de dropper des pièces.', tag:'ÉCONOMIE',    rarity:'common',  price:550,
     apply:(p)=>{ p.scavengerRelic=true; }},
-  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est réduite de 25%.', tag:'MOBILITÉ',   rarity:'common',  price:300,
+  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est réduite de 25%.', tag:'MOBILITÉ',   rarity:'common',  price:600,
     apply:(p)=>{ p.dashCd=Math.max(350, Math.round(p.dashCd*0.75)); }},
-  {id:'thorns',       ico:'🌵', name:'ÉPINES',               desc:'Renvoie 30% des dégâts reçus aux ennemis.', tag:'DÉFENSIF',  rarity:'common',  price:320,
+  {id:'thorns',       ico:'🌵', name:'ÉPINES',               desc:'Renvoie 30% des dégâts reçus aux ennemis.', tag:'DÉFENSIF',  rarity:'common',  price:650,
     apply:(p)=>{ p.thornsRelic=true; }},
 
   // ── RARE ──
-  {id:'chain_kill',   ico:'⚡', name:'RÉACTION EN CHAÎNE',  desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:550,
+  {id:'chain_kill',   ico:'⚡', name:'RÉACTION EN CHAÎNE',  desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.chainKill=true; }},
-  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser. Synergie : Nova de Balles.', tag:'STRATÉGIQUE',rarity:'rare',    price:600,
+  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATÉGIQUE',rarity:'rare',    price:1200,
     apply:(p)=>{ p.gravityNuke=true; }},
-  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Dégâts +6% par vague jouée. Cumulatif — devient dévastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:500,
+  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Dégâts +6% par vague jouée. Cumulatif — devient dévastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:1000,
     apply:(p)=>{ p.berserkerRelic=true; }},
-  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doublés par la cadence.', tag:'RISQUE',     rarity:'rare',    price:500,
+  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doublés par la cadence.', tag:'RISQUE',     rarity:'rare',    price:1000,
     apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); }},
-  {id:'ghost_step',   ico:'👟', name:'PAS FANTÔME',          desc:'Après un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITÉ',   rarity:'rare',    price:550,
+  {id:'ghost_step',   ico:'👟', name:'PAS FANTÔME',          desc:'Après un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITÉ',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.ghostStepRelic=true; }},
-  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'ÂMES',    desc:'Chaque boss ou mini-boss tué restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:600,
+  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'ÂMES',    desc:'Chaque boss ou mini-boss tué restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:1200,
     apply:(p)=>{ p.soulHarvestRelic=true; }},
-  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGÉ',     desc:'La bombe se recharge 2× plus vite grâce aux kills. Synergie : Puits Gravitationnel.', tag:'OFFENSIF',  rarity:'rare',    price:580,
+  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGÉ',     desc:'La bombe se recharge 2× plus vite grâce aux kills.', tag:'OFFENSIF',  rarity:'rare',    price:1150,
     apply:(p)=>{ p.overloadCoreRelic=true; }},
 
   // ── ÉPIQUE ──
-  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles qui ricochent une fois. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:900,
+  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:1800,
     apply:(p)=>{ p.bulletNova=true; }},
-  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s. Synergie : Cœur Surchargé.', tag:'STRATÉGIQUE',rarity:'epic',   price:850,
+  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s.', tag:'STRATÉGIQUE',rarity:'epic',   price:1700,
     apply:(p)=>{ p.timeThiefRelic=true; }},
-  {id:'mirror_dash',   ico:'🪞', name:'DASH MIROIR',         desc:'Le dash crée un double fantôme pendant 3s qui tire automatiquement. Synergie : Traîne de Dash.', tag:'MOBILITÉ', rarity:'epic', price:1000,
-    apply:(p)=>{ p.mirrorDashRelic=true; }},
-  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, mais dégâts doublés. Synergie : Vampirisme + Épines.', tag:'RISQUE',     rarity:'epic',    price:800,
+  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, mais dégâts doublés. Synergie : Vampirisme + Épines.', tag:'RISQUE',     rarity:'epic',    price:1600,
     apply:(p)=>{ p.maxHp=40; p.hp=Math.min(p.hp,40); p.bulletDmg*=2; }},
-  {id:'adrenaline',    ico:'💉', name:'ADRÉNALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:950,
+  {id:'adrenaline',    ico:'💉', name:'ADRÉNALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:1900,
     apply:(p)=>{ p.adrenalineRelic=true; }},
 ];
 
@@ -6654,7 +6753,22 @@ function pickRelic(r){
   G.paused=false; pendingRelicOffer=false;
   showPopup('✨ '+r.name,'#ffbe0b');
   updateRelicHud();
-  countdown(3,startWave);
+  // Apply berserker and ghost step for this wave since we skipped it
+  if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
+  G.player._ghostStepReady=false;
+  // Resume wave spawning directly (wave already incremented)
+  const w=G.wave;
+  G.spawnPool=(currentMode==='arena'&&w===1)?buildArenaWave(arenaLevel):buildWavePool(w);
+  G.spawnIdx=0; G.spawnTimer=0;
+  G.spawnInterval=Math.max(6, Math.round(56 - w*2.8 - Math.pow(Math.max(0,w-10),1.3)));
+  G.waveActive=true;
+  if(w%3===0) genObstacles();
+  else if(w===1||w%3===1) G.obstacles=[];
+  document.getElementById('hv-wave').textContent=w;
+  const isBoss=w%5===0, isMini=w%2===0&&w>=4&&w%5!==0;
+  const subTxt=isBoss?'⚠ BOSS':isMini?'⚠ MINI-BOSS':'';
+  showBanner(`VAGUE ${w}`,subTxt);
+  countdown(3,()=>{ if(G) G._countingDown=false; });
 }
 
 function updateRelicHud(){
@@ -6728,13 +6842,16 @@ async function initDailyChallenge(){
     modEl.appendChild(div);
   });
   // Check if already played today
-  const saved=loadData('pulse_daily_v1',{date:'',score:0});
+  const saved=loadData('pulse_daily_v1',{date:'',score:0,rewarded:false});
+  const playBtn=document.getElementById('daily-play-btn');
   if(saved.date===dateStr){
-    document.getElementById('daily-my-score').textContent='Ton score du jour : '+saved.score.toLocaleString('fr-FR');
+    const rewardLabel = saved.score>=100000?'👑 +800🪙':saved.score>=50000?'🥇 +400🪙':saved.score>=10000?'🥈 +150🪙':'🥉 +50🪙';
+    document.getElementById('daily-my-score').textContent=`Ton score : ${saved.score.toLocaleString('fr-FR')} pts · ${rewardLabel} reçus`;
+    if(playBtn){ playBtn.querySelector('span').textContent='✓ DÉJÀ JOUÉ AUJOURD\'HUI'; playBtn.style.opacity='.4'; playBtn.style.pointerEvents='none'; }
   } else {
     document.getElementById('daily-my-score').textContent='';
+    if(playBtn){ playBtn.querySelector('span').textContent='⚡ JOUER LE DÉFI'; playBtn.style.opacity=''; playBtn.style.pointerEvents=''; }
   }
-  // Load daily leaderboard from Supabase
   await loadDailyLeaderboard(dateStr);
 }
 
@@ -6765,32 +6882,40 @@ async function loadDailyLeaderboard(dateStr){
 }
 
 function startDailyChallenge(){
+  const dateStr=getDailyDateStr();
+  const saved=loadData('pulse_daily_v1',{date:'',score:0});
+  if(saved.date===dateStr){ showPopup('Déjà joué aujourd\'hui !','#ff1a6e'); return; }
   currentMode='daily';
   const mods=getDailyModifiers();
   G=null;
   startGame();
-  // Apply mods after game starts
   setTimeout(()=>{
     if(!G) return;
     mods.forEach(m=>m.apply(G));
   },100);
-  show('s-mode'); // will be overridden by startGame
 }
 
 async function saveDailyScore(score){
   const dateStr=getDailyDateStr();
   const saved=loadData('pulse_daily_v1',{date:'',score:0});
-  if(saved.date===dateStr&&saved.score>=score) return; // only keep best
-  saveData('pulse_daily_v1',{date:dateStr,score});
+  // Only save first run (daily = 1 per day)
+  if(saved.date===dateStr) return;
+  // Award coins based on score
+  let coinsReward=50; // bronze: just for playing
+  if(score>=100000) coinsReward=800;
+  else if(score>=50000) coinsReward=400;
+  else if(score>=10000) coinsReward=150;
+  awardCoins(coinsReward);
+  showPopup(`⚡ DÉFI : +${coinsReward}🪙`,'#ffbe0b');
+  saveData('pulse_daily_v1',{date:dateStr,score,rewarded:true});
   if(!SB||!currentUser) return;
-  // Save as a special score entry
   const profile=await loadCloudProfile();
   if(!profile) return;
   const scores=profile.scores||[];
   const existing=scores.findIndex(s=>s.daily===dateStr);
   const entry={daily:dateStr,score,date:dateStr};
   if(existing>=0) scores[existing]=entry; else scores.push(entry);
-  await saveCloudProfile({scores:scores.slice(-50)}); // keep last 50
+  await saveCloudProfile({scores:scores.slice(-50)});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -6955,8 +7080,8 @@ function renderRelicEquip(){
         });
         return;
       }
-      // Equip / unequip
-      const eq2=[...equipped];
+      // Equip / unequip — re-read from localStorage to avoid stale state
+      const eq2=loadData('pulse_eq_relics_v1',[]);
       if(eq2.includes(r.id)){
         saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
       } else {
@@ -7690,16 +7815,39 @@ document.addEventListener('DOMContentLoaded',()=>{
       <div class="daily-header">
         <div style="font-size:7px;letter-spacing:.35em;color:var(--txt2);margin-bottom:6px;" id="daily-date">CHARGEMENT…</div>
         <div class="daily-title">⚡ DÉFI QUOTIDIEN</div>
-        <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:4px;">Même seed pour tout le monde</div>
+        <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:4px;">Une seule tentative par jour · Récompense en pièces selon ton score</div>
       </div>
       <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);">MODIFICATEURS DU JOUR</div>
       <div class="daily-modifiers" id="daily-modifiers"></div>
+      <!-- Reward tiers -->
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:8px;">RÉCOMPENSES</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;" id="daily-rewards">
+        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+          <div style="font-size:16px;">🥉</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+50🪙</div>
+          <div style="font-size:6px;color:var(--dim);">Participé</div>
+        </div>
+        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+          <div style="font-size:16px;">🥈</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+150🪙</div>
+          <div style="font-size:6px;color:var(--dim);">&gt; 10 000 pts</div>
+        </div>
+        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+          <div style="font-size:16px;">🥇</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+400🪙</div>
+          <div style="font-size:6px;color:var(--dim);">&gt; 50 000 pts</div>
+        </div>
+        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(180,79,255,.3);background:rgba(180,79,255,.04);text-align:center;">
+          <div style="font-size:16px;">👑</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:#b44fff;">+800🪙</div>
+          <div style="font-size:6px;color:var(--dim);">&gt; 100 000 pts</div>
+        </div>
+      </div>
       <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:8px;">CLASSEMENT DU JOUR</div>
       <div class="daily-lb" id="daily-lb"><div style="color:var(--dim);font-size:8px;text-align:center;padding:12px;">Connecte-toi pour voir le classement</div></div>
       <div id="daily-my-score" style="font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);text-align:center;min-height:18px;"></div>
-      <button class="btn btn-p" onclick="startDailyChallenge()"><span>⚡ JOUER LE DÉFI</span></button>
+      <button class="btn btn-p" id="daily-play-btn" onclick="startDailyChallenge()"><span>⚡ JOUER LE DÉFI</span></button>
     </div>
-    
   </div>
 </div>
 
