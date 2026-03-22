@@ -53,7 +53,8 @@ body.gamepad-active{cursor:none;}
 }
 /* iOS WebView fix — remove tap delay everywhere */
 * { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-button, [onclick] { cursor:pointer; }
+body.touch button, body.touch [onclick] { cursor:pointer; }
+body:not(.touch) button, body:not(.touch) [onclick] { cursor:none !important; }
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
@@ -622,7 +623,7 @@ body.touch #minimap{display:none;}
 .pup-cost.maxed-lbl{color:var(--dim);font-size:8px;letter-spacing:.1em;}
 .shop-coins-bar{display:flex;align-items:center;gap:8px;font-family:'Orbitron',monospace;font-size:12px;color:var(--c3);margin-bottom:8px;}
 .title-user-pill{font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-top:2px;}
-.user-top-bar{position:fixed;top:0;right:0;z-index:802;display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(3,3,10,.85);border-bottom-left-radius:6px;}
+.user-top-bar{position:fixed;top:0;right:0;z-index:802;display:flex;align-items:center;gap:8px;padding:max(5px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 5px 10px;background:rgba(3,3,10,.85);border-bottom-left-radius:6px;}
 .user-top-name{font-size:7px;letter-spacing:.15em;color:var(--txt2);}
 .user-top-btn{font-size:7px;color:var(--c2);cursor:pointer;background:none;border:1px solid var(--c2);padding:2px 7px;font-family:'Share Tech Mono',monospace;letter-spacing:.1em;}
 
@@ -899,6 +900,17 @@ body.touch #minimap{display:none;}
 .admin-stat-v{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--c1);}
 .admin-stat-l{font-size:6px;letter-spacing:.2em;color:var(--txt2);}
 
+
+/* ═══ CONFIRM CUSTOM ═══ */
+#pulse-confirm{position:fixed;inset:0;z-index:9999;background:rgba(3,3,10,.88);display:none;align-items:center;justify-content:center;}
+#pulse-confirm.on{display:flex;}
+.pc-box{background:var(--dim2);border:1px solid var(--border);padding:28px 28px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;width:min(340px,88vw);box-shadow:0 0 60px rgba(0,245,212,.08);}
+.pc-msg{font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vmin,13px);letter-spacing:.12em;color:var(--txt);text-align:center;line-height:1.6;}
+.pc-btns{display:flex;gap:12px;width:100%;}
+.pc-ok{flex:1;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.18em;padding:10px;border:1px solid var(--c1);color:var(--c1);background:transparent;transition:all .15s;}
+.pc-ok:hover,.pc-ok:active{background:var(--c1);color:var(--bg);}
+.pc-cancel{flex:1;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.18em;padding:10px;border:1px solid var(--border);color:var(--txt2);background:transparent;transition:all .15s;}
+.pc-cancel:hover,.pc-cancel:active{border-color:var(--txt2);color:var(--txt);}
 
 /* ═══ RELIQUES ═══ */
 .relic-offer{position:fixed;inset:0;z-index:610;background:rgba(3,3,10,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
@@ -1239,7 +1251,7 @@ body.touch #minimap{display:none;}
     <div class="scr-sub">TOTAUX DEPUIS LE DÉBUT</div>
     <div class="stats-grid" id="stats-grid"></div>
     <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-d" onclick="if(confirm('Remettre toutes les stats à zéro ?')){resetGlobalStats();renderStats();}"><span>RESET</span></button>
+      <button class="btn btn-d" onclick="pulseConfirm('Remettre toutes les stats à zéro ?').then(ok=>{if(ok){resetGlobalStats();renderStats();}})"><span>RESET</span></button>
     </div>
   </div>
 </div>
@@ -1305,7 +1317,7 @@ body.touch #minimap{display:none;}
     <div class="pause-upg" id="pause-upg"></div>
     <div class="btn-col" style="width:min(250px,80vw);">
       <button class="btn btn-p" onclick="togglePause()"><span>▶ REPRENDRE</span></button>
-      <button class="btn btn-s" onclick="if(confirm('Quitter la partie en cours ?')){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}"><span>↩ MENU</span></button>
+      <button class="btn btn-s" onclick="pulseConfirm('Quitter la partie en cours ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ MENU</span></button>
     </div>
   </div>
 </div>
@@ -2410,7 +2422,7 @@ function sfxTimeSlow(){ playTone(220,'sine',.4,.1,-300); playTone(110,'sine',.4,
 // ═══════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════
-let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0;
+let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
 
 // ── DOM Element Cache (queried once, never inside the frame loop) ──
 let _dom={};
@@ -2753,6 +2765,7 @@ function spawnEnemy(def){
 }
 
 function dropPowerup(x,y){
+  if(G._dailyMod_noPowerups) return; // Défi: sans bonus
   if(G.powerups.length>=6) return; // max 6 sur la map à la fois
   // 30% de chance de ne rien dropper (réduction globale)
   if(Math.random()>0.30) return;
@@ -2925,9 +2938,11 @@ function update(now){
   frame++;
   const p=G.player;
 
-  // FPS counter with delta time (more accurate)
-  fpsCount++; fpsTimer+=16;
-  if(fpsTimer>=500){ fps=Math.round(fpsCount*2); fpsCount=0; fpsTimer=0;
+  // FPS counter with real delta time
+  fpsCount++;
+  if(!_fpsT0) _fpsT0=performance.now();
+  const _fpsNow=performance.now();
+  if(_fpsNow-_fpsT0>=500){ fps=Math.round(fpsCount/(_fpsNow-_fpsT0)*1000); fpsCount=0; _fpsT0=_fpsNow;
     // Auto-suggest low quality mode if consistently slow
     if(fps<40&&!settings.lowQuality&&G&&G.wave>2){
       G._lowFpsCount=(G._lowFpsCount||0)+1;
@@ -4269,6 +4284,16 @@ function renderSettings(){
       </div>`;
   }
   list.appendChild(accDiv);
+
+  // ── Mise à jour ──
+  const updDiv = document.createElement('div');
+  updDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
+  updDiv.innerHTML=`
+    <div style="font-size:7px;letter-spacing:.18em;color:var(--txt2);">🔄 MISE À JOUR</div>
+    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;text-align:center;">Si le jeu ne se met pas à jour, vide le cache ici.</div>
+    <button class="acc-save-btn" id="update-btn" onclick="forceUpdate()">⬇ METTRE À JOUR</button>
+    <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;" id="update-status"></div>`;
+  list.appendChild(updDiv);
 }
 
 async function handleSavePseudo(){
@@ -4288,6 +4313,27 @@ async function handleChangePassword(){
   msg.className = 'acc-msg ' + (result.ok ? 'ok' : 'err');
   if(result.ok) document.getElementById('acc-pass-input').value='';
   setTimeout(()=>{ msg.textContent=''; }, 3500);
+}
+
+async function forceUpdate(){
+  const btn = document.getElementById('update-btn');
+  const status = document.getElementById('update-status');
+  if(btn) btn.textContent = '⏳ En cours…';
+  try {
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for(const reg of regs) await reg.unregister();
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if(status) status.textContent = '✓ Cache vidé — rechargement…';
+    setTimeout(() => location.reload(true), 800);
+  } catch(e){
+    if(status) status.textContent = 'Erreur: ' + e.message;
+    if(btn) btn.textContent = '⬇ METTRE À JOUR';
+  }
 }
 
 function toggleSetting(key,el){
@@ -4490,6 +4536,13 @@ function startGame(){
   initDomCache();
   // Apply permanent upgrades
   applyPermaUpgrades(G.player, G);
+  // Load and apply equipped relics
+  const _eqRelicIds = loadData('pulse_eq_relics_v1', []);
+  _eqRelicIds.forEach(id => {
+    const r = RELIC_DEFS.find(x => x.id === id);
+    if(r && !activeRelics.find(a => a.id === r.id)){ activeRelics.push(r); r.apply(G.player); }
+  });
+  updateRelicHud();
   updateHPBar();
   document.getElementById('hv-wave').textContent='—';
   _dom['hv-score'].textContent='0';
@@ -4559,7 +4612,7 @@ function spawnDeathFx(x,y,col){
 // ═══════════════════════════════════════════════════════
 document.addEventListener('mousemove',e=>{
   const xh=document.getElementById('xhair');
-  xh.style.left=(e.clientX-9)+'px'; xh.style.top=(e.clientY-9)+'px';
+  xh.style.left=e.clientX+'px'; xh.style.top=e.clientY+'px';
   if(G){
     // Account for canvas offset in portrait mode
     G.mouseX=e.clientX - (canvasOffsetX||0);
@@ -4779,10 +4832,21 @@ function addBpXp(amount){
 }
 
 function checkBpAutoClaim(level){
-  // Nothing auto-claimed — player must click to claim all rewards
-  // Just notify they have something to pick up
+  // Auto-claim skin rewards so they appear immediately in inventory
   const unclaimed = BP_REWARDS.filter(r=>r.lv<=battlePass.level&&!battlePass.claimed[r.lv]);
-  if(unclaimed.length>0) showPopup('⭐ RÉCOMPENSE À RÉCLAMER !','#ffbe0b');
+  unclaimed.forEach(r=>{
+    if(r.type==='skin'){
+      battlePass.claimed[r.lv]=true;
+      if(!ownedSkins.includes(r.value)){
+        ownedSkins.push(r.value);
+        saveData('pulse_skins_v3',ownedSkins);
+        if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
+      }
+    }
+  });
+  saveBP();
+  const stillUnclaimed=BP_REWARDS.filter(r=>r.lv<=battlePass.level&&!battlePass.claimed[r.lv]);
+  if(stillUnclaimed.length>0) showPopup('⭐ RÉCOMPENSE À RÉCLAMER !','#ffbe0b');
 }
 
 function claimBpReward(level){
@@ -4911,10 +4975,13 @@ if(hasPremiumPass.season !== BP_SEASON_CURRENT) hasPremiumPass = {season:BP_SEAS
 function buyPremiumPass(){
   if(hasPremiumPass.owned){showPopup('Déjà possédé !','#00f5d4');return;}
   if(coins<PREMIUM_PASS_COST){showPopup('Pas assez de pièces ! ('+PREMIUM_PASS_COST+' requis)','#ff1a6e');return;}
-  if(!confirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?'))return;
-  coins-=PREMIUM_PASS_COST;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-  hasPremiumPass={season:BP_SEASON_CURRENT,owned:true};saveData('pulse_premium_v1',hasPremiumPass);
-  if(currentUser&&SB)saveCloudProfile({premium_pass:hasPremiumPass});
+  pulseConfirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?').then(ok=>{
+    if(!ok) return;
+    coins-=PREMIUM_PASS_COST;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
+    hasPremiumPass={season:BP_SEASON_CURRENT,owned:true};saveData('pulse_premium_v1',hasPremiumPass);
+    if(currentUser&&SB)saveCloudProfile({premium_pass:hasPremiumPass});
+    showPopup('✨ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b'); renderBP();
+  });
   showPopup('⭐ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b');
   renderBP();
 }
@@ -4997,6 +5064,18 @@ document.addEventListener('keydown',function(e){
     duoRemapTarget=null; duoRemapBtn=null;
     return;
   }
+},true);
+
+// Hook into mousedown for P2 remap (support clic gauche/droit/molette)
+document.addEventListener('mousedown',function(e){
+  if(!duoRemapTarget||!duoRemapBtn) return;
+  e.preventDefault(); e.stopPropagation();
+  const mouseKey='Mouse'+e.button;
+  p2KeyMap[duoRemapTarget]=mouseKey;
+  saveData('pulse_p2keys_v1',p2KeyMap);
+  duoRemapBtn.classList.remove('listening');
+  duoRemapBtn.textContent=kbKeyName(mouseKey);
+  duoRemapTarget=null; duoRemapBtn=null;
 },true);
 
 function launchDuo(){
@@ -5085,6 +5164,18 @@ function buildArenaWave(){
 
 const P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
 
+// Mouse button state for P2 remap support
+const _mouseButtons = {};
+document.addEventListener('mousedown', e=>{ _mouseButtons['Mouse'+e.button]=true; });
+document.addEventListener('mouseup',   e=>{ _mouseButtons['Mouse'+e.button]=false; });
+
+function p2KeyDown(action){
+  const key = p2KeyMap[action];
+  if(!key) return false;
+  if(key.startsWith('Mouse')) return !!_mouseButtons[key];
+  return !!G.keys[key];
+}
+
 function mkP2(x,y){
   return {x:x,y:y,r:12,hp:100,maxHp:100,speed:3.2,bulletDmg:1,bulletSpeed:9.5,
     fireRate:165,lastShot:performance.now(),lastDash:0,
@@ -5096,10 +5187,10 @@ function updateP2(now){
   if(!P2||!G||!G.running||G.paused) return;
   const p=P2, k=G.keys;
   let mx=0,my=0;
-  if(k[p2KeyMap.up||'i']||k['I']||k['ArrowUp']) my-=1;
-  if(k[p2KeyMap.down||'k']||k['K']||k['ArrowDown']) my+=1;
-  if(k[p2KeyMap.left||'j']||k['J']||k['ArrowLeft']) mx-=1;
-  if(k[p2KeyMap.right||'l']||k['L']||k['ArrowRight']) mx+=1;
+  if(p2KeyDown('up')  ||k['i']||k['I']||k['ArrowUp'])    my-=1;
+  if(p2KeyDown('down')||k['k']||k['K']||k['ArrowDown'])   my+=1;
+  if(p2KeyDown('left')||k['j']||k['J']||k['ArrowLeft'])   mx-=1;
+  if(p2KeyDown('right')||k['l']||k['L']||k['ArrowRight']) mx+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
   if(p.dashing){ p.x+=p.dashVx; p.y+=p.dashVy; p.dashFrames--; if(p.dashFrames<=0){p.dashing=false;p.invincible=22;} }
   else{ p.x=Math.max(p.r,Math.min(W-p.r,p.x+mx*p.speed)); p.y=Math.max(p.r,Math.min(H-p.r,p.y+my*p.speed)); }
@@ -5111,7 +5202,7 @@ function updateP2(now){
     p.lastShot=now;
     G.bullets.push({x:p.x,y:p.y,vx:p.aimDx*p.bulletSpeed,vy:p.aimDy*p.bulletSpeed,dmg:p.bulletDmg,r:4.5,piercing:0,pierced:0,aoe:false,homing:false,ricochet:false,life:135,dead:false,big:false,enemy:false,trail:[{x:p.x,y:p.y}]});
   }
-  if((k[p2KeyMap.dash||'Shift'])&&!p.dashing&&p.dashTimer<=0&&now-p.lastDash>p.dashCd){
+  if(p2KeyDown('dash')&&!p.dashing&&p.dashTimer<=0&&now-p.lastDash>p.dashCd){
     p.dashVx=p.aimDx*18; p.dashVy=p.aimDy*18; p.dashing=true; p.dashFrames=7; p.lastDash=now;
   }
   if(p.invincible>0) p.invincible--;
@@ -5598,7 +5689,8 @@ function adminMaxPerma(playerId){
 
 async function adminReset(playerId){
   if(!isAdmin()) return;
-  if(!confirm('RESET COMPLET de ce joueur ? Irréversible !')) return;
+  const _confirmed = await pulseConfirm('RESET COMPLET de ce joueur ? Irréversible !');
+  if(!_confirmed) return;
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Reset…'; statusEl.className='admin-status wait';
   try {
@@ -5647,6 +5739,33 @@ const RELIC_DEFS = [
     apply:(p)=>{ p.berserkerStacks=(p.berserkerStacks||0)+1; p.bulletDmg*=(1+0.05*((p.berserkerStacks||1))); }},
 ];
 
+// ═══════════════════════════════════════════════════════
+//  CONFIRM PERSONNALISÉ
+// ═══════════════════════════════════════════════════════
+let _pcResolve = null;
+(function(){
+  function init(){
+    const el = document.getElementById('pulse-confirm');
+    document.getElementById('pc-ok').onclick = function(){
+      el.classList.remove('on');
+      if(_pcResolve){ _pcResolve(true); _pcResolve=null; }
+    };
+    document.getElementById('pc-cancel').onclick = function(){
+      el.classList.remove('on');
+      if(_pcResolve){ _pcResolve(false); _pcResolve=null; }
+    };
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+  else init();
+})();
+function pulseConfirm(msg){
+  return new Promise(function(resolve){
+    _pcResolve = resolve;
+    document.getElementById('pc-msg').textContent = msg;
+    document.getElementById('pulse-confirm').classList.add('on');
+  });
+}
+
 let activeRelics = [];
 let pendingRelicOffer = false;
 
@@ -5660,6 +5779,7 @@ function offerRelic(){
   G.paused = true;
   // Pick 3 random relics not already owned
   const available = RELIC_DEFS.filter(r=>!activeRelics.find(a=>a.id===r.id));
+  if(available.length === 0){ pendingRelicOffer=false; G.paused=false; countdown(3,startWave); return; }
   const shuffled = available.sort(()=>Math.random()-.5).slice(0,3);
   const container = document.getElementById('relic-cards');
   container.innerHTML='';
@@ -5963,11 +6083,14 @@ function renderRelicEquip(){
     div.onclick=()=>{
       if(!owned&&!r.premium){
         if(coins<r.price){showPopup('Pas assez de pièces ! ('+r.price+' requis)','#ff1a6e');return;}
-        if(!confirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?'))return;
-        coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-        const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
-        showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
-        renderRelicEquip(); return;
+        pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
+          if(!ok) return;
+          coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
+          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+          showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
+          renderRelicEquip();
+        });
+        return;
       }
       if(owned){
         const eq2=[...equipped];
@@ -6017,6 +6140,7 @@ function kbKeyName(key){
     ' ':'ESPACE','ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→',
     'Escape':'ÉCHAP','Enter':'ENTRÉE','Backspace':'⌫','Tab':'TAB','Shift':'SHIFT',
     'Control':'CTRL','Alt':'ALT','Meta':'WIN',
+    'Mouse0':'CLIC G','Mouse2':'CLIC D','Mouse1':'CLIC M',
   };
   return names[key] ?? key.toUpperCase();
 }
@@ -6682,6 +6806,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 </div>
 <!-- Active relics HUD -->
 <div id="relic-hud"></div>
+
+<!-- CONFIRM CUSTOM -->
+<div id="pulse-confirm">
+  <div class="pc-box">
+    <div class="pc-msg" id="pc-msg"></div>
+    <div class="pc-btns">
+      <button class="pc-cancel" id="pc-cancel">ANNULER</button>
+      <button class="pc-ok" id="pc-ok">CONFIRMER</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- DÉFI QUOTIDIEN -->
