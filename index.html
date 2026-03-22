@@ -1231,7 +1231,7 @@ body.touch #minimap{display:none;}
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
       <button class="btn btn-s" onclick="show('s-stats');renderStats()"><span>📊 STATISTIQUES</span></button>
       <button class="btn btn-s" onclick="show('s-settings');renderSettings()"><span>⚙ PARAMÈTRES</span></button>
-      <button class="btn btn-s" style="opacity:.55;font-size:clamp(8px,2vw,10px);" onclick="obInit();show('s-onboard')"><span>📖 REVOIR LE TUTORIEL</span></button>
+      <button class="btn btn-s" onclick="show('s-gift');renderGiftScreen()"><span>🎁 CADEAUX</span></button>
     </div>
     <div class="ctrl-hint" id="ctrl-hint">
       WASD / FLÈCHES = bouger &nbsp;|&nbsp; SOURIS = viser (tir automatique)<br>
@@ -1421,6 +1421,17 @@ body.touch #minimap{display:none;}
     <div class="auth-switch" id="auth-switch-lbl">Pas de compte ? <span onclick="toggleAuthMode()">S'INSCRIRE</span></div>
     <div class="auth-switch" style="margin-top:2px;"><span onclick="show('s-reset')" style="color:var(--txt2);cursor:pointer;">Mot de passe oublié ?</span></div>
     <div class="auth-guest" onclick="playAsGuest()">Jouer sans compte (progression locale)</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- CADEAUX                                           -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="scr" id="s-gift">
+  <div class="scr-inner" style="align-items:center;gap:14px;max-width:500px;width:100%;">
+    <div class="scr-h">🎁 CADEAUX</div>
+    <div style="font-size:8px;letter-spacing:.14em;color:var(--txt2);text-align:center;">Envoie des pièces, un skin ou le Passe Amélioré à un autre joueur.</div>
+    <div id="s-gift-content" style="width:100%;display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 </div>
 
@@ -4438,34 +4449,8 @@ function renderSettings(){
   // ── Tutoriel ──
   const tutDiv = document.createElement('div');
   tutDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
-  tutDiv.innerHTML=`
-    <button class="acc-save-btn" onclick="obInit();show('s-onboard')">📖 REVOIR LE TUTORIEL</button>`;
+  tutDiv.innerHTML=`<button class="acc-save-btn" onclick="obInit();show('s-onboard')">📖 REVOIR LE TUTORIEL</button>`;
   list.appendChild(tutDiv);
-
-  // ── Cadeaux ──
-  if(currentUser){
-    const giftDiv = document.createElement('div');
-    giftDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;';
-    giftDiv.innerHTML=`
-      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.28em;color:var(--txt2);padding:4px 0;">🎁 ENVOYER UN CADEAU</div>
-      <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;">Envoie des pièces, un skin ou le Passe Amélioré à un autre joueur via son email ou pseudo.</div>
-      <div class="acc-row">
-        <input class="acc-input" id="gift-target" type="text" placeholder="Email ou pseudo du destinataire" style="flex:1;">
-      </div>
-      <div class="acc-row" style="gap:8px;flex-wrap:wrap;">
-        <select class="acc-input" id="gift-type" style="flex:1;min-width:140px;" onchange="renderGiftValueUI()">
-          <option value="coins">🪙 Pièces</option>
-          <option value="skin">🎨 Skin</option>
-          <option value="pass">⭐ Passe Amélioré</option>
-        </select>
-        <div id="gift-value-wrap" style="flex:1;min-width:100px;">
-          <input class="acc-input" id="gift-coins-val" type="number" min="1" max="10000" value="100" placeholder="Montant" style="width:100%;">
-        </div>
-      </div>
-      <button class="acc-save-btn" onclick="sendGift()">🎁 ENVOYER</button>
-      <div class="acc-msg" id="gift-msg"></div>`;
-    list.appendChild(giftDiv);
-  }
 }
 
 async function handleSavePseudo(){
@@ -4529,7 +4514,34 @@ function renderGiftValueUI(){
   }
 }
 
+function renderGiftScreen(){
+  const el = document.getElementById('s-gift-content');
+  if(!el) return;
+  if(!currentUser){
+    el.innerHTML=`<div style="text-align:center;color:var(--txt2);font-size:8px;letter-spacing:.12em;padding:20px;">Connecte-toi pour envoyer des cadeaux.</div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="acc-row">
+      <input class="acc-input" id="gift-target" type="text" placeholder="Email ou pseudo du destinataire" style="flex:1;">
+    </div>
+    <div class="acc-row" style="gap:8px;flex-wrap:wrap;">
+      <select class="acc-input" id="gift-type" style="flex:1;min-width:140px;" onchange="renderGiftValueUI()">
+        <option value="coins">🪙 Pièces</option>
+        <option value="skin">🎨 Skin</option>
+        <option value="pass">⭐ Passe Amélioré</option>
+      </select>
+      <div id="gift-value-wrap" style="flex:1;min-width:100px;">
+        <input class="acc-input" id="gift-coins-val" type="number" min="1" max="10000" value="100" placeholder="Montant" style="width:100%;">
+      </div>
+    </div>
+    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;">Ton solde : <span style="color:var(--c3);">${coins} 🪙</span></div>
+    <button class="btn btn-p" onclick="sendGift()"><span>🎁 ENVOYER</span></button>
+    <div class="acc-msg" id="gift-msg"></div>`;
+}
+
 async function sendGift(){
+
   if(!currentUser||!SB){ showPopup('Connexion requise','#ff1a6e'); return; }
   const target = document.getElementById('gift-target')?.value?.trim();
   const type = document.getElementById('gift-type')?.value;
@@ -4749,7 +4761,7 @@ const BACK_MAP = {
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
-  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title',
+  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title',
   's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth',
 };
 let _backBtn=null;
