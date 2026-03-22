@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
 <title>PULSE v26 — Twin-Stick Survivor</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -35,7 +39,7 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #xhair::before{width:1px;height:22px;left:10.5px;top:0;}
 #xhair::after{width:22px;height:1px;top:10.5px;left:0;}
 .xdot{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--c1);top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px var(--c1);}
-body.touch #xhair{display:none;}body.game-active:not(.touch){cursor:none;}
+body.touch #xhair{display:none;}body:not(.touch){cursor:none;}
 body.gamepad-active{cursor:none;}
 
 /* GAMEPAD INDICATOR */
@@ -53,14 +57,7 @@ body.gamepad-active{cursor:none;}
 }
 /* iOS WebView fix — remove tap delay everywhere */
 * { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-/* Custom crosshair only when game is active */
-body.game-active:not(.touch) { cursor:none; }
-body.game-active:not(.touch) button,
-body.game-active:not(.touch) [onclick],
-body.game-active:not(.touch) a,
-body.game-active:not(.touch) [role="button"] { cursor:none !important; }
-/* Normal cursor on menus and inputs always */
-body:not(.game-active) #xhair { display:none !important; }
+button, [onclick] { cursor:pointer; }
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
@@ -327,7 +324,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .at-icon{font-size:22px;}
 .at-name{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c3);}
 .at-desc{font-size:8px;letter-spacing:.1em;color:var(--txt2);margin-top:2px;}
-.at-reward{font-size:9px;letter-spacing:.14em;color:var(--c3);margin-top:3px;font-family:'Orbitron',monospace;}
 
 /* FX overlays */
 #dmg-fx{position:fixed;inset:0;z-index:95;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(255,26,110,.28) 100%);}
@@ -630,7 +626,7 @@ body.touch #minimap{display:none;}
 .pup-cost.maxed-lbl{color:var(--dim);font-size:8px;letter-spacing:.1em;}
 .shop-coins-bar{display:flex;align-items:center;gap:8px;font-family:'Orbitron',monospace;font-size:12px;color:var(--c3);margin-bottom:8px;}
 .title-user-pill{font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-top:2px;}
-.user-top-bar{position:fixed;top:0;right:0;z-index:802;display:flex;align-items:center;gap:8px;padding:max(5px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) 5px 10px;background:rgba(3,3,10,.85);border-bottom-left-radius:6px;}
+.user-top-bar{position:fixed;top:0;right:0;z-index:802;display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(3,3,10,.85);border-bottom-left-radius:6px;}
 .user-top-name{font-size:7px;letter-spacing:.15em;color:var(--txt2);}
 .user-top-btn{font-size:7px;color:var(--c2);cursor:pointer;background:none;border:1px solid var(--c2);padding:2px 7px;font-family:'Share Tech Mono',monospace;letter-spacing:.1em;}
 
@@ -908,17 +904,6 @@ body.touch #minimap{display:none;}
 .admin-stat-l{font-size:6px;letter-spacing:.2em;color:var(--txt2);}
 
 
-/* ═══ CONFIRM CUSTOM ═══ */
-#pulse-confirm{position:fixed;inset:0;z-index:99999;background:rgba(3,3,10,.88);display:none;align-items:center;justify-content:center;}
-#pulse-confirm.on{display:flex;}
-.pc-box{background:var(--dim2);border:1px solid var(--border);padding:28px 28px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;width:min(340px,88vw);box-shadow:0 0 60px rgba(0,245,212,.08);}
-.pc-msg{font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vmin,13px);letter-spacing:.12em;color:var(--txt);text-align:center;line-height:1.6;}
-.pc-btns{display:flex;gap:12px;width:100%;}
-.pc-ok{flex:1;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.18em;padding:10px;border:1px solid var(--c1);color:var(--c1);background:transparent;transition:all .15s;}
-.pc-ok:hover,.pc-ok:active{background:var(--c1);color:var(--bg);}
-.pc-cancel{flex:1;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.18em;padding:10px;border:1px solid var(--border);color:var(--txt2);background:transparent;transition:all .15s;}
-.pc-cancel:hover,.pc-cancel:active{border-color:var(--txt2);color:var(--txt);}
-
 /* ═══ RELIQUES ═══ */
 .relic-offer{position:fixed;inset:0;z-index:610;background:rgba(3,3,10,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
 .relic-offer.on{display:flex;}
@@ -926,18 +911,10 @@ body.touch #minimap{display:none;}
 .relic-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 .relic-card{width:clamp(120px,28vw,160px);border:1px solid rgba(255,190,11,.4);background:rgba(255,190,11,.05);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;}
 .relic-card:hover{border-color:var(--c3);transform:translateY(-4px);box-shadow:0 8px 28px rgba(255,190,11,.2);}
-.relic-card.rarity-rare{border-color:rgba(0,187,249,.5);background:rgba(0,187,249,.05);}
-.relic-card.rarity-rare:hover{border-color:#00bbf9;box-shadow:0 8px 28px rgba(0,187,249,.25);}
-.relic-card.rarity-epic{border-color:rgba(180,79,255,.6);background:rgba(180,79,255,.07);}
-.relic-card.rarity-epic:hover{border-color:#b44fff;box-shadow:0 8px 28px rgba(180,79,255,.3);}
 .relic-card-ico{font-size:clamp(28px,7vmin,38px);}
 .relic-card-name{font-family:'Orbitron',monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.1em;color:var(--c3);text-align:center;}
-.relic-card.rarity-rare .relic-card-name{color:#00bbf9;}
-.relic-card.rarity-epic .relic-card-name{color:#b44fff;}
 .relic-card-desc{font-size:clamp(7px,1.6vmin,8px);color:var(--txt2);text-align:center;line-height:1.6;}
 .relic-card-tag{font-size:6px;letter-spacing:.2em;padding:2px 7px;border:1px solid rgba(255,190,11,.3);color:var(--c3);}
-.relic-card-rarity{font-size:6px;letter-spacing:.25em;padding:1px 6px;margin-top:-2px;font-family:'Orbitron',monospace;}
-.relic-card-price{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;color:var(--c3);margin-top:2px;}
 /* Active relics HUD */
 #relic-hud{position:fixed;bottom:clamp(80px,18vmin,110px);right:clamp(8px,2vw,14px);z-index:104;display:flex;flex-direction:column;gap:3px;pointer-events:none;}
 .relic-hud-item{display:flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(3,3,10,.8);border:1px solid rgba(255,190,11,.25);font-size:7px;letter-spacing:.1em;color:var(--c3);}
@@ -1135,7 +1112,7 @@ body.touch #minimap{display:none;}
 <div id="kfeed"></div>
 <div id="combo"><div id="cval">0</div><div id="cmul"></div><div id="clbl">COMBO</div></div>
 <div id="dmg-fx"></div><div id="heal-fx"></div><div id="spec-fx"></div><div id="frz-fx"></div><div id="lvup-fx"></div><div id="wave-clear-fx"></div>
-<div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div><div class="at-reward" id="at-reward"></div></div></div>
+<div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div></div></div>
 
 <!-- PORTRAIT CONTROLS BG -->
 <div id="portrait-ctrl-bg">
@@ -1266,7 +1243,7 @@ body.touch #minimap{display:none;}
     <div class="scr-sub">TOTAUX DEPUIS LE DÉBUT</div>
     <div class="stats-grid" id="stats-grid"></div>
     <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-d" onclick="pulseConfirm('Remettre toutes les stats à zéro ?').then(ok=>{if(ok){resetGlobalStats();renderStats();}})"><span>RESET</span></button>
+      <button class="btn btn-d" onclick="if(confirm('Remettre toutes les stats à zéro ?')){resetGlobalStats();renderStats();}"><span>RESET</span></button>
     </div>
   </div>
 </div>
@@ -1332,7 +1309,7 @@ body.touch #minimap{display:none;}
     <div class="pause-upg" id="pause-upg"></div>
     <div class="btn-col" style="width:min(250px,80vw);">
       <button class="btn btn-p" onclick="togglePause()"><span>▶ REPRENDRE</span></button>
-      <button class="btn btn-s" onclick="pulseConfirm('Quitter la partie en cours ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ MENU</span></button>
+      <button class="btn btn-s" onclick="if(confirm('Quitter la partie en cours ?')){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}"><span>↩ MENU</span></button>
     </div>
   </div>
 </div>
@@ -1408,9 +1385,8 @@ body.touch #minimap{display:none;}
   <div class="auth-box">
     <div class="auth-title">PULSE</div>
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
-    <input class="auth-input" id="auth-email" type="text" placeholder="EMAIL OU PSEUDO" autocomplete="username" onkeydown="if(event.key==='Enter')doAuth()">
+    <input class="auth-input" id="auth-email" type="email" placeholder="EMAIL" autocomplete="email" onkeydown="if(event.key==='Enter')doAuth()">
     <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
-    <input class="auth-input" id="auth-pseudo-reg" type="text" placeholder="PSEUDO (unique, visible en classement)" maxlength="16" style="display:none;" onkeydown="if(event.key==='Enter')doAuth()">
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-ok"  id="auth-ok"></div>
     <button class="btn btn-p" id="auth-submit-btn" onclick="doAuth()"><span id="auth-submit-lbl">SE CONNECTER</span></button>
@@ -1749,18 +1725,13 @@ async function loadCloudProfile(){
     if(error){
       if(error.code==='PGRST116'||error.message?.includes('0 rows')){
         // Nouveau joueur — créer profil
-        const fresh={id:currentUser.id,email:currentUser.email||'',pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1,claimed:{}}};
+        const fresh={id:currentUser.id,pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1}};
         const {error:insertErr}=await SB.from('profiles').insert(fresh);
         if(insertErr) console.warn('Erreur création profil:',insertErr.message);
         return fresh;
       }
       console.warn('Erreur chargement profil:',error.message);
       return null;
-    }
-    // Keep email in sync with auth
-    if(currentUser.email && data && data.email !== currentUser.email){
-      await SB.from('profiles').update({email:currentUser.email}).eq('id',currentUser.id);
-      data.email = currentUser.email;
     }
     return data;
   } catch(e){ console.warn('Erreur réseau profil:',e); return null; }
@@ -1783,99 +1754,57 @@ function toggleAuthMode(){
   document.getElementById('auth-switch-lbl').innerHTML = authMode==='login'
     ? 'Pas de compte ? <span onclick="toggleAuthMode()">S\'INSCRIRE</span>'
     : 'Déjà un compte ? <span onclick="toggleAuthMode()">SE CONNECTER</span>';
-  // Show pseudo field only on register
-  const pseudoEl = document.getElementById('auth-pseudo-reg');
-  if(pseudoEl) pseudoEl.style.display = authMode==='register' ? 'block' : 'none';
-  // Update email placeholder
-  const emailEl = document.getElementById('auth-email');
-  if(emailEl) emailEl.placeholder = authMode==='login' ? 'EMAIL OU PSEUDO' : 'EMAIL';
   document.getElementById('auth-err').textContent='';
   document.getElementById('auth-ok').textContent='';
 }
 
 async function doAuth(){
   if(!SB){ playAsGuest(); return; }
-  const input=document.getElementById('auth-email').value.trim();
+  const email=document.getElementById('auth-email').value.trim();
   const pass=document.getElementById('auth-pass').value;
-  const errEl=document.getElementById('auth-err');
-  const okEl=document.getElementById('auth-ok');
-  errEl.textContent=''; okEl.textContent='';
-  if(!input||!pass){ errEl.textContent='Remplis tous les champs.'; return; }
-  if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caractères.'; return; }
+  document.getElementById('auth-err').textContent='';
+  document.getElementById('auth-ok').textContent='';
+  if(!email||!pass){ document.getElementById('auth-err').textContent='Remplis tous les champs.'; return; }
+  if(pass.length<6){ document.getElementById('auth-err').textContent='Mot de passe minimum 6 caractères.'; return; }
   const btn=document.getElementById('auth-submit-btn');
   btn.style.opacity='.5'; btn.style.pointerEvents='none';
   try {
     let res;
     if(authMode==='login'){
-      // Determine if input is email or pseudo
-      let emailToUse = input;
-      if(!input.includes('@')){
-        // Lookup email by pseudo — try email column first, fallback to auth lookup
-        try {
-          const {data:rows} = await SB.from('profiles').select('id,email').ilike('pseudo', input).limit(1);
-          if(rows&&rows.length>0&&rows[0].email){
-            emailToUse = rows[0].email;
-          } else if(rows&&rows.length>0){
-            // Profile found but no email — try to get email from auth via a sign-in attempt won't work
-            // Ask user to use their email instead
-            errEl.textContent='Pseudo trouvé, mais email non synchronisé. Connecte-toi avec ton email cette fois.';
-            btn.style.opacity=''; btn.style.pointerEvents=''; return;
-          } else {
-            errEl.textContent='Pseudo introuvable. Vérifie l\'orthographe ou utilise ton email.';
-            btn.style.opacity=''; btn.style.pointerEvents=''; return;
-          }
-        } catch(lookupErr){
-          // Column 'email' might not exist yet — tell user to use email
-          errEl.textContent='Connecte-toi avec ton email (migration pseudo en cours).';
-          btn.style.opacity=''; btn.style.pointerEvents=''; return;
-        }
-      }
-      res=await SB.auth.signInWithPassword({email:emailToUse, password:pass});
+      res=await SB.auth.signInWithPassword({email,password:pass});
       if(res.error){
-        errEl.textContent=translateAuthErr(res.error.message);
+        document.getElementById('auth-err').textContent=translateAuthErr(res.error.message);
       } else {
         currentUser=res.data.user; isGuest=false;
         await afterLogin();
       }
     } else {
-      // Registration — require valid email
-      if(!input.includes('@')){ errEl.textContent='Utilise ton email pour t\'inscrire.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
-      const pseudo=(document.getElementById('auth-pseudo-reg')?.value||'').trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-      if(!pseudo||pseudo.length<3){ errEl.textContent='Pseudo requis (3-16 caractères, lettres/chiffres/-/_).'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
-      // Check pseudo uniqueness
-      const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).limit(1);
-      if(existing&&existing.length>0){ errEl.textContent='Ce pseudo est déjà pris. Choisis-en un autre.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
-      res=await SB.auth.signUp({email:input, password:pass});
+      // Inscription
+      res=await SB.auth.signUp({email,password:pass});
       if(res.error){
-        errEl.textContent=translateAuthErr(res.error.message);
+        document.getElementById('auth-err').textContent=translateAuthErr(res.error.message);
       } else if(res.data?.user){
-        // Save pseudo immediately in profile
-        await SB.from('profiles').upsert({id:res.data.user.id, pseudo, email:input, coins:0, owned_skins:['default'], equipped_skin:'default', perma_upgrades:{}, scores:[], stats:{}, ach:{}, battle_pass:{level:0,xp:0,season:1,claimed:{}}});
         if(res.data.session){
           currentUser=res.data.user; isGuest=false;
-          userPseudo=pseudo; saveData('pulse_pseudo_v3',pseudo);
-          await afterLogin(true);
+          await afterLogin(true); // ← new account: show tutorial
         } else {
-          okEl.textContent='✉️ Vérifie ton email pour confirmer, puis connecte-toi avec ton pseudo ou email !';
-          setTimeout(()=>{ authMode='login'; toggleAuthMode(); },4000);
+          document.getElementById('auth-ok').textContent='✉️ Vérifie ton email pour confirmer ton compte, puis connecte-toi !';
+          setTimeout(()=>{ authMode='login'; toggleAuthMode(); },3000);
         }
       }
     }
   } catch(e){
     console.error('Auth error:',e);
-    errEl.textContent='Erreur réseau ('+e.message+'). Essaie le mode invité.';
+    document.getElementById('auth-err').textContent='Erreur réseau ('+e.message+'). Essaie le mode invité.';
   }
   btn.style.opacity=''; btn.style.pointerEvents='';
 }
 
 function translateAuthErr(msg){
-  if(msg.includes('Invalid login')) return 'Email/pseudo ou mot de passe incorrect.';
-  if(msg.includes('already registered')||msg.includes('already been registered')) return 'Cet email est déjà utilisé.';
+  if(msg.includes('Invalid login')) return 'Email ou mot de passe incorrect.';
+  if(msg.includes('already registered')) return 'Cet email est déjà utilisé.';
   if(msg.includes('Password should')) return 'Mot de passe trop court (min 6 caractères).';
   if(msg.includes('valid email')) return 'Email invalide.';
-  if(msg.includes('User not found')) return 'Aucun compte trouvé avec cet email ou pseudo.';
-  if(msg.includes('Email not confirmed')) return 'Email non confirmé — vérifie ta boîte mail.';
-  if(msg.includes('rate limit')) return 'Trop de tentatives, réessaie dans quelques minutes.';
   return msg;
 }
 
@@ -2290,9 +2219,9 @@ function renderShop(tab){
 const ENEMY_DEFS = [
   {id:'grunt',    col:'#ff1a6e', r:10, hp:3,   spd:1.4,  pts:10,  dmg:8,  lbl:'GRUNT',    shape:'circle'},
   {id:'runner',   col:'#ff9f1c', r:7,  hp:2,   spd:3.1,  pts:15,  dmg:6,  lbl:'RUNNER',   shape:'circle'},
-  {id:'tank',     col:'#9b5de5', r:20, hp:15,  spd:0.58, pts:45,  dmg:22, lbl:'TANK',     shape:'hex', ranged:true, shootInterval:240},
+  {id:'tank',     col:'#9b5de5', r:20, hp:15,  spd:0.58, pts:45,  dmg:22, lbl:'TANK',     shape:'hex'},
   {id:'swarm',    col:'#f15bb5', r:5,  hp:1,   spd:2.2,  pts:7,   dmg:4,  lbl:'SWARM',    shape:'circle'},
-  {id:'hunter',   col:'#00bbf9', r:9,  hp:8,   spd:0.52, pts:28,  dmg:14, lbl:'HUNTER',   shape:'tri'},
+  {id:'hunter',   col:'#00bbf9', r:9,  hp:5,   spd:1.1,  pts:28,  dmg:14, lbl:'HUNTER',   shape:'tri'},
   {id:'bomber',   col:'#ff5500', r:12, hp:4,   spd:1.8,  pts:30,  dmg:35, lbl:'BOMBER',   shape:'circle', explodes:true},
   {id:'guardian', col:'#44aaff', r:11, hp:6,   spd:0.9,  pts:35,  dmg:12, lbl:'GUARDIAN', shape:'circle', shieldHp:10},
   {id:'zigzag',   col:'#ff44bb', r:8,  hp:3,   spd:2.5,  pts:20,  dmg:10, lbl:'ZIGZAG',   shape:'diamond', zigzag:true},
@@ -2337,7 +2266,7 @@ const UPGRADE_DEFS = [
   {id:'xpboost',  ico:'⭐', n:'Boost XP',       d:'Gain XP ×1.6.',                  tier:'common',     stacks:true,  apply:s=>{ s.xpMult*=1.6; }},
   {id:'regen',    ico:'💚', n:'Régénération',   d:'+1 PV/3s.',                      tier:'common',     stacks:true,  apply:s=>{ s.regen+=1; }},
   {id:'specrate', ico:'💜', n:'Surcharge',      d:'Bombe se charge +50%.',          tier:'rare',       stacks:true,  apply:s=>{ s.specRate*=1.5; }},
-  {id:'multi',    ico:'✳️', n:'Tri-Shot',       d:'+1 balle par tir (max 2 fois).',              tier:'rare',       stacks:true,  apply:s=>{ if(s.multishot<2) s.multishot++; }},
+  {id:'multi',    ico:'✳️', n:'Tri-Shot',       d:'+1 balle par tir.',              tier:'rare',       stacks:true,  apply:s=>{ s.multishot++; }},
   {id:'steal',    ico:'🩸', n:'Vampirisme',     d:'Kill soigne +3 PV (max +18).',   tier:'rare',       stacks:true,  apply:s=>{ s.lifesteal=Math.min(18,s.lifesteal+3); }},
   {id:'aoe',      ico:'💥', n:'Explosion',      d:'Balles explosent à l\'impact.', tier:'rare',       stacks:false, apply:s=>{ s.aoe=true; }},
   {id:'homing',   ico:'🎯', n:'Tracking',       d:'Balles suivent les ennemis.',    tier:'rare',       stacks:false, apply:s=>{ s.homing=true; }},
@@ -2367,28 +2296,28 @@ const CURSE_DEFS = [
 
 // ─── ACHIEVEMENTS ───
 const ACH_DEFS = [
-  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',      d:'Tuer son premier ennemi.',           goal:1,     stat:'totalKills',      reward:25},
-  {id:'kills_100',    ico:'💀',  n:'Centurion',          d:'Tuer 100 ennemis en une partie.',    goal:100,   stat:'sessionKills',    reward:50},
-  {id:'kills_500',    ico:'🔥',  n:'Exterminateur',      d:'Tuer 500 ennemis en une partie.',    goal:500,   stat:'sessionKills',    reward:150},
-  {id:'wave_10',      ico:'🌊',  n:'Surfeur',             d:'Atteindre la vague 10.',             goal:10,    stat:'maxWave',         reward:75},
-  {id:'wave_20',      ico:'🏄',  n:'Pro de la vague',    d:'Atteindre la vague 20.',             goal:20,    stat:'maxWave',         reward:150},
-  {id:'wave_30',      ico:'👑',  n:'Maître des vagues',  d:'Atteindre la vague 30.',             goal:30,    stat:'maxWave',         reward:300},
-  {id:'score_10k',    ico:'💎',  n:'10 000 pts',          d:'Atteindre 10 000 points.',           goal:10000, stat:'maxScore',        reward:50},
-  {id:'score_50k',    ico:'💠',  n:'50 000 pts',          d:'Atteindre 50 000 points.',           goal:50000, stat:'maxScore',        reward:100},
-  {id:'score_100k',   ico:'💜',  n:'100 000 pts',         d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore',        reward:250},
-  {id:'combo_20',     ico:'🔥',  n:'Combo x20',           d:'Atteindre un combo de 20.',          goal:20,    stat:'maxCombo',        reward:40},
-  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',           d:'Atteindre un combo de 50.',          goal:50,    stat:'maxCombo',        reward:100},
-  {id:'combo_100',    ico:'👑',  n:'Combo x100',          d:'Atteindre un combo de 100.',         goal:100,   stat:'maxCombo',        reward:250},
-  {id:'level_10',     ico:'⭐',  n:'Niveau 10',           d:'Atteindre le niveau 10.',            goal:10,    stat:'maxLevel',        reward:60},
-  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',       d:'Vaincre un boss.',                   goal:1,     stat:'bossKills',       reward:75},
-  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',         d:'Vaincre 5 boss.',                    goal:5,     stat:'bossKills',       reward:200},
-  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',         d:'Finir une vague sans prendre de dmg.',goal:1,   stat:'noHitWaves',      reward:50},
-  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades différents.',    goal:10,    stat:'uniqueUpgrades',  reward:80},
-  {id:'games_10',     ico:'🎮',  n:'Accro',               d:'Jouer 10 parties.',                  goal:10,    stat:'gamesPlayed',     reward:100},
-  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malédiction.',          goal:1,     stat:'cursesAccepted',  reward:30},
-  {id:'curse_5',      ico:'🔥',  n:'Masochiste',          d:'Accepter 5 malédictions.',           goal:5,     stat:'cursesAccepted',  reward:120},
-  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantômes',d:'Tuer 10 fantômes.',                  goal:10,    stat:'ghostKills',      reward:80},
-  {id:'no_hit_5',     ico:'💎',  n:'Perfection',          d:'5 vagues sans dégâts.',              goal:5,     stat:'noHitWaves',      reward:200},
+  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',   d:'Tuer son premier ennemi.',          goal:1,    stat:'totalKills'},
+  {id:'kills_100',    ico:'💀',  n:'Centurion',      d:'Tuer 100 ennemis en une partie.',   goal:100,  stat:'sessionKills'},
+  {id:'kills_500',    ico:'🔥',  n:'Exterminateur',  d:'Tuer 500 ennemis en une partie.',   goal:500,  stat:'sessionKills'},
+  {id:'wave_10',      ico:'🌊',  n:'Surfeur',         d:'Atteindre la vague 10.',             goal:10,   stat:'maxWave'},
+  {id:'wave_20',      ico:'🏄',  n:'Pro de la vague', d:'Atteindre la vague 20.',             goal:20,   stat:'maxWave'},
+  {id:'wave_30',      ico:'👑',  n:'Maître des vagues', d:'Atteindre la vague 30.',           goal:30,   stat:'maxWave'},
+  {id:'score_10k',    ico:'💎',  n:'10 000 pts',      d:'Atteindre 10 000 points.',           goal:10000,stat:'maxScore'},
+  {id:'score_50k',    ico:'💠',  n:'50 000 pts',      d:'Atteindre 50 000 points.',           goal:50000,stat:'maxScore'},
+  {id:'score_100k',   ico:'💜',  n:'100 000 pts',     d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore'},
+  {id:'combo_20',     ico:'🔥',  n:'Combo x20',       d:'Atteindre un combo de 20.',          goal:20,   stat:'maxCombo'},
+  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',       d:'Atteindre un combo de 50.',          goal:50,   stat:'maxCombo'},
+  {id:'combo_100',    ico:'👑',  n:'Combo x100',      d:'Atteindre un combo de 100.',         goal:100,  stat:'maxCombo'},
+  {id:'level_10',     ico:'⭐',  n:'Niveau 10',       d:'Atteindre le niveau 10.',            goal:10,   stat:'maxLevel'},
+  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',   d:'Vaincre un boss.',                   goal:1,    stat:'bossKills'},
+  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',     d:'Vaincre 5 boss.',                    goal:5,    stat:'bossKills'},
+  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',     d:'Finir une vague sans prendre de dmg.',goal:1,  stat:'noHitWaves'},
+  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',  d:'Obtenir 10 upgrades différents.',    goal:10,   stat:'uniqueUpgrades'},
+  {id:'games_10',     ico:'🎮',  n:'Accro',           d:'Jouer 10 parties.',                  goal:10,   stat:'gamesPlayed'},
+  {id:'cursed',       ico:'😈',  n:'Maudit',          d:'Accepter une malédiction.',          goal:1,    stat:'cursesAccepted'},
+  {id:'curse_5',      ico:'🔥',  n:'Masochiste',      d:'Accepter 5 malédictions.',           goal:5,    stat:'cursesAccepted'},
+  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantômes', d:'Tuer 10 fantômes.',            goal:10,   stat:'ghostKills'},
+  {id:'no_hit_5',     ico:'💎',  n:'Perfection',      d:'5 vagues sans dégâts.',             goal:5,    stat:'noHitWaves'},
 ];
 
 // ─── TIP MESSAGES ───
@@ -2485,7 +2414,7 @@ function sfxTimeSlow(){ playTone(220,'sine',.4,.1,-300); playTone(110,'sine',.4,
 // ═══════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════
-let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
+let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0;
 
 // ── DOM Element Cache (queried once, never inside the frame loop) ──
 let _dom={};
@@ -2715,10 +2644,6 @@ function startWave(){
   G.wave++;
   const w=G.wave;
   G.waveHitsReceived=0;
-  // Relic: berserker — +6% damage per wave
-  if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
-  // Relic: ghost step reset per wave
-  G.player._ghostStepReady=false;
   G.spawnPool=(currentMode==='arena'&&w===1)?buildArenaWave():buildWavePool(w);
   G.spawnIdx=0; G.spawnTimer=0;
   G.spawnInterval=Math.max(6, Math.round(56 - w*2.8 - Math.pow(Math.max(0,w-10),1.3)));
@@ -2832,7 +2757,6 @@ function spawnEnemy(def){
 }
 
 function dropPowerup(x,y){
-  if(G._dailyMod_noPowerups) return; // Défi: sans bonus
   if(G.powerups.length>=6) return; // max 6 sur la map à la fois
   // 30% de chance de ne rien dropper (réduction globale)
   if(Math.random()>0.30) return;
@@ -2854,16 +2778,10 @@ function tryShoot(now){
   const p=G.player;
   // Overheat curse: block shooting when locked
   if(p.overheatLocked) return;
-  // Adrenaline relic: firerate +30% at low HP
-  const adrenalineBoost = p._adrenalineActive ? 0.70 : 1.0;
-  const rate=p.rapidFire>0 ? Math.max(32,Math.round(p.fireRate*.42*adrenalineBoost)) : Math.round(p.fireRate*adrenalineBoost);
+  const rate=p.rapidFire>0 ? Math.max(32,Math.round(p.fireRate*.42)) : p.fireRate;
   if(now-p.lastShot<rate) return;
   p.lastShot=now;
   G.shotsFired=(G.shotsFired||0)+1;
-
-  // Ghost step relic: next shot after dash is piercing
-  const ghostPiercing = p._ghostStepReady ? 99 : 0;
-  if(p._ghostStepReady) p._ghostStepReady=false;
 
   // Determine aim direction — mobile touch OR gamepad → use stored aimDx/aimDy; mouse → compute from cursor
   let dx,dy;
@@ -2888,9 +2806,8 @@ function tryShoot(now){
 
   const fireBullet=(ax,ay,isLaserShot=false)=>{
     if(G.bullets.length>=200) return; // hard cap bullets
-    const effectivePiercing = isLaserShot ? 99 : Math.max(p.piercing, ghostPiercing);
     G.bullets.push({x:p.x,y:p.y,vx:ax*p.bulletSpeed,vy:ay*p.bulletSpeed,dmg:isLaserShot?bd*3:bd,r:isLaserShot?3:br,
-      piercing:effectivePiercing,pierced:0,aoe:p.aoe&&!isLaserShot,homing:p.homing&&!isLaserShot,ricochet:p.ricochet,ricocheted:false,
+      piercing:isLaserShot?99:(p.piercing),pierced:0,aoe:p.aoe&&!isLaserShot,homing:p.homing&&!isLaserShot,ricochet:p.ricochet,ricocheted:false,
       life:isLaserShot?p.bulletLife*2:p.bulletLife,dead:false,big:isLaserShot?false:big,enemy:false,
       isLaser:isLaserShot, gravity:p.gravity,afterburn:p.afterburn,
       trail:[{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y},{x:p.x,y:p.y}]});
@@ -3012,11 +2929,9 @@ function update(now){
   frame++;
   const p=G.player;
 
-  // FPS counter with real delta time
-  fpsCount++;
-  if(!_fpsT0) _fpsT0=performance.now();
-  const _fpsNow=performance.now();
-  if(_fpsNow-_fpsT0>=500){ fps=Math.round(fpsCount/(_fpsNow-_fpsT0)*1000); fpsCount=0; _fpsT0=_fpsNow;
+  // FPS counter with delta time (more accurate)
+  fpsCount++; fpsTimer+=16;
+  if(fpsTimer>=500){ fps=Math.round(fpsCount*2); fpsCount=0; fpsTimer=0;
     // Auto-suggest low quality mode if consistently slow
     if(fps<40&&!settings.lowQuality&&G&&G.wave>2){
       G._lowFpsCount=(G._lowFpsCount||0)+1;
@@ -3053,13 +2968,6 @@ function update(now){
   if(p.invincible>0) p.invincible--;
   if(p.dashTimer>0){ p.dashTimer-=16; if(p.dashTimer<=0){ p.dashTimer=0; p.dashChargesLeft=p.dashCharges; } }
   if(G.timeSlow>0){ G.timeSlow--; if(G.timeSlow===0) showPopup('⏱ TEMPS NORMAL','#88aaff'); }
-  // Relic: adrenaline — boost speed and firerate under 30% HP
-  if(p.adrenalineRelic){
-    const lowHP = p.hp/p.maxHp < 0.30;
-    p._adrenalineActive = lowHP;
-  }
-  // Relic: ghost step — next shot piercing after dash ends
-  if(p._dashJustEnded){ p._ghostStepReady = p.ghostStepRelic; p._dashJustEnded=false; }
   // Regen : ralentit aux hautes vagues
   if(p.regen>0){
     const regenInterval = Math.min(360, 180 + G.wave*8);
@@ -3099,7 +3007,9 @@ function update(now){
     });
   }
 
-  // Spec bar throttle updates every 3 frames (kill-based only — no auto-charge)
+  // Spec charge
+  p.specCharge=Math.min(p.specMax, p.specCharge+p.specRate*.022); // charge plus lente
+  // Throttle bar updates every 3 frames
   if(frame%3===0){
     updateSpecBar();
     _dom['mb-spec'].classList.toggle('ready', p.specCharge>=p.specMax);
@@ -3132,13 +3042,13 @@ function update(now){
   if(kkeys.some(key=>kbIsMove(key,'down')))  my+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
 
-  const spd=p.speed*(p.speedBoost>0?1.65:1)*(p._adrenalineActive?1.5:1)*getGameSpeed();
+  const spd=p.speed*(p.speedBoost>0?1.65:1)*getGameSpeed();
   if(p.dashing){
     const nx=p.x+p.dashVx, ny=p.y+p.dashVy;
     if(!blocked(nx,p.y,p.r)) p.x=nx;
     if(!blocked(p.x,ny,p.r)) p.y=ny;
     p.dashFrames--;
-    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; }
+    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; }
     spawnFx(p.x,p.y,'#00f5d4',2);
   } else {
     const nx=p.x+mx*spd, ny=p.y+my*spd;
@@ -3147,20 +3057,6 @@ function update(now){
   }
   p.x=Math.max(p.r,Math.min(W-p.r,p.x));
   p.y=Math.max(p.r,Math.min(H-p.r,p.y));
-
-  // Push player out of any overlapping obstacle
-  for(const o of G.obstacles){
-    const ox1=o.x-o.w/2, ox2=o.x+o.w/2, oy1=o.y-o.h/2, oy2=o.y+o.h/2;
-    if(p.x+p.r>ox1&&p.x-p.r<ox2&&p.y+p.r>oy1&&p.y-p.r<oy2){
-      const overL=p.x+p.r-ox1, overR=ox2-(p.x-p.r);
-      const overT=p.y+p.r-oy1, overB=oy2-(p.y-p.r);
-      const minOver=Math.min(overL,overR,overT,overB);
-      if(minOver===overL)      p.x=ox1-p.r;
-      else if(minOver===overR) p.x=ox2+p.r;
-      else if(minOver===overT) p.y=oy1-p.r;
-      else                     p.y=oy2+p.r;
-    }
-  }
 
   // Auto-fire every frame — clamp now so tab-switch doesn't stall shooting
   const shootNow = (G._lastFrame && now - G._lastFrame > 500) ? (p.lastShot + p.fireRate + 1) : now;
@@ -3211,8 +3107,7 @@ function update(now){
       }
     } else if(e.ranged){
       e.bossTimer++;
-      const interval = e.shootInterval || 120;
-      if(e.bossTimer%interval===0&&dist<350){
+      if(e.bossTimer%120===0&&dist<350){
         G.bullets.push({x:e.x,y:e.y,vx:nx*6.5,vy:ny*6.5,dmg:e.dmg*(1-p.armor),r:6,life:180,dead:false,enemy:true,piercing:0,pierced:0,trail:[{x:e.x,y:e.y}]});
       }
     }
@@ -3284,7 +3179,7 @@ function update(now){
       for(const e of G.enemies){ if(!e.dead){ const d=Math.hypot(b.x-e.x,b.y-e.y); if(d<cd){cd=d;cl=e;} } }
       if(cl&&cd<380){
         const dx=cl.x-b.x,dy=cl.y-b.y,l=Math.sqrt(dx*dx+dy*dy);
-        b.vx+=(dx/l)*.38; b.vy+=(dy/l)*.38;  // réduit de .9 → .38 (moins cheaté)
+        b.vx+=(dx/l)*.9; b.vy+=(dy/l)*.9;
         const bl=Math.sqrt(b.vx*b.vx+b.vy*b.vy),ts=p.bulletSpeed;
         b.vx=b.vx/bl*ts; b.vy=b.vy/bl*ts;
       }
@@ -3424,27 +3319,7 @@ function hitEnemy(e,b){
   }
   if(e.hp<=0&&!e.dead){
     e.dead=true;
-    // Bomber: explode on death — damages player AND nearby enemies
-    if(e.explodes){
-      const expRadius=100, expDmg=e.dmg;
-      spawnDeathFx(e.x,e.y,e.col);
-      if(settings.screenshake) G.shk=Math.max(G.shk,14);
-      sfxDeath();
-      // Damage player if close
-      if(Math.hypot(G.player.x-e.x,G.player.y-e.y)<expRadius) dmgPlayer(expDmg);
-      // Damage nearby enemies (friendly fire)
-      for(const e2 of G.enemies){
-        if(e2.dead||e2===e) continue;
-        if(Math.hypot(e2.x-e.x,e2.y-e.y)<expRadius){
-          e2.hp-=expDmg; spawnFx(e2.x,e2.y,'#ff5500',5);
-          if(e2.hp<=0&&!e2.dead){ e2.dead=true; onKill(e2); spawnDeathFx(e2.x,e2.y,e2.col); dropPowerup(e2.x,e2.y); }
-        }
-      }
-      doExplosion(e.x,e.y,e.col);
-      onKill(e);
-      dropPowerup(e.x,e.y);
-      return;
-    }
+    if(e.splits&&e.r>7){
       for(let i=0;i<2;i++){
         const a=Math.random()*Math.PI*2;
         G.enemies.push({...e,dead:false,r:e.r*.6,hp:e.maxHp*.4,maxHp:e.maxHp*.4,
@@ -3506,16 +3381,9 @@ function onKill(e){
   if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
   // Relic: chain kill — every 5 kills in a row triggers mini nuke
   G._chainKillCount=(G._chainKillCount||0)+1;
-  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18+(p.berserkerRelic?10:0)); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
+  if(p.chainKill && G._chainKillCount>=5){ G._chainKillCount=0; doNuke(G,18); spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); }
   // Relic: coin magnet bonus
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
-  // Relic: scavenger — 20% coin drop on kill
-  if(p.scavengerRelic && Math.random()<0.20){ awardCoins(2); }
-  // Relic: soul harvest — boss/miniboss kill restores HP + charges bomb
-  if(p.soulHarvestRelic && (e.boss||e.mini)){ p.hp=Math.min(p.maxHp,p.hp+30); updateHPBar(); p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.4); updateSpecBar(); showPopup('💀 MOISSON !','#b44fff'); }
-  // Relic: overload core — kills charge bomb 2× faster
-  if(p.overloadCoreRelic){ p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate); updateSpecBar(); }
-  // Relic: berserker — dégâts augmentent par vague (appliqué à chaque début de vague, pas ici)
   // Daily mode score tracking
   if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
 }
@@ -3534,11 +3402,6 @@ function dmgPlayer(raw){
   flashEl('dmg-fx');
   if(settings.screenshake) G.shk=Math.max(G.shk,10);
   updateHPBar(); vib(60); vibGp(0.7,0.3,100);
-  // Relic: thorns — reflect 30% dmg to all nearby enemies
-  if(p.thornsRelic){
-    const thornsDmg=Math.max(1,Math.round(raw*0.30));
-    for(const e of G.enemies){ if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<180){ e.hp-=thornsDmg; e.flash=6; spawnFx(e.x,e.y,'#00f5d4',2); if(e.hp<=0&&!e.dead){e.dead=true;onKill(e);spawnDeathFx(e.x,e.y,e.col);dropPowerup(e.x,e.y);} } }
-  }
   if(p.hp<=0) gameOver();
 }
 
@@ -4169,11 +4032,6 @@ function checkAch(id,val){
   if(val>=def.goal){
     achDone[id]=true; saveAch();
     newAchThisRun.push(def.n);
-    // Award coins reward
-    if(def.reward&&def.reward>0){
-      awardCoins(def.reward);
-      addKF(`🏆 +${def.reward}🪙 ${def.n}`,'g');
-    }
     showAchToast(def);
     sfxAch();
   }
@@ -4184,8 +4042,6 @@ function showAchToast(def){
   document.getElementById('at-ico').textContent=def.ico;
   document.getElementById('at-name').textContent=def.n;
   document.getElementById('at-desc').textContent=def.d;
-  const rewardEl=document.getElementById('at-reward');
-  if(rewardEl) rewardEl.textContent=def.reward?`+${def.reward} 🪙`:'';
   t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
 }
 
@@ -4198,9 +4054,7 @@ function renderAch(){
     const progress=a.stat&&gStats[a.stat]?Math.min(1,gStats[a.stat]/a.goal):0;
     const c=document.createElement('div');
     c.className='ach-card'+(isDone?' done':'');
-    const rewardBadge=a.reward?`<span style="font-size:7px;color:var(--c3);letter-spacing:.1em;margin-left:6px;">+${a.reward}🪙</span>`:'';
-    const progressBar=!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div><div style="font-size:7px;color:var(--dim);margin-top:2px;">${Math.min(gStats[a.stat]||0,a.goal)} / ${a.goal}</div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DÉBLOQUÉ</div>';
-    c.innerHTML=`<div class="ach-icon">${a.ico}</div><div style="flex:1"><div style="display:flex;align-items:center;""><div class="ach-name">${a.n}</div>${rewardBadge}</div><div class="ach-desc">${a.d}</div>${progressBar}</div>`;
+    c.innerHTML=`<div class="ach-icon">${a.ico}</div><div><div class="ach-name">${a.n}</div><div class="ach-desc">${a.d}</div>${!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DÉBLOQUÉ</div>'}</div>`;
     grid.appendChild(c);
   }
 }
@@ -4419,48 +4273,6 @@ function renderSettings(){
       </div>`;
   }
   list.appendChild(accDiv);
-
-  // ── Mise à jour ──
-  const updDiv = document.createElement('div');
-  updDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
-  updDiv.innerHTML=`
-    <div style="font-size:7px;letter-spacing:.18em;color:var(--txt2);">🔄 MISE À JOUR</div>
-    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;text-align:center;">Si le jeu ne se met pas à jour, vide le cache ici.</div>
-    <button class="acc-save-btn" id="update-btn" onclick="forceUpdate()">⬇ METTRE À JOUR</button>
-    <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;" id="update-status"></div>`;
-  list.appendChild(updDiv);
-
-  // ── Tutoriel ──
-  const tutDiv = document.createElement('div');
-  tutDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
-  tutDiv.innerHTML=`
-    <button class="acc-save-btn" onclick="obInit();show('s-onboard')">📖 REVOIR LE TUTORIEL</button>`;
-  list.appendChild(tutDiv);
-
-  // ── Cadeaux ──
-  if(currentUser){
-    const giftDiv = document.createElement('div');
-    giftDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;';
-    giftDiv.innerHTML=`
-      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.28em;color:var(--txt2);padding:4px 0;">🎁 ENVOYER UN CADEAU</div>
-      <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;">Envoie des pièces, un skin ou le Passe Amélioré à un autre joueur via son email ou pseudo.</div>
-      <div class="acc-row">
-        <input class="acc-input" id="gift-target" type="text" placeholder="Email ou pseudo du destinataire" style="flex:1;">
-      </div>
-      <div class="acc-row" style="gap:8px;flex-wrap:wrap;">
-        <select class="acc-input" id="gift-type" style="flex:1;min-width:140px;" onchange="renderGiftValueUI()">
-          <option value="coins">🪙 Pièces</option>
-          <option value="skin">🎨 Skin</option>
-          <option value="pass">⭐ Passe Amélioré</option>
-        </select>
-        <div id="gift-value-wrap" style="flex:1;min-width:100px;">
-          <input class="acc-input" id="gift-coins-val" type="number" min="1" max="10000" value="100" placeholder="Montant" style="width:100%;">
-        </div>
-      </div>
-      <button class="acc-save-btn" onclick="sendGift()">🎁 ENVOYER</button>
-      <div class="acc-msg" id="gift-msg"></div>`;
-    list.appendChild(giftDiv);
-  }
 }
 
 async function handleSavePseudo(){
@@ -4480,112 +4292,6 @@ async function handleChangePassword(){
   msg.className = 'acc-msg ' + (result.ok ? 'ok' : 'err');
   if(result.ok) document.getElementById('acc-pass-input').value='';
   setTimeout(()=>{ msg.textContent=''; }, 3500);
-}
-
-async function forceUpdate(){
-  const btn = document.getElementById('update-btn');
-  const status = document.getElementById('update-status');
-  if(btn) btn.textContent = '⏳ En cours…';
-  try {
-    if('serviceWorker' in navigator){
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for(const reg of regs) await reg.unregister();
-    }
-    if('caches' in window){
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    }
-    if(status) status.textContent = '✓ Cache vidé — rechargement…';
-    setTimeout(() => location.reload(true), 800);
-  } catch(e){
-    if(status) status.textContent = 'Erreur: ' + e.message;
-    if(btn) btn.textContent = '⬇ METTRE À JOUR';
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-//  SYSTÈME DE CADEAUX
-// ═══════════════════════════════════════════════════════
-function renderGiftValueUI(){
-  const type = document.getElementById('gift-type')?.value;
-  const wrap = document.getElementById('gift-value-wrap');
-  if(!wrap) return;
-  if(type==='coins'){
-    wrap.innerHTML=`<input class="acc-input" id="gift-coins-val" type="number" min="1" max="10000" value="100" placeholder="Montant" style="width:100%;">`;
-  } else if(type==='skin'){
-    const opts = ownedSkins.filter(s=>s!=='default').map(s=>{
-      const def = SKIN_DEFS.find(d=>d.id===s);
-      return def ? `<option value="${s}">${def.name}</option>` : '';
-    }).join('');
-    wrap.innerHTML=opts ? `<select class="acc-input" id="gift-skin-val" style="width:100%;">${opts}</select>`
-      : `<div style="font-size:7px;color:var(--c2);">Aucun skin à offrir</div>`;
-  } else {
-    wrap.innerHTML=`<div style="font-size:7px;color:var(--txt2);letter-spacing:.08em;">Coût : ${PREMIUM_PASS_COST} 🪙</div>`;
-  }
-}
-
-async function sendGift(){
-  if(!currentUser||!SB){ showPopup('Connexion requise','#ff1a6e'); return; }
-  const target = document.getElementById('gift-target')?.value?.trim();
-  const type = document.getElementById('gift-type')?.value;
-  const msg = document.getElementById('gift-msg');
-  if(!target){ if(msg){msg.textContent='Entre un email ou pseudo.';msg.className='acc-msg err';} return; }
-
-  // Lookup target profile by pseudo or email
-  let {data:targets, error:qErr} = await SB.from('profiles')
-    .select('id,pseudo,coins,owned_skins,battle_pass,premium_pass')
-    .or(`pseudo.ilike.${target},email.ilike.${target}`)
-    .limit(1);
-  // Fallback: try exact pseudo match if no results
-  if((!targets||targets.length===0)&&!qErr){
-    const res2 = await SB.from('profiles').select('id,pseudo,coins,owned_skins,battle_pass,premium_pass').ilike('pseudo',target).limit(1);
-    targets = res2.data; qErr = res2.error;
-  }
-  if(qErr||!targets||targets.length===0){
-    if(msg){msg.textContent='Joueur introuvable.';msg.className='acc-msg err';} return;
-  }
-  const tgt = targets[0];
-  if(tgt.id===currentUser.id){ if(msg){msg.textContent='Tu ne peux pas t\'envoyer un cadeau.';msg.className='acc-msg err';} return; }
-
-  if(type==='coins'){
-    const amount = Math.max(1, Math.min(10000, parseInt(document.getElementById('gift-coins-val')?.value)||0));
-    if(coins < amount){ if(msg){msg.textContent='Pas assez de pièces.';msg.className='acc-msg err';} return; }
-    const ok = await pulseConfirm(`Envoyer ${amount} 🪙 à ${tgt.pseudo||target} ?`);
-    if(!ok) return;
-    coins -= amount;
-    saveData('pulse_coins_v3', coins);
-    await saveCloudProfile({coins});
-    updateCoinsHUD();
-    await SB.from('profiles').update({coins:(tgt.coins||0)+amount}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ ${amount} pièces envoyées à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
-    setTimeout(()=>{if(msg)msg.textContent='';},4000);
-
-  } else if(type==='skin'){
-    const skinId = document.getElementById('gift-skin-val')?.value;
-    if(!skinId){ if(msg){msg.textContent='Choisis un skin.';msg.className='acc-msg err';} return; }
-    const skinDef = SKIN_DEFS.find(s=>s.id===skinId);
-    const ok = await pulseConfirm(`Offrir le skin ${skinDef?.name||skinId} à ${tgt.pseudo||target} ?`);
-    if(!ok) return;
-    const tgtSkins = tgt.owned_skins||['default'];
-    if(!tgtSkins.includes(skinId)) tgtSkins.push(skinId);
-    await SB.from('profiles').update({owned_skins:tgtSkins}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
-    setTimeout(()=>{if(msg)msg.textContent='';},4000);
-
-  } else if(type==='pass'){
-    if(coins < PREMIUM_PASS_COST){ if(msg){msg.textContent=`Pas assez de pièces (${PREMIUM_PASS_COST} requis).`;msg.className='acc-msg err';} return; }
-    const tgtBp = tgt.premium_pass||{};
-    if(tgtBp.owned){ if(msg){msg.textContent='Ce joueur possède déjà le Passe Amélioré.';msg.className='acc-msg err';} return; }
-    const ok = await pulseConfirm(`Offrir le Passe Amélioré à ${tgt.pseudo||target} pour ${PREMIUM_PASS_COST} 🪙 ?`);
-    if(!ok) return;
-    coins -= PREMIUM_PASS_COST;
-    saveData('pulse_coins_v3', coins);
-    await saveCloudProfile({coins});
-    updateCoinsHUD();
-    await SB.from('profiles').update({premium_pass:{season:BP_SEASON_CURRENT,owned:true}}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ Passe Amélioré offert à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
-    setTimeout(()=>{if(msg)msg.textContent='';},4000);
-  }
 }
 
 function toggleSetting(key,el){
@@ -4634,13 +4340,8 @@ function getPseudo(){
 }
 
 async function savePseudo(pseudo){
-  pseudo = pseudo.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-  if(!pseudo||pseudo.length<3) return {ok:false, msg:'Pseudo invalide (3-16 caractères, lettres/chiffres/-/_).'};
-  // Check uniqueness (exclude self)
-  if(SB&&currentUser){
-    const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).neq('id', currentUser.id).limit(1);
-    if(existing&&existing.length>0) return {ok:false, msg:'Ce pseudo est déjà pris.'};
-  }
+  pseudo = pseudo.trim().toUpperCase().replace(/[^A-Z0-9_\-\s]/g,'').slice(0,16);
+  if(!pseudo) return {ok:false, msg:'Pseudo invalide.'};
   userPseudo = pseudo;
   saveData('pulse_pseudo_v3', pseudo);
   if(currentUser && SB) await saveCloudProfile({pseudo});
@@ -4771,8 +4472,6 @@ function show(id){
   if(id!=='__none__') document.getElementById(id)?.classList.add('on');
   const noBack=['s-title','s-auth','s-go','s-pause','__none__'];
   if(_backBtn) _backBtn.style.display=(BACK_MAP[id]&&!noBack.includes(id))?'block':'none';
-  // Remove game-active when any menu screen shown (not pause/none)
-  if(id!=='__none__'&&id!=='s-pause') document.body.classList.remove('game-active');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4781,7 +4480,6 @@ function show(id){
 function startGame(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   show('__none__');
-  document.body.classList.add('game-active');
   document.getElementById('wbanner').classList.remove('show');
   document.getElementById('kfeed').innerHTML='';
   document.getElementById('combo').classList.remove('on');
@@ -4796,13 +4494,6 @@ function startGame(){
   initDomCache();
   // Apply permanent upgrades
   applyPermaUpgrades(G.player, G);
-  // Load and apply equipped relics
-  const _eqRelicIds = loadData('pulse_eq_relics_v1', []);
-  _eqRelicIds.forEach(id => {
-    const r = RELIC_DEFS.find(x => x.id === id);
-    if(r && !activeRelics.find(a => a.id === r.id)){ activeRelics.push(r); r.apply(G.player); }
-  });
-  updateRelicHud();
   updateHPBar();
   document.getElementById('hv-wave').textContent='—';
   _dom['hv-score'].textContent='0';
@@ -4872,7 +4563,7 @@ function spawnDeathFx(x,y,col){
 // ═══════════════════════════════════════════════════════
 document.addEventListener('mousemove',e=>{
   const xh=document.getElementById('xhair');
-  xh.style.left=e.clientX+'px'; xh.style.top=e.clientY+'px';
+  xh.style.left=(e.clientX-9)+'px'; xh.style.top=(e.clientY-9)+'px';
   if(G){
     // Account for canvas offset in portrait mode
     G.mouseX=e.clientX - (canvasOffsetX||0);
@@ -5092,21 +4783,10 @@ function addBpXp(amount){
 }
 
 function checkBpAutoClaim(level){
-  // Auto-claim skin rewards so they appear immediately in inventory
+  // Nothing auto-claimed — player must click to claim all rewards
+  // Just notify they have something to pick up
   const unclaimed = BP_REWARDS.filter(r=>r.lv<=battlePass.level&&!battlePass.claimed[r.lv]);
-  unclaimed.forEach(r=>{
-    if(r.type==='skin'){
-      battlePass.claimed[r.lv]=true;
-      if(!ownedSkins.includes(r.value)){
-        ownedSkins.push(r.value);
-        saveData('pulse_skins_v3',ownedSkins);
-        if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
-      }
-    }
-  });
-  saveBP();
-  const stillUnclaimed=BP_REWARDS.filter(r=>r.lv<=battlePass.level&&!battlePass.claimed[r.lv]);
-  if(stillUnclaimed.length>0) showPopup('⭐ RÉCOMPENSE À RÉCLAMER !','#ffbe0b');
+  if(unclaimed.length>0) showPopup('⭐ RÉCOMPENSE À RÉCLAMER !','#ffbe0b');
 }
 
 function claimBpReward(level){
@@ -5235,13 +4915,10 @@ if(hasPremiumPass.season !== BP_SEASON_CURRENT) hasPremiumPass = {season:BP_SEAS
 function buyPremiumPass(){
   if(hasPremiumPass.owned){showPopup('Déjà possédé !','#00f5d4');return;}
   if(coins<PREMIUM_PASS_COST){showPopup('Pas assez de pièces ! ('+PREMIUM_PASS_COST+' requis)','#ff1a6e');return;}
-  pulseConfirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?').then(ok=>{
-    if(!ok) return;
-    coins-=PREMIUM_PASS_COST;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-    hasPremiumPass={season:BP_SEASON_CURRENT,owned:true};saveData('pulse_premium_v1',hasPremiumPass);
-    if(currentUser&&SB)saveCloudProfile({premium_pass:hasPremiumPass});
-    showPopup('✨ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b'); renderBP();
-  });
+  if(!confirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?'))return;
+  coins-=PREMIUM_PASS_COST;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
+  hasPremiumPass={season:BP_SEASON_CURRENT,owned:true};saveData('pulse_premium_v1',hasPremiumPass);
+  if(currentUser&&SB)saveCloudProfile({premium_pass:hasPremiumPass});
   showPopup('⭐ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b');
   renderBP();
 }
@@ -5324,18 +5001,6 @@ document.addEventListener('keydown',function(e){
     duoRemapTarget=null; duoRemapBtn=null;
     return;
   }
-},true);
-
-// Hook into mousedown for P2 remap (support clic gauche/droit/molette)
-document.addEventListener('mousedown',function(e){
-  if(!duoRemapTarget||!duoRemapBtn) return;
-  e.preventDefault(); e.stopPropagation();
-  const mouseKey='Mouse'+e.button;
-  p2KeyMap[duoRemapTarget]=mouseKey;
-  saveData('pulse_p2keys_v1',p2KeyMap);
-  duoRemapBtn.classList.remove('listening');
-  duoRemapBtn.textContent=kbKeyName(mouseKey);
-  duoRemapTarget=null; duoRemapBtn=null;
 },true);
 
 function launchDuo(){
@@ -5424,18 +5089,6 @@ function buildArenaWave(){
 
 const P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
 
-// Mouse button state for P2 remap support
-const _mouseButtons = {};
-document.addEventListener('mousedown', e=>{ _mouseButtons['Mouse'+e.button]=true; });
-document.addEventListener('mouseup',   e=>{ _mouseButtons['Mouse'+e.button]=false; });
-
-function p2KeyDown(action){
-  const key = p2KeyMap[action];
-  if(!key) return false;
-  if(key.startsWith('Mouse')) return !!_mouseButtons[key];
-  return !!G.keys[key];
-}
-
 function mkP2(x,y){
   return {x:x,y:y,r:12,hp:100,maxHp:100,speed:3.2,bulletDmg:1,bulletSpeed:9.5,
     fireRate:165,lastShot:performance.now(),lastDash:0,
@@ -5447,10 +5100,10 @@ function updateP2(now){
   if(!P2||!G||!G.running||G.paused) return;
   const p=P2, k=G.keys;
   let mx=0,my=0;
-  if(p2KeyDown('up')  ||k['i']||k['I']||k['ArrowUp'])    my-=1;
-  if(p2KeyDown('down')||k['k']||k['K']||k['ArrowDown'])   my+=1;
-  if(p2KeyDown('left')||k['j']||k['J']||k['ArrowLeft'])   mx-=1;
-  if(p2KeyDown('right')||k['l']||k['L']||k['ArrowRight']) mx+=1;
+  if(k[p2KeyMap.up||'i']||k['I']||k['ArrowUp']) my-=1;
+  if(k[p2KeyMap.down||'k']||k['K']||k['ArrowDown']) my+=1;
+  if(k[p2KeyMap.left||'j']||k['J']||k['ArrowLeft']) mx-=1;
+  if(k[p2KeyMap.right||'l']||k['L']||k['ArrowRight']) mx+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
   if(p.dashing){ p.x+=p.dashVx; p.y+=p.dashVy; p.dashFrames--; if(p.dashFrames<=0){p.dashing=false;p.invincible=22;} }
   else{ p.x=Math.max(p.r,Math.min(W-p.r,p.x+mx*p.speed)); p.y=Math.max(p.r,Math.min(H-p.r,p.y+my*p.speed)); }
@@ -5462,7 +5115,7 @@ function updateP2(now){
     p.lastShot=now;
     G.bullets.push({x:p.x,y:p.y,vx:p.aimDx*p.bulletSpeed,vy:p.aimDy*p.bulletSpeed,dmg:p.bulletDmg,r:4.5,piercing:0,pierced:0,aoe:false,homing:false,ricochet:false,life:135,dead:false,big:false,enemy:false,trail:[{x:p.x,y:p.y}]});
   }
-  if(p2KeyDown('dash')&&!p.dashing&&p.dashTimer<=0&&now-p.lastDash>p.dashCd){
+  if((k[p2KeyMap.dash||'Shift'])&&!p.dashing&&p.dashTimer<=0&&now-p.lastDash>p.dashCd){
     p.dashVx=p.aimDx*18; p.dashVy=p.aimDy*18; p.dashing=true; p.dashFrames=7; p.lastDash=now;
   }
   if(p.invincible>0) p.invincible--;
@@ -5949,8 +5602,7 @@ function adminMaxPerma(playerId){
 
 async function adminReset(playerId){
   if(!isAdmin()) return;
-  const _confirmed = await pulseConfirm('RESET COMPLET de ce joueur ? Irréversible !');
-  if(!_confirmed) return;
+  if(!confirm('RESET COMPLET de ce joueur ? Irréversible !')) return;
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Reset…'; statusEl.className='admin-status wait';
   try {
@@ -5977,79 +5629,27 @@ function adminStatus(msg, cls){
 //  SYSTÈME DE RELIQUES
 // ═══════════════════════════════════════════════════════
 const RELIC_DEFS = [
-  // ── COMMUN ──
-  {id:'dash_trail',   ico:'💫', name:'TRAÎNE DE DASH',      desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',  rarity:'common',  price:300,
+  {id:'dash_trail',  ico:'💫', name:'TRAÎNE DE DASH',    desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',
     apply:(p)=>{ p.dashTrail=true; }},
-  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:300,
-    apply:(p)=>{ p.vampireRelic=true; }},
-  {id:'coin_magnet',  ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE', rarity:'common',  price:350,
-    apply:(p)=>{ p.coinMagnet=true; }},
-  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',   rarity:'common',  price:300,
-    apply:(p)=>{ p.armorRegen=true; }},
-  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',  rarity:'common',  price:350,
-    apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
-  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tué a 20% de chance de dropper des pièces.', tag:'ÉCONOMIE',    rarity:'common',  price:280,
-    apply:(p)=>{ p.scavengerRelic=true; }},
-  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est réduite de 25%.', tag:'MOBILITÉ',   rarity:'common',  price:300,
-    apply:(p)=>{ p.dashCd=Math.max(350, Math.round(p.dashCd*0.75)); }},
-  {id:'thorns',       ico:'🌵', name:'ÉPINES',               desc:'Renvoie 30% des dégâts reçus aux ennemis.', tag:'DÉFENSIF',  rarity:'common',  price:320,
-    apply:(p)=>{ p.thornsRelic=true; }},
-
-  // ── RARE ──
-  {id:'chain_kill',   ico:'⚡', name:'RÉACTION EN CHAÎNE',  desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:550,
+  {id:'chain_kill',  ico:'⚡', name:'RÉACTION EN CHAÎNE', desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke automatique.', tag:'OFFENSIF',
     apply:(p)=>{ p.chainKill=true; }},
-  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser. Synergie : Nova de Balles.', tag:'STRATÉGIQUE',rarity:'rare',    price:600,
-    apply:(p)=>{ p.gravityNuke=true; }},
-  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Dégâts +6% par vague jouée. Cumulatif — devient dévastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:500,
-    apply:(p)=>{ p.berserkerRelic=true; }},
-  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doublés par la cadence.', tag:'RISQUE',     rarity:'rare',    price:500,
-    apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); }},
-  {id:'ghost_step',   ico:'👟', name:'PAS FANTÔME',          desc:'Après un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITÉ',   rarity:'rare',    price:550,
-    apply:(p)=>{ p.ghostStepRelic=true; }},
-  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'ÂMES',    desc:'Chaque boss ou mini-boss tué restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:600,
-    apply:(p)=>{ p.soulHarvestRelic=true; }},
-  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGÉ',     desc:'La bombe se recharge 2× plus vite grâce aux kills. Synergie : Puits Gravitationnel.', tag:'OFFENSIF',  rarity:'rare',    price:580,
-    apply:(p)=>{ p.overloadCoreRelic=true; }},
-
-  // ── ÉPIQUE ──
-  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles qui ricochent une fois. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:900,
+  {id:'armor_regen', ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT', desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',
+    apply:(p)=>{ p.armorRegen=true; }},
+  {id:'coin_magnet', ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE',
+    apply:(p)=>{ p.coinMagnet=true; }},
+  {id:'bullet_nova',  ico:'💥', name:'NOVA DE BALLES',     desc:'Mourir déclenche une explosion de 12 balles. (Oui, mourir.)', tag:'ULTIME',
     apply:(p)=>{ p.bulletNova=true; }},
-  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s. Synergie : Cœur Surchargé.', tag:'STRATÉGIQUE',rarity:'epic',   price:850,
-    apply:(p)=>{ p.timeThiefRelic=true; }},
-  {id:'mirror_dash',   ico:'🪞', name:'DASH MIROIR',         desc:'Le dash crée un double fantôme pendant 3s qui tire automatiquement. Synergie : Traîne de Dash.', tag:'MOBILITÉ', rarity:'epic', price:1000,
-    apply:(p)=>{ p.mirrorDashRelic=true; }},
-  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, mais dégâts doublés. Synergie : Vampirisme + Épines.', tag:'RISQUE',     rarity:'epic',    price:800,
-    apply:(p)=>{ p.maxHp=40; p.hp=Math.min(p.hp,40); p.bulletDmg*=2; }},
-  {id:'adrenaline',    ico:'💉', name:'ADRÉNALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:950,
-    apply:(p)=>{ p.adrenalineRelic=true; }},
+  {id:'vampire',     ico:'🩸', name:'VAMPIRISME',          desc:'Chaque kill restaure 2 PV. Max 5 kills par seconde.', tag:'SURVIE',
+    apply:(p)=>{ p.vampireRelic=true; }},
+  {id:'overclock',   ico:'⚙',  name:'SURCHAUFFE',          desc:'Cadence de tir +30% mais la bombe se recharge 20% plus lentement.', tag:'RISQUE',
+    apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); p.specRate*=0.8; }},
+  {id:'gravity_well',ico:'🌀', name:'PUITS GRAVITATIONNEL',desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATÉGIQUE',
+    apply:(p)=>{ p.gravityNuke=true; }},
+  {id:'double_dash',  ico:'⚡⚡',name:'DOUBLE DASH',        desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',
+    apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
+  {id:'berserker',   ico:'😡', name:'BERSERKER',            desc:'Dégâts +5% par vague jouée. (Cumulatif — dangereux en fin de run.)', tag:'SCALING',
+    apply:(p)=>{ p.berserkerStacks=(p.berserkerStacks||0)+1; p.bulletDmg*=(1+0.05*((p.berserkerStacks||1))); }},
 ];
-
-// ═══════════════════════════════════════════════════════
-//  CONFIRM PERSONNALISÉ
-// ═══════════════════════════════════════════════════════
-let _pcResolve = null;
-(function(){
-  function init(){
-    const el = document.getElementById('pulse-confirm');
-    document.getElementById('pc-ok').onclick = function(){
-      el.classList.remove('on');
-      if(_pcResolve){ _pcResolve(true); _pcResolve=null; }
-    };
-    document.getElementById('pc-cancel').onclick = function(){
-      el.classList.remove('on');
-      if(_pcResolve){ _pcResolve(false); _pcResolve=null; }
-    };
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
-  else init();
-})();
-function pulseConfirm(msg){
-  return new Promise(function(resolve){
-    _pcResolve = resolve;
-    document.getElementById('pc-msg').textContent = msg;
-    document.getElementById('pulse-confirm').classList.add('on');
-  });
-}
 
 let activeRelics = [];
 let pendingRelicOffer = false;
@@ -6064,17 +5664,12 @@ function offerRelic(){
   G.paused = true;
   // Pick 3 random relics not already owned
   const available = RELIC_DEFS.filter(r=>!activeRelics.find(a=>a.id===r.id));
-  if(available.length === 0){ pendingRelicOffer=false; G.paused=false; countdown(3,startWave); return; }
   const shuffled = available.sort(()=>Math.random()-.5).slice(0,3);
   const container = document.getElementById('relic-cards');
   container.innerHTML='';
   shuffled.forEach(r=>{
-    const rarityClass = r.rarity ? `rarity-${r.rarity}` : '';
-    const rarityLabel = r.rarity==='epic'?'ÉPIQUE':r.rarity==='rare'?'RARE':'COMMUN';
-    const rarityCol = r.rarity==='epic'?'#b44fff':r.rarity==='rare'?'#00bbf9':'#ffbe0b';
-    const div=document.createElement('div'); div.className=`relic-card ${rarityClass}`;
+    const div=document.createElement('div'); div.className='relic-card';
     div.innerHTML=`<div class="relic-card-ico">${r.ico}</div>
-      <div class="relic-card-rarity" style="color:${rarityCol};border:1px solid ${rarityCol}40;">${rarityLabel}</div>
       <div class="relic-card-name">${r.name}</div>
       <div class="relic-card-desc">${r.desc}</div>
       <div class="relic-card-tag">${r.tag}</div>`;
@@ -6329,9 +5924,13 @@ function renderRelicEquip(){
   const slots=document.getElementById('relic-slots-display');
   if(slots){
     slots.innerHTML='';
+    const RDEF=[
+      {id:'dash_trail',ico:'💫'},{id:'chain_kill',ico:'⚡'},{id:'armor_regen',ico:'🛡'},
+      {id:'coin_magnet',ico:'🧲'},{id:'vampire',ico:'🩸'},{id:'double_dash',ico:'⚡⚡'},
+      {id:'berserker',ico:'😡'},{id:'overclock',ico:'⚙'},{id:'ghost_walk',ico:'👻'},{id:'transcend',ico:'✨'}
+    ];
     for(let i=0;i<2;i++){
-      const eqId=equipped[i];
-      const r=eqId?RELIC_DEFS.find(x=>x.id===eqId):null;
+      const r=equipped[i]?RDEF.find(x=>x.id===equipped[i]):null;
       const sl=document.createElement('div');
       sl.style.cssText='width:52px;height:52px;border:2px '+(r?'solid rgba(255,190,11,.5)':'dashed rgba(255,190,11,.3)')+';display:flex;align-items:center;justify-content:center;font-size:22px;background:'+(r?'rgba(255,190,11,.06)':'transparent')+';position:relative;';
       sl.innerHTML='<span>'+(r?r.ico:'?')+'</span><div style="position:absolute;bottom:-14px;font-size:6px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;">SLOT '+(i+1)+'</div>';
@@ -6339,68 +5938,51 @@ function renderRelicEquip(){
     }
   }
 
-  // Sort: equipped first, then owned, then by rarity (epic→rare→common)
-  const rarityOrder={epic:0,rare:1,common:2};
-  const sorted=[...RELIC_DEFS].sort((a,b)=>{
-    const aEq=equipped.includes(a.id), bEq=equipped.includes(b.id);
-    if(aEq&&!bEq) return -1; if(bEq&&!aEq) return 1;
-    const aOwn=unlocked.includes(a.id), bOwn=unlocked.includes(b.id);
-    if(aOwn&&!bOwn) return -1; if(bOwn&&!aOwn) return 1;
-    return (rarityOrder[a.rarity]||2)-(rarityOrder[b.rarity]||2);
-  });
+  const ALL=[
+    {id:'dash_trail',ico:'💫',name:'TRAÎNE DE DASH',desc:'Dash blesse les ennemis (15 dmg).',tag:'MOBILITÉ',price:800},
+    {id:'chain_kill',ico:'⚡',name:'RÉACTION EN CHAÎNE',desc:'5 kills = mini-nuke auto.',tag:'OFFENSIF',price:900},
+    {id:'armor_regen',ico:'🛡',name:'BLINDAGE RÉGÉNÉRANT',desc:'Chaque upgrade restore 15 PV.',tag:'DÉFENSIF',price:700},
+    {id:'coin_magnet',ico:'🧲',name:'MAGNÉTISME',desc:'+50% pièces gagnées.',tag:'ÉCONOMIE',price:600},
+    {id:'vampire',ico:'🩸',name:'VAMPIRISME',desc:'+2 PV par kill.',tag:'SURVIE',price:750},
+    {id:'double_dash',ico:'⚡⚡',name:'DOUBLE DASH',desc:'+1 charge de dash.',tag:'MOBILITÉ',price:850},
+    {id:'berserker',ico:'😡',name:'BERSERKER',desc:'Dégâts +5% par vague.',tag:'SCALING',price:1000},
+    {id:'overclock',ico:'⚙',name:'SURCHAUFFE',desc:'Cadence +30%, bombe -20%.',tag:'RISQUE',price:700},
+    {id:'ghost_walk',ico:'👻',name:'FANTÔME',desc:'Traverse les murs pendant le dash. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
+    {id:'transcend',ico:'✨',name:'TRANSCENDANCE',desc:'Régénère 50% HP toutes les 5 vagues. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
+  ];
 
-  const rarityCol={common:'var(--c3)',rare:'#00bbf9',epic:'#b44fff'};
-  const rarityLbl={common:'COMMUN',rare:'RARE',epic:'ÉPIQUE'};
-
-  sorted.forEach(r=>{
-    const owned=unlocked.includes(r.id);
+  ALL.forEach(r=>{
+    const owned=unlocked.includes(r.id)||(r.premium&&typeof hasPremiumPass!=='undefined'&&hasPremiumPass.owned);
     const isEq=equipped.includes(r.id);
-    const rc=rarityCol[r.rarity]||'var(--c3)';
-    const rl=rarityLbl[r.rarity]||'COMMUN';
-    const borderCol=isEq?'rgba(255,190,11,.7)':owned?(r.rarity==='epic'?'rgba(180,79,255,.4)':r.rarity==='rare'?'rgba(0,187,249,.35)':'var(--border)'):'rgba(255,255,255,.05)';
-    const bgCol=isEq?'rgba(255,190,11,.06)':owned?(r.rarity==='epic'?'rgba(180,79,255,.05)':r.rarity==='rare'?'rgba(0,187,249,.04)':'var(--dim2)'):'var(--dim2)';
     const div=document.createElement('div');
-    div.style.cssText=`border:1px solid ${borderCol};background:${bgCol};padding:12px 10px;transition:all .15s;cursor:pointer;`;
-    div.innerHTML=`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-        <span style="font-size:20px;">${r.ico}</span>
-        <div>
-          <div style="font-family:Orbitron,monospace;font-size:clamp(7px,1.8vmin,9px);letter-spacing:.07em;color:${owned?rc:'var(--dim)'};">${r.name}</div>
-          <div style="font-size:5px;letter-spacing:.2em;color:${rc};opacity:.8;">${rl}</div>
-        </div>
-      </div>
-      <div style="font-size:7px;color:var(--txt2);line-height:1.45;margin-bottom:5px;">${r.desc}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:5px;letter-spacing:.18em;padding:2px 5px;border:1px solid ${rc}40;color:${rc};">${r.tag}</span>
-        ${owned
-          ? (isEq?'<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;">✓ ÉQUIPÉE</span>':'<span style="font-size:7px;color:var(--txt2);">Cliquer pour équiper</span>')
-          : `<span style="font-size:7px;color:${coins>=(r.price||0)?'var(--c3)':'var(--c2)'};">🪙 ${r.price||0}</span>`
-        }
-      </div>`;
-    div.onmouseover=()=>div.style.borderColor=rc;
-    div.onmouseout=()=>div.style.borderColor=borderCol;
+    div.style.cssText='border:1px solid '+(isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)')+';background:'+(isEq?'rgba(255,190,11,.06)':'var(--dim2)')+';padding:12px 10px;cursor:pointer;transition:all .15s;';
+    div.innerHTML=`<div style="font-size:22px;margin-bottom:4px;">${r.ico}</div>
+      <div style="font-family:Orbitron,monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.08em;color:${owned?'var(--txt)':'var(--dim)'};">${r.name}</div>
+      <div style="font-size:7px;color:var(--txt2);margin:3px 0;line-height:1.4;">${r.desc}</div>
+      <div style="font-size:6px;letter-spacing:.2em;padding:2px 6px;border:1px solid rgba(255,190,11,.3);color:var(--c3);display:inline-block;margin-top:3px;">${r.tag}</div>
+      ${owned?'':'<div style="margin-top:5px;font-size:8px;color:'+(r.premium?'var(--c3)':coins>=r.price?'var(--c1)':'var(--c2)')+';">'+(r.premium?'⭐ Passe Amélioré requis':'🪙 '+r.price)+'</div>'}
+      ${isEq?'<div style="margin-top:5px;font-size:7px;color:var(--c1);">✓ ÉQUIPÉE</div>':''}`;
+    div.onmouseover=()=>div.style.borderColor='var(--c1)';
+    div.onmouseout=()=>div.style.borderColor=isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)';
     div.onclick=()=>{
-      if(!owned){
-        if(!r.price){showPopup('Relique non disponible à l\'achat','#ff1a6e');return;}
+      if(!owned&&!r.premium){
         if(coins<r.price){showPopup('Pas assez de pièces ! ('+r.price+' requis)','#ff1a6e');return;}
-        pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
-          if(!ok) return;
-          coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
-          showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
-          renderRelicEquip();
-        });
-        return;
+        if(!confirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?'))return;
+        coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
+        const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+        showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
+        renderRelicEquip(); return;
       }
-      // Equip / unequip
-      const eq2=[...equipped];
-      if(eq2.includes(r.id)){
-        saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
-      } else {
-        if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
-        eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
+      if(owned){
+        const eq2=[...equipped];
+        if(eq2.includes(r.id)){
+          saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
+        } else {
+          if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
+          eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
+        }
+        renderRelicEquip();
       }
-      renderRelicEquip();
     };
     grid.appendChild(div);
   });
@@ -6439,7 +6021,6 @@ function kbKeyName(key){
     ' ':'ESPACE','ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→',
     'Escape':'ÉCHAP','Enter':'ENTRÉE','Backspace':'⌫','Tab':'TAB','Shift':'SHIFT',
     'Control':'CTRL','Alt':'ALT','Meta':'WIN',
-    'Mouse0':'CLIC G','Mouse2':'CLIC D','Mouse1':'CLIC M',
   };
   return names[key] ?? key.toUpperCase();
 }
@@ -6639,10 +6220,12 @@ document.addEventListener('visibilitychange',()=>{
 });
 const _gpInterval=setInterval(()=>{
   if(gpIndex===null){ _gpSnap=null; return; }
+  // Slow down if no game running AND no remap in progress (saves CPU)
+  if(!G&&!gpRemapTarget){ return; }
   const gps=safeGetGamepads();
   const gp=gps[gpIndex];
   if(!gp||!gp.connected){ _gpSnap=null; return; }
-  // Build snapshot — always, even in menus
+  // Build snapshot
   const snap={
     ax:Array.from(gp.axes),
     bt:gp.buttons.map(b=>typeof b==='object'?{v:b.value,p:b.pressed}:{v:b,p:!!b}),
@@ -6710,7 +6293,7 @@ try{
   });
 }catch(gpErr){ console.warn('Gamepad API non dispo:',gpErr.message); }
 
-// safeGetGamepads defined above
+function safeGetGamepads(){ try{ return navigator.getGamepads?navigator.getGamepads():[] }catch(e){ return []; } }
 
 function startRemap(action,btnEl){
   if(gpIndex===null){
@@ -6810,12 +6393,8 @@ function refreshGpMapIfOpen(){
 }
 
 function pollGamepad(){
-  if(gpIndex===null) return;
+  if(gpIndex===null||!_gpSnap) return;
   if(gpRemapTarget) return; // remap handled in setInterval
-
-  // Always reset movement — prevents "stuck" input when snap is missing
-  if(G){ G.moveX=0; G.moveY=0; }
-  if(!_gpSnap) return;
 
   // ── Use pre-fetched snapshot for zero-lag reads ──
   const lx=gpSnapAxis(0), ly=gpSnapAxis(1);
@@ -6841,8 +6420,8 @@ function pollGamepad(){
   const nPAUSE=gpSnapPressed(gpMap.PAUSE), nSTART=gpSnapPressed(gpMap.START);
   const nSEL=gpSnapPressed(gpMap.SELECT), nLB=gpSnapPressed(gpMap.LB), nRB=gpSnapPressed(gpMap.RB);
 
-  if(nDASH&&!gpPrev.DASH){ if(G&&G.running&&!G.paused) doDash(); }
-  if(nSPEC&&!gpPrev.SPEC){ if(G&&G.running&&!G.paused){ resumeAC(); useSpecial(); } }
+  if(nDASH&&!gpPrev.DASH) doDash();
+  if(nSPEC&&!gpPrev.SPEC){ resumeAC(); useSpecial(); }
   if((nPAUSE&&!gpPrev.PAUSE)||(nSTART&&!gpPrev.START)){
     if(G&&G.running) togglePause();
     else if(document.getElementById('s-title').classList.contains('on')){ resumeAC(); startGame(); }
@@ -7108,17 +6687,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 <!-- Active relics HUD -->
 <div id="relic-hud"></div>
 
-<!-- CONFIRM CUSTOM -->
-<div id="pulse-confirm">
-  <div class="pc-box">
-    <div class="pc-msg" id="pc-msg"></div>
-    <div class="pc-btns">
-      <button class="pc-cancel" id="pc-cancel">ANNULER</button>
-      <button class="pc-ok" id="pc-ok">CONFIRMER</button>
-    </div>
-  </div>
-</div>
-
 
 <!-- DÉFI QUOTIDIEN -->
 <div class="scr" id="s-daily">
@@ -7195,5 +6763,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   </div>
 </div>
 
+<script>
+// ── PWA Service Worker Registration ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: '/Pulse/' })
+      .then(reg => {
+        console.log('[PWA] Service Worker enregistré, scope:', reg.scope);
+        // Vérifier les mises à jour au chargement
+        reg.update();
+      })
+      .catch(err => console.warn('[PWA] Erreur SW:', err));
+  });
+}
+</script>
 </body>
 </html>
