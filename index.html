@@ -34,18 +34,13 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
 
 /* CROSSHAIR */
-#xhair{position:fixed;z-index:9999;pointer-events:none;width:22px;height:22px;transform:translate(-50%,-50%);left:-100px;top:-100px;}
-#xhair::before,#xhair::after{content:'';position:absolute;background:var(--c1);box-shadow:0 0 4px var(--c1);}
-#xhair::before{width:1px;height:22px;left:10.5px;top:0;}
-#xhair::after{width:22px;height:1px;top:10.5px;left:0;}
-.xdot{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--c1);top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px var(--c1);}
-/* Cursor rules */
-body{cursor:default;}
+#xhair{position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;transform:translate(-50%,-50%);left:-100px;top:-100px;}
+.xdot{display:none;}
 body.touch #xhair{display:none !important;}
-body.game-active:not(.touch){cursor:none;}
-body.game-active:not(.touch) *{cursor:none !important;}
-body:not(.game-active):not(.touch) #xhair{visibility:hidden;}
-body.gamepad-active:not(.game-active){cursor:default;}
+body.game-active:not(.touch) #xhair{display:block;}
+body:not(.game-active) #xhair{visibility:hidden;}
+/* Hide system cursor in-game */
+body.game-active,body.game-active *{cursor:none !important;}
 
 /* BUTTONS — kept in main block below */
 /* ── cursor rules ── cleaned up ── */
@@ -122,6 +117,11 @@ body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
 .hdiv{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--c1)18,transparent);margin:16px 0;}
 .scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5.5vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 30px rgba(0,245,212,.35);}
 .scr-sub{font-size:9px;letter-spacing:.35em;color:var(--txt2);margin-top:4px;text-align:center;margin-bottom:14px;}
+
+/* NOTIFICATION BADGES */
+.notif-badge{position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;background:var(--c2);color:#fff;font-size:9px;font-family:'Orbitron',monospace;font-weight:700;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;pointer-events:none;z-index:10;box-shadow:0 0 8px rgba(255,26,110,.6);animation:badgePop .3s ease;}
+@keyframes badgePop{0%{transform:scale(0);}60%{transform:scale(1.3);}100%{transform:scale(1);}}
+.btn{position:relative;} /* needed for badge absolute positioning */
 
 /* TITLE */
 #s-title{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a1e16 0%,var(--bg) 70%);}
@@ -1194,7 +1194,7 @@ body.touch #minimap{display:none;}
 
 <canvas id="cvs-bg"></canvas>
 <canvas id="cvs-game"></canvas>
-<div id="xhair"><div class="xdot"></div></div>
+<canvas id="xhair" width="28" height="28"></canvas>
 
 <div id="wave-bar"><div id="wave-bar-fill"></div></div>
 
@@ -1336,7 +1336,7 @@ body.touch #minimap{display:none;}
       <button class="btn btn-s" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-stats');renderStats()"><span>📊 STATS</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-gift');renderGiftScreen()"><span>🎁 CADEAUX</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint">
@@ -1481,6 +1481,36 @@ body.touch #minimap{display:none;}
       <button class="btn btn-p" id="arena-next-btn" onclick="arenaNextLevel()"><span>▶ NIVEAU SUIVANT</span></button>
       <button class="btn btn-s" onclick="show('s-arena-map');renderArenaMap()"><span>📋 VOIR LES NIVEAUX</span></button>
       <button class="btn btn-s" onclick="show('s-title')"><span>MENU</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div class="scr" id="s-profile">
+  <div class="scr-inner" style="align-items:center;gap:14px;">
+    <div class="scr-h">👤 MON PROFIL</div>
+
+    <!-- Avatar + name -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:min(480px,94vw);border:1px solid var(--border);background:var(--dim2);padding:20px;">
+      <canvas id="profile-avatar" width="80" height="80" style="border-radius:50%;border:2px solid var(--c1);"></canvas>
+      <div id="profile-name" style="font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,20px);letter-spacing:.12em;color:var(--c1);"></div>
+      <div id="profile-title" style="font-size:8px;letter-spacing:.3em;color:var(--c3);"></div>
+      <div style="display:flex;gap:16px;font-size:8px;color:var(--txt2);letter-spacing:.1em;" id="profile-badges"></div>
+    </div>
+
+    <!-- Stats grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(480px,94vw);" id="profile-stats"></div>
+
+    <!-- Best scores -->
+    <div style="width:min(480px,94vw);">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.25em;color:var(--txt2);margin-bottom:8px;">🏆 MEILLEURES PARTIES</div>
+      <div id="profile-scores" style="display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+
+    <!-- Skins owned -->
+    <div style="width:min(480px,94vw);">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.25em;color:var(--txt2);margin-bottom:8px;">🎨 SKINS POSSÉDÉS</div>
+      <div id="profile-skins" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
   </div>
 </div>
@@ -1935,6 +1965,7 @@ body.touch #minimap{display:none;}
     <div class="shop-coins-bar"><span>🪙</span><span id="shop-coins-display">0</span><span style="font-size:8px;letter-spacing:.2em;color:var(--txt2);">PIÈCES</span></div>
     <div class="shop-tabs">
       <button class="shop-tab active" onclick="shopTab('skins',this)">🎨 SKINS</button>
+      <button class="shop-tab" onclick="shopTab('cursors',this)">🎯 CURSEURS</button>
       <button class="shop-tab" onclick="shopTab('perma',this)">⬆ AMÉLIORATIONS</button>
       <button class="shop-tab" onclick="shopTab('lottery',this)">🎰 LOTERIE</button>
     </div>
@@ -2157,6 +2188,84 @@ async function doLogout(){
   show('s-auth');
 }
 
+function renderProfile(){
+  // Avatar — draw player skin on canvas
+  const avCvs=document.getElementById('profile-avatar');
+  if(avCvs){
+    const ctx=avCvs.getContext('2d');
+    const s=80; ctx.clearRect(0,0,s,s);
+    // Background
+    ctx.fillStyle='#0a1a12'; ctx.fillRect(0,0,s,s);
+    // Draw player skin preview
+    drawSkinPreview(avCvs, equippedSkin, s);
+  }
+
+  // Name & title
+  const pseudo = currentUser ? (loadData('pulse_pseudo','') || currentUser.email?.split('@')[0] || 'Joueur') : 'Invité';
+  document.getElementById('profile-name').textContent = pseudo.toUpperCase();
+
+  // Title based on stats
+  const wave=gStats.maxWave||0, kills=gStats.totalKills||0, games=gStats.gamesPlayed||0;
+  const title = wave>=30?'👑 MAÎTRE LÉGENDAIRE':wave>=20?'⚡ VÉTÉRAN':wave>=10?'🔥 GUERRIER':games>=10?'🎮 SURVIVANT':'🌱 RECRUE';
+  document.getElementById('profile-title').textContent = title;
+
+  // Badges
+  const achCount=Object.keys(achDone||{}).length;
+  document.getElementById('profile-badges').innerHTML = [
+    `🎖 ${achCount} succès`,
+    `💀 ${arenaLevel-1} niveaux arène`,
+    `⭐ Passe niv.${battlePass.level}`,
+    hasPremiumPass.owned?'⭐ PASSE AMÉLIORÉ':'',
+  ].filter(Boolean).map(b=>`<span style="border:1px solid var(--border);padding:3px 8px;border-radius:2px;">${b}</span>`).join('');
+
+  // Stats grid
+  const statsData=[
+    ['🏆','Meilleur score',(gStats.maxScore||0).toLocaleString('fr-FR')],
+    ['🌊','Meilleure vague',gStats.maxWave||0],
+    ['💀','Total kills',(gStats.totalKills||0).toLocaleString('fr-FR')],
+    ['🎮','Parties jouées',gStats.gamesPlayed||0],
+    ['🔥','Meilleur combo',gStats.maxCombo||0],
+    ['⏱','Temps total',`${Math.floor((gStats.totalTime||0)/3600)}h${String(Math.floor(((gStats.totalTime||0)%3600)/60)).padStart(2,'0')}m`],
+  ];
+  document.getElementById('profile-stats').innerHTML = statsData.map(([ico,lbl,val])=>
+    `<div style="border:1px solid var(--border);background:var(--dim2);padding:10px;text-align:center;">
+      <div style="font-size:16px;margin-bottom:4px;">${ico}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vw,14px);color:var(--c1);">${val}</div>
+      <div style="font-size:7px;letter-spacing:.15em;color:var(--txt2);margin-top:3px;">${lbl}</div>
+    </div>`
+  ).join('');
+
+  // Best scores
+  const topScores=[...scores].sort((a,b)=>b.score-a.score).slice(0,5);
+  document.getElementById('profile-scores').innerHTML = topScores.length ? topScores.map((s,i)=>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);background:var(--dim2);">
+      <div style="font-family:'Orbitron',monospace;font-size:10px;color:${i===0?'var(--c3)':'var(--txt2)'};">#${i+1}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--c1);flex:1;">${(s.score||0).toLocaleString('fr-FR')}</div>
+      <div style="font-size:8px;color:var(--txt2);">V.${s.wave||0} · ${s.kills||0}💀 · ${s.mode||'Classique'}</div>
+      <div style="font-size:7px;color:var(--dim);">${s.date||''}</div>
+    </div>`
+  ).join('') : '<div style="font-size:8px;color:var(--txt2);text-align:center;padding:12px;">Aucune partie enregistrée.</div>';
+
+  // Skins
+  const mySkins=SKIN_DEFS.filter(sk=>ownedSkins.includes(sk.id));
+  const skinsEl=document.getElementById('profile-skins');
+  skinsEl.innerHTML='';
+  mySkins.forEach(sk=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText=`position:relative;cursor:pointer;${equippedSkin===sk.id?'outline:2px solid var(--c1);':''}`; 
+    const cvs=document.createElement('canvas'); cvs.width=44; cvs.height=44;
+    drawSkinPreview(cvs,sk.id,44);
+    wrap.appendChild(cvs);
+    if(equippedSkin===sk.id){
+      const badge=document.createElement('div');
+      badge.style.cssText='position:absolute;bottom:0;right:0;background:var(--c1);color:#000;font-size:6px;padding:1px 3px;letter-spacing:.1em;';
+      badge.textContent='ON'; wrap.appendChild(badge);
+    }
+    wrap.onclick=()=>{ equipSkin(sk.id); renderProfile(); };
+    skinsEl.appendChild(wrap);
+  });
+}
+
 function updateUserBar(){
   const bar=document.getElementById('user-top-bar');
   const nm=document.getElementById('user-top-name');
@@ -2176,6 +2285,37 @@ function updateUserBar(){
 function renderTitleBest(){
   const best=scores[0]?.score||0;
   document.getElementById('title-best').textContent=best>0?`🏆 MEILLEUR SCORE : ${best}`:'';
+  updateMenuBadges();
+}
+
+function updateMenuBadges(){
+  // BP badge — unclaimed rewards
+  const bpUnclaimed=BP_REWARDS.filter(r=>r.lv<=battlePass.level&&!battlePass.claimed[r.lv]).length;
+  setBadge('btn-bp-badge', bpUnclaimed);
+
+  // Achievement badge — newly unlocked (not yet seen)
+  const achNew=(loadData('pulse_ach_unseen_v1',[])||[]).length;
+  setBadge('btn-ach-badge', achNew);
+}
+
+function setBadge(id, count){
+  let el=document.getElementById(id);
+  if(count>0){
+    if(!el){
+      // Find the button to attach to — match by contained text
+      const label=id==='btn-bp-badge'?'PASSE DE COMBAT':id==='btn-ach-badge'?'SUCCÈS':null;
+      if(label){
+        const allBtns=document.querySelectorAll('.btn');
+        for(const btn of allBtns){
+          if(btn.textContent.includes(label)){
+            el=document.createElement('div'); el.id=id; el.className='notif-badge';
+            btn.appendChild(el); break;
+          }
+        }
+      }
+    }
+    if(el){ el.textContent=count>9?'9+':count; el.style.display='flex'; }
+  } else if(el){ el.style.display='none'; }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2224,6 +2364,82 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 let ownedSkins    = loadData('pulse_skins_v3',    ['default']);
 let equippedSkin  = loadData('pulse_equipped_v3', 'default');
+
+// ── CURSOR SKIN SYSTEM ──
+const CURSOR_DEFS = [
+  {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=1.5;
+    const g=s*.14, arm=s*.46;
+    // Horizontal
+    ctx.beginPath(); ctx.moveTo(s/2-arm,s/2); ctx.lineTo(s/2-g,s/2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s/2+g,s/2);   ctx.lineTo(s/2+arm,s/2); ctx.stroke();
+    // Vertical
+    ctx.beginPath(); ctx.moveTo(s/2,s/2-arm); ctx.lineTo(s/2,s/2-g); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s/2,s/2+g);   ctx.lineTo(s/2,s/2+arm); ctx.stroke();
+    // Center dot
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(s/2,s/2,1.5,0,Math.PI*2); ctx.fill();
+  }},
+  {id:'dot',       name:'POINT',       price:80,   draw:(ctx,s,col)=>{
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(s/2,s/2,3,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=1; ctx.globalAlpha=.5;
+    ctx.beginPath(); ctx.arc(s/2,s/2,s*.4,0,Math.PI*2); ctx.stroke();
+  }},
+  {id:'circle',    name:'CERCLE',      price:120,  draw:(ctx,s,col)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(s/2,s/2,s*.38,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(s/2,s/2,2,0,Math.PI*2); ctx.fill();
+    // 4 ticks
+    for(let i=0;i<4;i++){
+      const a=i*Math.PI/2, r=s*.38, len=s*.1;
+      ctx.beginPath(); ctx.moveTo(s/2+Math.cos(a)*r,s/2+Math.sin(a)*r);
+      ctx.lineTo(s/2+Math.cos(a)*(r+len),s/2+Math.sin(a)*(r+len)); ctx.stroke();
+    }
+  }},
+  {id:'arrow',     name:'FLÈCHE',      price:150,  draw:(ctx,s,col)=>{
+    ctx.fillStyle=col; ctx.strokeStyle=col; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(2,2); ctx.lineTo(2,s*.7); ctx.lineTo(s*.22,s*.5);
+    ctx.lineTo(s*.32,s*.75); ctx.lineTo(s*.42,s*.72);
+    ctx.lineTo(s*.32,s*.46); ctx.lineTo(s*.52,s*.46); ctx.closePath();
+    ctx.fill();
+  }},
+  {id:'diamond',   name:'DIAMANT',     price:200,  draw:(ctx,s,col)=>{
+    ctx.strokeStyle=col; ctx.lineWidth=1.5;
+    const c=s/2, r=s*.4;
+    ctx.beginPath(); ctx.moveTo(c,c-r); ctx.lineTo(c+r*.6,c); ctx.lineTo(c,c+r); ctx.lineTo(c-r*.6,c); ctx.closePath(); ctx.stroke();
+    ctx.fillStyle=col; ctx.globalAlpha=.25; ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(c,c,2,0,Math.PI*2); ctx.fill();
+  }},
+];
+let equippedCursor = loadData('pulse_cursor_v1','crosshair');
+let ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
+
+function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURSOR_DEFS[0]; }
+function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
+function buyCursor(id){
+  const def=CURSOR_DEFS.find(c=>c.id===id);
+  if(!def||ownedCursors.includes(id)) return;
+  if(def.price>0&&!spendCoins(def.price)) return;
+  ownedCursors.push(id); saveData('pulse_owned_cursors_v1',ownedCursors);
+  equipCursor(id);
+}
+
+let _xhairCanvas=null;
+function drawXhair(){
+  if(!_xhairCanvas) _xhairCanvas=document.getElementById('xhair');
+  const cvs=_xhairCanvas; if(!cvs) return;
+  const s=28; cvs.width=s; cvs.height=s;
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,s,s);
+  // Color from current skin
+  let col='#00f5d4';
+  try{ const sk=getSkin(); col=sk.rainbow?'#00f5d4':(sk.color&&sk.color!=='rainbow'?sk.color:'#00f5d4'); }catch(e){}
+  ctx.shadowColor=col; ctx.shadowBlur=5;
+  getCursorDef().draw(ctx,s,col);
+}
+
+// Draw crosshair once on startup; refreshed each frame during game
+drawXhair();
 
 const SKIN_DEFS = [
   {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4'},
@@ -2499,6 +2715,38 @@ function renderShop(tab){
         if(sk.price===0){ buySkin(sk.id); equipSkin(sk.id); renderShop('skins'); return; }
         if(coins>=sk.price){ buySkin(sk.id); equipSkin(sk.id); renderShop('skins'); }
         else { const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pièces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
+      });
+      grid.appendChild(card);
+    }
+  } else if(tab==='cursors'){
+    grid.className='shop-grid';
+    grid.style.cssText='';
+    for(const def of CURSOR_DEFS){
+      const owned=ownedCursors.includes(def.id);
+      const equipped=equippedCursor===def.id;
+      const card=document.createElement('div');
+      card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
+      // Preview canvas
+      const cvs=document.createElement('canvas'); cvs.width=54; cvs.height=54;
+      cvs.style.cssText='display:block;margin:0 auto;';
+      const ctx=cvs.getContext('2d');
+      ctx.shadowColor='#00f5d4'; ctx.shadowBlur=4;
+      def.draw(ctx,54,'#00f5d4');
+      card.appendChild(cvs);
+      const nm=document.createElement('div'); nm.className='skin-name'; nm.textContent=def.name;
+      card.appendChild(nm);
+      const pr=document.createElement('div');
+      if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='ÉQUIPÉ'; }
+      else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSÉDÉ'; }
+      else if(def.price===0){ pr.className='skin-price free-lbl'; pr.textContent='GRATUIT'; }
+      else{ pr.className='skin-price'; pr.innerHTML=`🪙 ${def.price}`; }
+      card.appendChild(pr);
+      card.addEventListener('click',()=>{
+        if(equipped) return;
+        if(owned){ equipCursor(def.id); renderShop('cursors'); return; }
+        if(def.price===0){ buyCursor(def.id); renderShop('cursors'); return; }
+        if(coins>=def.price){ buyCursor(def.id); renderShop('cursors'); }
+        else{ const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pièces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
       });
       grid.appendChild(card);
     }
@@ -4487,6 +4735,8 @@ function draw(){
   if(_duoActive) drawP2();
   if(currentMode==='online') olDrawPeers();
   drawMinimap();
+  // Redraw crosshair canvas each frame (keeps colour in sync with skin)
+  if(frame%12===0) drawXhair();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4788,7 +5038,9 @@ function checkAch(id,val){
   if(val>=def.goal){
     achDone[id]=true; saveAch();
     newAchThisRun.push(def.n);
-    // Award coins reward
+    // Track for menu badge
+    const unseen=loadData('pulse_ach_unseen_v1',[]);
+    if(!unseen.includes(id)){ unseen.push(id); saveData('pulse_ach_unseen_v1',unseen); }
     if(def.reward&&def.reward>0){
       awardCoins(def.reward);
       addKF(`🏆 +${def.reward}🪙 ${def.n}`,'g');
@@ -4809,6 +5061,9 @@ function showAchToast(def){
 }
 
 function renderAch(){
+  // Clear unseen badge
+  saveData('pulse_ach_unseen_v1',[]);
+  setTimeout(updateMenuBadges, 100);
   const done=Object.keys(achDone).length;
   document.getElementById('ach-prog-lbl').textContent=`${done} / ${ACH_DEFS.length} DÉBLOQUÉS`;
   const grid=document.getElementById('ach-grid'); grid.innerHTML='';
@@ -5384,7 +5639,7 @@ const BACK_MAP = {
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
-  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title',
+  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
   's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth',
 };
 let _backBtn=null;
@@ -5813,6 +6068,7 @@ function claimBpReward(level){
 function openBP(){
   renderBP();
   show('s-bp');
+  setTimeout(updateMenuBadges, 200);
 }
 
 function closeBpClaim(){
@@ -7719,16 +7975,32 @@ function kbIsMove(key, dir){
 //  GAMEPAD — Anti-lag BT + Remapping
 // ═══════════════════════════════════════════════════════
 let gpIndex=null, gpPrev={};
+let _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
 
 // Deadzone réduite à 0.12 pour meilleure réactivité (surtout BT)
 const GP_DEADZONE=0.12;
 
+// Auto-detect gamepad layout from id string
+function detectGpLayout(id=''){
+  if(/nintendo|pro con|joy-con|nso/i.test(id)) return 'nintendo';
+  if(/xinput|xbox|360|xbone/i.test(id)) return 'xbox';
+  if(/dualshock|dualsense|playstation|ps[34]|ps5/i.test(id)) return 'playstation';
+  return 'standard';
+}
+
+// Button labels per layout
+function gpBtnLabels(layout){
+  if(layout==='nintendo') return {0:'B',1:'A',2:'Y',3:'X',4:'L',5:'R',6:'ZL',7:'ZR',8:'−',9:'+',10:'LS',11:'RS',12:'↑',13:'↓',14:'←',15:'→'};
+  if(layout==='playstation') return {0:'✕',1:'○',2:'□',3:'△',4:'L1',5:'R1',6:'L2',7:'R2',8:'SELECT',9:'START',10:'L3',11:'R3',12:'↑',13:'↓',14:'←',15:'→'};
+  return {0:'A',1:'B',2:'X',3:'Y',4:'LB',5:'RB',6:'LT',7:'RT',8:'SELECT',9:'START',10:'LS',11:'RS',12:'↑',13:'↓',14:'←',15:'→'};
+}
+
+// Nintendo swaps A/B and X/Y vs standard
 const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
 let gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
 let gpRemapTarget=null, gpRemapListener=null;
 const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALÉ.'};
-const GP_BTN_NAMES={0:'A',1:'B',2:'X',3:'Y',4:'LB',5:'RB',6:'LT',7:'RT',8:'SELECT',9:'START',10:'LS',11:'RS',12:'↑',13:'↓',14:'←',15:'→'};
-function gpBtnName(idx){ return GP_BTN_NAMES[idx]??`BTN${idx}`; }
+function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
 function gpVal(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.value:b):0; }
 function gpPressed(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.pressed:!!b):false; }
 function gpAxisRaw(gp,axIdx){ return gp.axes[axIdx]||0; }
@@ -7798,16 +8070,17 @@ function gpSnapAxisRaw(idx){ return _gpSnap?.ax[idx]??0; }
 try{
   window.addEventListener('gamepadconnected',e=>{
     gpIndex=e.gamepad.index;
+    _gpLayout=detectGpLayout(e.gamepad.id);
     // Pre-fill snapshot immediately to avoid first-frame miss
     const gps=safeGetGamepads(); const gp0=gps[gpIndex];
     if(gp0){ _gpSnap={ax:Array.from(gp0.axes),bt:gp0.buttons.map(b=>typeof b==='object'?{v:b.value,p:b.pressed}:{v:b,p:!!b})}; }
     document.body.classList.add('gamepad-active');
     document.getElementById('gamepad-hud').classList.add('on');
     let name=e.gamepad.id.replace(/\(.*?\)/g,'').trim().substring(0,28);
-    // Detect BT vs wired from id string (BT often contains 'Bluetooth' or ends in different pattern)
     const isBT = /bluetooth|wireless/i.test(e.gamepad.id);
-    document.getElementById('gamepad-name').textContent=(name||'MANETTE')+(isBT?' 📶':'');
-    if(G) showPopup('🎮 MANETTE CONNECTÉE'+(isBT?' (BT)':''),'#b44fff');
+    const layoutLabel={nintendo:'🟡 Nintendo',xbox:'🟢 Xbox',playstation:'🔵 PlayStation',standard:'🎮'}[_gpLayout]||'🎮';
+    document.getElementById('gamepad-name').textContent=layoutLabel+' '+(name||'MANETTE')+(isBT?' 📶':'');
+    if(G) showPopup('🎮 MANETTE CONNECTÉE — '+layoutLabel+(isBT?' BT':''),'#b44fff');
     refreshGpMapIfOpen();
   });
   window.addEventListener('gamepaddisconnected',e=>{
@@ -7857,9 +8130,10 @@ function renderGpMapScreen(){
   const gps2=safeGetGamepads(); const gpLive=hasGp?gps2[gpIndex]:null;
   const isBT=gpLive?/bluetooth|wireless/i.test(gpLive.id):false;
   if(tip){
-    if(!hasGp) tip.innerHTML='Branchez une manette pour configurer les boutons.<br><span style="color:var(--dim)">BT: autorisez l\'accès manette dans votre navigateur si besoin.</span>';
-    else if(isBT) tip.innerHTML='🔵 Bluetooth détecté · Clique un bouton puis appuie la touche manette (timeout 6s).<br><span style="color:var(--c3)">Conseil BT: reste à moins de 2m pour moins de latence.</span>';
-    else tip.textContent='Clique un bouton puis appuie la touche manette désirée (timeout 6s).';
+    const layoutLabel={nintendo:'🟡 Nintendo Switch',xbox:'🟢 Xbox',playstation:'🔵 PlayStation',standard:'🎮 Standard'}[_gpLayout]||'🎮';
+    if(!hasGp) tip.innerHTML='Branchez une manette pour configurer les boutons.<br><span style="color:var(--txt2)">Xbox, PlayStation, Nintendo et manettes génériques supportées.</span>';
+    else if(isBT) tip.innerHTML=`${layoutLabel} · Bluetooth · Clique un bouton puis appuie la touche (timeout 6s).<br><span style="color:var(--c3)">Conseil BT: reste à moins de 2m pour moins de latence.</span>`;
+    else tip.innerHTML=`${layoutLabel} · Câble · Clique un bouton puis appuie la touche (timeout 6s).`;
   }
   if(!hasGp) return;
 
@@ -7951,9 +8225,13 @@ function pollGamepad(){
   const nDASH=gpSnapPressed(gpMap.DASH), nSPEC=gpSnapPressed(gpMap.SPECIAL);
   const nPAUSE=gpSnapPressed(gpMap.PAUSE), nSTART=gpSnapPressed(gpMap.START);
   const nSEL=gpSnapPressed(gpMap.SELECT), nLB=gpSnapPressed(gpMap.LB), nRB=gpSnapPressed(gpMap.RB);
+  // LT/RT triggers (button index 6/7) — fire shoot / special on some layouts
+  const nLT=(_gpSnap?.bt[6]?.v||0)>0.5, nRT=(_gpSnap?.bt[7]?.v||0)>0.5;
 
   if(nDASH&&!gpPrev.DASH){ if(G&&G.running&&!G.paused) doDash(); }
   if(nSPEC&&!gpPrev.SPEC){ if(G&&G.running&&!G.paused){ resumeAC(); useSpecial(); } }
+  if(nRT&&!gpPrev.RT){ if(G&&G.running&&!G.paused){ resumeAC(); tryShoot(performance.now()); } }
+  if(nLT&&!gpPrev.LT){ if(G&&G.running&&!G.paused) doDash(); }
   if((nPAUSE&&!gpPrev.PAUSE)||(nSTART&&!gpPrev.START)){
     if(G&&G.running) togglePause();
     else if(document.getElementById('s-title').classList.contains('on')){ resumeAC(); startGame(); }
@@ -7964,7 +8242,7 @@ function pollGamepad(){
   if(nSEL&&!gpPrev.SEL&&document.getElementById('s-go').classList.contains('on')) show('s-title');
 
   gpNavigateCards(gpPrev.DASH,nDASH);
-  gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,_navCd:gpPrev._navCd};
+  gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,LT:nLT,RT:nRT,_navCd:gpPrev._navCd};
 }
 
 let gpCardIdx=0;
