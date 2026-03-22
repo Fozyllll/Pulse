@@ -1397,8 +1397,9 @@ body:not(.touch) #pulse-confirm button{cursor:none !important;}
   <div class="auth-box">
     <div class="auth-title">PULSE</div>
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
-    <input class="auth-input" id="auth-email" type="email" placeholder="EMAIL" autocomplete="email" onkeydown="if(event.key==='Enter')doAuth()">
+    <input class="auth-input" id="auth-email" type="text" placeholder="EMAIL OU PSEUDO" autocomplete="username" onkeydown="if(event.key==='Enter')doAuth()">
     <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
+    <input class="auth-input" id="auth-pseudo-reg" type="text" placeholder="PSEUDO (unique, visible en classement)" maxlength="16" style="display:none;" onkeydown="if(event.key==='Enter')doAuth()">
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-ok"  id="auth-ok"></div>
     <button class="btn btn-p" id="auth-submit-btn" onclick="doAuth()"><span id="auth-submit-lbl">SE CONNECTER</span></button>
@@ -1737,13 +1738,18 @@ async function loadCloudProfile(){
     if(error){
       if(error.code==='PGRST116'||error.message?.includes('0 rows')){
         // Nouveau joueur — créer profil
-        const fresh={id:currentUser.id,pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1}};
+        const fresh={id:currentUser.id,email:currentUser.email||'',pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1,claimed:{}}};
         const {error:insertErr}=await SB.from('profiles').insert(fresh);
         if(insertErr) console.warn('Erreur création profil:',insertErr.message);
         return fresh;
       }
       console.warn('Erreur chargement profil:',error.message);
       return null;
+    }
+    // Keep email in sync with auth
+    if(currentUser.email && data && data.email !== currentUser.email){
+      await SB.from('profiles').update({email:currentUser.email}).eq('id',currentUser.id);
+      data.email = currentUser.email;
     }
     return data;
   } catch(e){ console.warn('Erreur réseau profil:',e); return null; }
@@ -1766,57 +1772,91 @@ function toggleAuthMode(){
   document.getElementById('auth-switch-lbl').innerHTML = authMode==='login'
     ? 'Pas de compte ? <span onclick="toggleAuthMode()">S\'INSCRIRE</span>'
     : 'Déjà un compte ? <span onclick="toggleAuthMode()">SE CONNECTER</span>';
+  // Show pseudo field only on register
+  const pseudoEl = document.getElementById('auth-pseudo-reg');
+  if(pseudoEl) pseudoEl.style.display = authMode==='register' ? 'block' : 'none';
+  // Update email placeholder
+  const emailEl = document.getElementById('auth-email');
+  if(emailEl) emailEl.placeholder = authMode==='login' ? 'EMAIL OU PSEUDO' : 'EMAIL';
   document.getElementById('auth-err').textContent='';
   document.getElementById('auth-ok').textContent='';
 }
 
 async function doAuth(){
   if(!SB){ playAsGuest(); return; }
-  const email=document.getElementById('auth-email').value.trim();
+  const input=document.getElementById('auth-email').value.trim();
   const pass=document.getElementById('auth-pass').value;
-  document.getElementById('auth-err').textContent='';
-  document.getElementById('auth-ok').textContent='';
-  if(!email||!pass){ document.getElementById('auth-err').textContent='Remplis tous les champs.'; return; }
-  if(pass.length<6){ document.getElementById('auth-err').textContent='Mot de passe minimum 6 caractères.'; return; }
+  const errEl=document.getElementById('auth-err');
+  const okEl=document.getElementById('auth-ok');
+  errEl.textContent=''; okEl.textContent='';
+  if(!input||!pass){ errEl.textContent='Remplis tous les champs.'; return; }
+  if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caractères.'; return; }
   const btn=document.getElementById('auth-submit-btn');
   btn.style.opacity='.5'; btn.style.pointerEvents='none';
   try {
     let res;
     if(authMode==='login'){
-      res=await SB.auth.signInWithPassword({email,password:pass});
+      // Determine if input is email or pseudo
+      let emailToUse = input;
+      if(!input.includes('@')){
+        // Lookup email by pseudo
+        const {data:rows, error:lookupErr} = await SB.from('profiles').select('id,email').ilike('pseudo', input).limit(1);
+        if(lookupErr||!rows||rows.length===0){
+          errEl.textContent='Pseudo introuvable. Essaie avec ton email.';
+          btn.style.opacity=''; btn.style.pointerEvents=''; return;
+        }
+        emailToUse = rows[0].email;
+        if(!emailToUse){
+          errEl.textContent='Compte sans email associé — connecte-toi avec ton email.';
+          btn.style.opacity=''; btn.style.pointerEvents=''; return;
+        }
+      }
+      res=await SB.auth.signInWithPassword({email:emailToUse, password:pass});
       if(res.error){
-        document.getElementById('auth-err').textContent=translateAuthErr(res.error.message);
+        errEl.textContent=translateAuthErr(res.error.message);
       } else {
         currentUser=res.data.user; isGuest=false;
         await afterLogin();
       }
     } else {
-      // Inscription
-      res=await SB.auth.signUp({email,password:pass});
+      // Registration — require valid email
+      if(!input.includes('@')){ errEl.textContent='Utilise ton email pour t\'inscrire.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
+      const pseudo=(document.getElementById('auth-pseudo-reg')?.value||'').trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
+      if(!pseudo||pseudo.length<3){ errEl.textContent='Pseudo requis (3-16 caractères, lettres/chiffres/-/_).'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
+      // Check pseudo uniqueness
+      const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).limit(1);
+      if(existing&&existing.length>0){ errEl.textContent='Ce pseudo est déjà pris. Choisis-en un autre.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
+      res=await SB.auth.signUp({email:input, password:pass});
       if(res.error){
-        document.getElementById('auth-err').textContent=translateAuthErr(res.error.message);
+        errEl.textContent=translateAuthErr(res.error.message);
       } else if(res.data?.user){
+        // Save pseudo immediately in profile
+        await SB.from('profiles').upsert({id:res.data.user.id, pseudo, email:input, coins:0, owned_skins:['default'], equipped_skin:'default', perma_upgrades:{}, scores:[], stats:{}, ach:{}, battle_pass:{level:0,xp:0,season:1,claimed:{}}});
         if(res.data.session){
           currentUser=res.data.user; isGuest=false;
-          await afterLogin(true); // ← new account: show tutorial
+          userPseudo=pseudo; saveData('pulse_pseudo_v3',pseudo);
+          await afterLogin(true);
         } else {
-          document.getElementById('auth-ok').textContent='✉️ Vérifie ton email pour confirmer ton compte, puis connecte-toi !';
-          setTimeout(()=>{ authMode='login'; toggleAuthMode(); },3000);
+          okEl.textContent='✉️ Vérifie ton email pour confirmer, puis connecte-toi avec ton pseudo ou email !';
+          setTimeout(()=>{ authMode='login'; toggleAuthMode(); },4000);
         }
       }
     }
   } catch(e){
     console.error('Auth error:',e);
-    document.getElementById('auth-err').textContent='Erreur réseau ('+e.message+'). Essaie le mode invité.';
+    errEl.textContent='Erreur réseau ('+e.message+'). Essaie le mode invité.';
   }
   btn.style.opacity=''; btn.style.pointerEvents='';
 }
 
 function translateAuthErr(msg){
-  if(msg.includes('Invalid login')) return 'Email ou mot de passe incorrect.';
-  if(msg.includes('already registered')) return 'Cet email est déjà utilisé.';
+  if(msg.includes('Invalid login')) return 'Email/pseudo ou mot de passe incorrect.';
+  if(msg.includes('already registered')||msg.includes('already been registered')) return 'Cet email est déjà utilisé.';
   if(msg.includes('Password should')) return 'Mot de passe trop court (min 6 caractères).';
   if(msg.includes('valid email')) return 'Email invalide.';
+  if(msg.includes('User not found')) return 'Aucun compte trouvé avec cet email ou pseudo.';
+  if(msg.includes('Email not confirmed')) return 'Email non confirmé — vérifie ta boîte mail.';
+  if(msg.includes('rate limit')) return 'Trop de tentatives, réessaie dans quelques minutes.';
   return msg;
 }
 
@@ -4536,8 +4576,13 @@ function getPseudo(){
 }
 
 async function savePseudo(pseudo){
-  pseudo = pseudo.trim().toUpperCase().replace(/[^A-Z0-9_\-\s]/g,'').slice(0,16);
-  if(!pseudo) return {ok:false, msg:'Pseudo invalide.'};
+  pseudo = pseudo.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
+  if(!pseudo||pseudo.length<3) return {ok:false, msg:'Pseudo invalide (3-16 caractères, lettres/chiffres/-/_).'};
+  // Check uniqueness (exclude self)
+  if(SB&&currentUser){
+    const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).neq('id', currentUser.id).limit(1);
+    if(existing&&existing.length>0) return {ok:false, msg:'Ce pseudo est déjà pris.'};
+  }
   userPseudo = pseudo;
   saveData('pulse_pseudo_v3', pseudo);
   if(currentUser && SB) await saveCloudProfile({pseudo});
@@ -6494,12 +6539,10 @@ document.addEventListener('visibilitychange',()=>{
 });
 const _gpInterval=setInterval(()=>{
   if(gpIndex===null){ _gpSnap=null; return; }
-  // Slow down if no game running AND no remap in progress (saves CPU)
-  if(!G&&!gpRemapTarget){ return; }
   const gps=safeGetGamepads();
   const gp=gps[gpIndex];
   if(!gp||!gp.connected){ _gpSnap=null; return; }
-  // Build snapshot
+  // Build snapshot — always, even in menus
   const snap={
     ax:Array.from(gp.axes),
     bt:gp.buttons.map(b=>typeof b==='object'?{v:b.value,p:b.pressed}:{v:b,p:!!b}),
@@ -6567,7 +6610,7 @@ try{
   });
 }catch(gpErr){ console.warn('Gamepad API non dispo:',gpErr.message); }
 
-function safeGetGamepads(){ try{ return navigator.getGamepads?navigator.getGamepads():[] }catch(e){ return []; } }
+// safeGetGamepads defined above
 
 function startRemap(action,btnEl){
   if(gpIndex===null){
@@ -6667,8 +6710,12 @@ function refreshGpMapIfOpen(){
 }
 
 function pollGamepad(){
-  if(gpIndex===null||!_gpSnap) return;
+  if(gpIndex===null) return;
   if(gpRemapTarget) return; // remap handled in setInterval
+
+  // Always reset movement — prevents "stuck" input when snap is missing
+  if(G){ G.moveX=0; G.moveY=0; }
+  if(!_gpSnap) return;
 
   // ── Use pre-fetched snapshot for zero-lag reads ──
   const lx=gpSnapAxis(0), ly=gpSnapAxis(1);
@@ -6694,8 +6741,8 @@ function pollGamepad(){
   const nPAUSE=gpSnapPressed(gpMap.PAUSE), nSTART=gpSnapPressed(gpMap.START);
   const nSEL=gpSnapPressed(gpMap.SELECT), nLB=gpSnapPressed(gpMap.LB), nRB=gpSnapPressed(gpMap.RB);
 
-  if(nDASH&&!gpPrev.DASH) doDash();
-  if(nSPEC&&!gpPrev.SPEC){ resumeAC(); useSpecial(); }
+  if(nDASH&&!gpPrev.DASH){ if(G&&G.running&&!G.paused) doDash(); }
+  if(nSPEC&&!gpPrev.SPEC){ if(G&&G.running&&!G.paused){ resumeAC(); useSpecial(); } }
   if((nPAUSE&&!gpPrev.PAUSE)||(nSTART&&!gpPrev.START)){
     if(G&&G.running) togglePause();
     else if(document.getElementById('s-title').classList.contains('on')){ resumeAC(); startGame(); }
