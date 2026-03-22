@@ -382,14 +382,17 @@ body:not(.touch) #mob{display:none;}
   #joy-zone{
     position:fixed;
     bottom:0; left:0;
-    width:55%; height:40%;
+    width:52%; height:42%;
     z-index:200;
+    /* Visual feedback zone */
+    background:radial-gradient(ellipse 60% 50% at 25% 75%,rgba(0,245,212,.04),transparent);
   }
   #aim-zone{
     position:fixed;
     bottom:0; right:0;
-    width:55%; height:42%;
+    width:52%; height:44%;
     z-index:200;
+    background:radial-gradient(ellipse 60% 50% at 75% 75%,rgba(255,26,110,.03),transparent);
   }
   #aim-ring{
     bottom:calc(clamp(14px,4vw,24px) + env(safe-area-inset-bottom, 0px));
@@ -412,9 +415,15 @@ body:not(.touch) #mob{display:none;}
   /* Overheat bar */
   #overheat-bar{ bottom:36% !important; }
   /* HUD: compact 2-row in portrait */
-  #hud-top{ flex-wrap:wrap; row-gap:2px; }
-  .hw-hp{ width:clamp(52px,22vw,90px); }
-  .hw-xp,.hw-sp,.hw-cd{ width:clamp(38px,14vw,65px); }
+  #hud-top{ flex-wrap:wrap; row-gap:2px; max-width:calc(100vw - 16px); }
+  .hw-hp{ width:clamp(60px,24vw,100px); }
+  .hw-xp,.hw-sp,.hw-cd{ width:clamp(42px,15vw,70px); }
+  /* Score bigger in portrait */
+  #hv-score{ font-size:clamp(14px,4.5vw,20px) !important; }
+  /* Wave centered at top in portrait */
+  #hv-wave{ font-size:clamp(11px,3.5vw,16px) !important; }
+  /* Combo lower */
+  #combo{ bottom:40% !important; right:8px !important; left:auto !important; }
 }
 
 /* ── SMALL SCREEN (phones < 380px) ── */
@@ -1248,7 +1257,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 22.0</div>
+    <div class="logo-ver">VERSION 22.1</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1425,7 +1434,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v22.0</div>
+<div id="watermark">PULSE v22.1</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -2586,14 +2595,24 @@ function drawBg(t){
   if(!bgChanged) return;
   _bgLastT=t; _bgLastCombo=comboIntensity; _bgLastHp=hpRatio;
 
-  bCtx.fillStyle='#03030a'; bCtx.fillRect(0,0,W,H);
+  // Season-themed background
+  const _sTheme = getSeasonTheme();
+  const _bgBase = _sTheme.bg||'#03030a';
+  bCtx.fillStyle=_bgBase; bCtx.fillRect(0,0,W,H);
 
-  // Grid — single batched path (MUCH faster than individual strokes)
+  // Season ambient glow
+  const _ac1 = _sTheme.accent||'#00f5d4';
+  const _ac2 = _sTheme.accent2||'#b44fff';
+  const _hexToRgb = h=>{ const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return [r,g,b]; };
+  const [r1,g1,b1] = _ac1.startsWith('#')&&_ac1.length===7 ? _hexToRgb(_ac1) : [0,245,212];
+  const [r2,g2,b2] = _ac2.startsWith('#')&&_ac2.length===7 ? _hexToRgb(_ac2) : [180,79,255];
+
+  // Grid
   const gridAlpha = 0.022 + comboIntensity*0.028;
-  const gridR = hpRatio<0.3 ? 255 : 0;
-  const gridG = Math.round(245 - comboIntensity*60);
-  const gridB = Math.round(212 - comboIntensity*100);
-  bCtx.strokeStyle=`rgba(${gridR},${gridG},${gridB},${gridAlpha})`; bCtx.lineWidth=.5;
+  const gridR = hpRatio<0.3 ? 255 : r1;
+  const gridG2 = hpRatio<0.3 ? 10 : Math.round(g1 - comboIntensity*40);
+  const gridB2 = hpRatio<0.3 ? 20 : Math.round(b1 - comboIntensity*60);
+  bCtx.strokeStyle=`rgba(${gridR},${gridG2},${gridB2},${gridAlpha})`; bCtx.lineWidth=.5;
   bCtx.beginPath();
   const gs=58;
   for(let x=0;x<W;x+=gs){ bCtx.moveTo(x,0); bCtx.lineTo(x,H); }
@@ -2612,10 +2631,48 @@ function drawBg(t){
   for(let bi=0;bi<buckets.length;bi++){
     const bucket=buckets[bi]; if(!bucket||!bucket.length) continue;
     const avgA=bucket.reduce((s,x)=>s+x.a,0)/bucket.length;
-    bCtx.fillStyle=`rgba(0,245,212,${avgA.toFixed(3)})`;
+    const _starMix=Math.sin(bi*.8); const _sr=Math.round(r1+(_starMix)*(r2-r1)),_sg=Math.round(g1+_starMix*(g2-g1)),_sb=Math.round(b1+_starMix*(b2-b1)); bCtx.fillStyle=`rgba(${_sr},${_sg},${_sb},${avgA.toFixed(3)})`;
     bCtx.beginPath();
     for(const s of bucket){ bCtx.moveTo(s.x+s.r,s.y); bCtx.arc(s.x,s.y,s.r,0,Math.PI*2); }
     bCtx.fill();
+  }
+
+  // Season decorative element (nebula spot, aurora, etc.)
+  const _seasonIdx=(BP_SEASON-1)%SEASON_THEMES.length;
+  if(!settings.lowQuality){
+    if(_seasonIdx===0||_seasonIdx===2){ // NEON CITY / VOID: scanlines
+      bCtx.globalAlpha=0.018;
+      bCtx.strokeStyle=`rgba(${r1},${g1},${b1},1)`; bCtx.lineWidth=1;
+      bCtx.beginPath();
+      for(let y=0;y<H;y+=4){ bCtx.moveTo(0,y); bCtx.lineTo(W,y); }
+      bCtx.stroke(); bCtx.globalAlpha=1;
+    } else if(_seasonIdx===1){ // BLOOD MOON: radial glow top-center
+      const mg=bCtx.createRadialGradient(W*.5,0,20,W*.5,0,H*.45);
+      mg.addColorStop(0,`rgba(${r1},${g1},${b1},0.06)`); mg.addColorStop(1,'transparent');
+      bCtx.fillStyle=mg; bCtx.fillRect(0,0,W,H);
+    } else if(_seasonIdx===3){ // SOLAR STORM: diagonal streaks
+      bCtx.globalAlpha=0.015; bCtx.strokeStyle=`rgba(${r1},${g1},${b1},1)`; bCtx.lineWidth=1;
+      bCtx.beginPath();
+      for(let i=-H;i<W+H;i+=28){ bCtx.moveTo(i,0); bCtx.lineTo(i+H,H); }
+      bCtx.stroke(); bCtx.globalAlpha=1;
+    } else if(_seasonIdx===4){ // DEEP SEA: horizontal waves
+      bCtx.globalAlpha=0.02;
+      for(let y=0;y<H;y+=22){
+        const off=Math.sin(t*.5+y*.03)*8;
+        bCtx.strokeStyle=`rgba(${r1},${g1},${b1},.8)`; bCtx.lineWidth=1;
+        bCtx.beginPath(); bCtx.moveTo(0,y+off);
+        for(let x=0;x<W;x+=8) bCtx.lineTo(x,y+Math.sin(t*.4+x*.04)*6);
+        bCtx.stroke();
+      }
+      bCtx.globalAlpha=1;
+    } else if(_seasonIdx===5){ // GLITCH: random colored lines
+      if(Math.random()<0.04){
+        bCtx.globalAlpha=0.06;
+        const gy=Math.random()*H; const gh=Math.random()*3+1;
+        bCtx.fillStyle=`rgba(${r1},${g1},${b1},1)`; bCtx.fillRect(0,gy,W,gh);
+        bCtx.globalAlpha=1;
+      }
+    }
   }
 
   // Vignette
@@ -2626,7 +2683,9 @@ function drawBg(t){
     const redA=(0.35-hpRatio)/0.35*0.45*pulse;
     vg.addColorStop(1,`rgba(180,10,40,${redA+0.3})`);
   } else {
-    vg.addColorStop(1,'rgba(3,3,10,.62)');
+    // Season-tinted vignette
+    const [vr,vg2,vb]=_hexToRgb(_bgBase.length===7?_bgBase:'#03030a');
+    vg.addColorStop(1,`rgba(${vr},${vg2},${vb},0.72)`);
   }
   bCtx.fillStyle=vg; bCtx.fillRect(0,0,W,H);
 
@@ -3305,6 +3364,11 @@ function update(now){
 
   G.enemies=G.enemies.filter(e=>!e.dead);
   G.bullets=G.bullets.filter(b=>!b.dead);
+  // Skin passive effects
+  const _sp=G.player;
+  if(_sp.iceAura){ G.enemies.forEach(e=>{ if(!e.dead&&Math.hypot(e.x-_sp.x,e.y-_sp.y)<80) e.spd=Math.max(e.spd*.92,0.3); }); }
+  if(_sp.furyOnLowHp){ _sp._furyActive=_sp.hp/_sp.maxHp<0.3; }
+
   updateModeLogic();
   if(currentMode==='duo') updateP2(now);
 
@@ -3337,6 +3401,7 @@ function hitEnemy(e,b){
   if(e.armored&&!b.big&&!b.isLaser&&!b.overcharged) dmg=Math.ceil(dmg*0.4);
   e.hp-=dmg; e.flash=7; spawnFx(e.x,e.y,e.col,3); sfxHit();
   G.shotsHit=(G.shotsHit||0)+1;
+  if(G.player.fireTrail){ e.burnTimer=(e.burnTimer||0)+45; e.burnDmg=G.player.bulletDmg*.2; }
   // Floating damage number
   const dmgCol=b.isLaser?'#ffee00':b.big?'#ffbe0b':b.overcharged?'#ffe000':'#fff';
   if(G.floats) G.floats.push({x:e.x+(Math.random()-.5)*12,y:e.y-e.r,txt:Math.round(dmg),col:dmgCol,life:36,maxLife:36,vy:-1.4});
@@ -3424,6 +3489,15 @@ function onKill(e){
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
   // Daily mode score tracking
   if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
+  // Skin: rainbow chaos — dead enemy spawns 3 random bullets
+  if(G.player.rainbowChaos&&Math.random()<0.35&&G.bullets.length<180){
+    for(let i=0;i<3;i++){
+      const a=Math.random()*Math.PI*2;
+      G.bullets.push({x:e.x,y:e.y,vx:Math.cos(a)*8,vy:Math.sin(a)*8,dmg:Math.round(G.player.bulletDmg*.6),r:4,life:60,dead:false,enemy:false,piercing:0,pierced:0,trail:[],big:false});
+    }
+  }
+  // Skin: gold greed — bonus coin on kill
+  if(G.player.greedCoin&&Math.random()<0.3){ awardCoins(1); }
 }
 
 function doExplosion(x,y,col){ G.explosions.push({x,y,r:12,life:11,maxLife:11,col,hit:new Set()}); }
@@ -3845,7 +3919,9 @@ function renderUpgradeChoices(){
   grid.innerHTML='';
   const rChance=Math.min(.65,.18+G.wave*.022);
   const legChance=Math.min(.25,.02+G.wave*.01);
-  const pool=[...UPGRADE_DEFS].sort(()=>Math.random()-.5);
+  // Include skin-specific upgrades in the pool
+  const _skinUpgs = getSkinUpgrades().filter(u=>!G.player.upgradeCounts[u.id]);
+  const pool=[...UPGRADE_DEFS,..._skinUpgs].sort(()=>Math.random()-.5);
   const chosen=[];
   for(const u of pool){
     if(chosen.length>=3) break;
@@ -4508,6 +4584,7 @@ function startGame(){
   initDomCache();
   // Apply permanent upgrades
   applyPermaUpgrades(G.player, G);
+  applyTempBonuses(G.player);
   updateHPBar();
   document.getElementById('hv-wave').textContent='—';
   _dom['hv-score'].textContent='0';
@@ -4561,7 +4638,7 @@ function vibGp(strong=0.5,weak=0.2,dur=80){
     if(gp?.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble',{startDelay:0,duration:dur,weakMagnitude:weak,strongMagnitude:strong});
   }catch(e){}
 }
-function spawnFx(x,y,col,n=4){ if(G.particles.length>=150) return; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2,s=1.5+Math.random()*2.5; G.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:1.5+Math.random()*2,col,life:12+Math.random()*7,maxLife:19,alpha:1}); } }
+function spawnFx(x,y,col,n=4){ if(G.particles.length>=(settings.lowQuality?80:150)) return; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2,s=1.5+Math.random()*2.5; G.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:1.5+Math.random()*2,col,life:12+Math.random()*7,maxLife:19,alpha:1}); } }
 function spawnDeathFx(x,y,col){
   for(let i=0;i<28;i++){
     const a=i/28*Math.PI*2, speed=1.8+Math.random()*6.5;
@@ -4755,33 +4832,33 @@ function applySeasonTheme(){
 
 const BP_REWARDS = [
   {lv:1,  type:'coins',  value:75,    label:'+75 pièces',        icon:'🪙', rarity:'common'},
-  {lv:2,  type:'perma',  value:'p_hp',label:'Vitalité +',        icon:'❤️', rarity:'rare'},
+  {lv:2,  type:'temp',   value:'temp_hp3',label:'Bonus VIE 3 vagues',  icon:'💗', rarity:'rare', desc:'HP max +25 pendant 3 vagues'},
   {lv:3,  type:'coins',  value:100,   label:'+100 pièces',       icon:'🪙', rarity:'common'},
   {lv:4,  type:'skin',   value:'crimson',label:'Skin Crimson',   icon:'🔴', rarity:'rare'},
   {lv:5,  type:'coins',  value:150,   label:'+150 pièces',       icon:'🪙', rarity:'common'},
-  {lv:6,  type:'perma',  value:'p_dmg',label:'Puissance +',      icon:'💥', rarity:'rare'},
+  {lv:6,  type:'temp',   value:'temp_dmg3',label:'Bonus DÉGÂTS 3 vagues', icon:'⚔️', rarity:'rare', desc:'Dégâts +30% pendant 3 vagues'},
   {lv:7,  type:'coins',  value:150,   label:'+150 pièces',       icon:'🪙', rarity:'common'},
   {lv:8,  type:'skin',   value:'wire', label:'Skin Wire',        icon:'⬡',  rarity:'rare'},
   {lv:9,  type:'coins',  value:200,   label:'+200 pièces',       icon:'🪙', rarity:'common'},
   {lv:10, type:'skin',   value:'gold', label:'Skin Or Pur',      icon:'🥇', rarity:'epic'},
   {lv:11, type:'coins',  value:200,   label:'+200 pièces',       icon:'🪙', rarity:'common'},
-  {lv:12, type:'perma',  value:'p_dash',label:'Dash +',          icon:'⚡', rarity:'rare'},
+  {lv:12, type:'temp',   value:'temp_dash3',label:'SUPER DASH 3 vagues', icon:'💨', rarity:'rare', desc:'Dash instant recharge pendant 3 vagues'},
   {lv:13, type:'coins',  value:250,   label:'+250 pièces',       icon:'🪙', rarity:'common'},
   {lv:14, type:'skin',   value:'circuit',label:'Skin Circuit',   icon:'🔌', rarity:'epic'},
-  {lv:15, type:'perma',  value:'p_regen',label:'Régéné +',       icon:'💚', rarity:'rare'},
+  {lv:15, type:'temp',   value:'temp_regen3',label:'REGEN 3 vagues', icon:'🌿', rarity:'rare', desc:'Régénération +2 PV/s pendant 3 vagues'},
   {lv:16, type:'coins',  value:250,   label:'+250 pièces',       icon:'🪙', rarity:'common'},
   {lv:17, type:'skin',   value:'violet',label:'Skin Spectre',    icon:'💜', rarity:'epic'},
   {lv:18, type:'perma',  value:'p_spec',label:'Bombe +',         icon:'💜', rarity:'rare'},
   {lv:19, type:'coins',  value:300,   label:'+300 pièces',       icon:'🪙', rarity:'common'},
   {lv:20, type:'skin',   value:'pulsering',label:'Skin Pulse Ring',icon:'🟡',rarity:'epic'},
   {lv:21, type:'coins',  value:300,   label:'+300 pièces',       icon:'🪙', rarity:'common'},
-  {lv:22, type:'perma',  value:'p_magnet',label:'Magnétisme',    icon:'🧲', rarity:'rare'},
+  {lv:22, type:'temp',   value:'temp_magnet3',label:'SUPER AIMANT 3 vagues', icon:'🧲', rarity:'rare', desc:'Ramassage automatique + vitesse +20% pendant 3 vagues'},
   {lv:23, type:'coins',  value:350,   label:'+350 pièces',       icon:'🪙', rarity:'common'},
   {lv:24, type:'skin',   value:'ice',  label:'Skin Glace',       icon:'🧊', rarity:'epic'},
   {lv:25, type:'coins',  value:400,   label:'+400 pièces',       icon:'🪙', rarity:'common'},
   {lv:26, type:'skin',   value:'fire', label:'Skin Flamme',      icon:'🔥', rarity:'epic'},
   {lv:27, type:'coins',  value:400,   label:'+400 pièces',       icon:'🪙', rarity:'common'},
-  {lv:28, type:'perma',  value:'p_coins',label:'Fortune +',      icon:'💰', rarity:'rare'},
+  {lv:28, type:'temp',   value:'temp_coins3',label:'FORTUNE 3 vagues', icon:'💰', rarity:'rare', desc:'Pièces ×2 pendant 3 vagues'},
   {lv:29, type:'coins',  value:500,   label:'+500 pièces',       icon:'🪙', rarity:'common'},
   {lv:30, type:'skin',   value:'rainbow',label:'Arc-en-ciel',    icon:'🌈', rarity:'legendary'},
 ];
@@ -6279,6 +6356,68 @@ async function sendGift(){
     document.getElementById('gift-status').className='online-status ok';
     document.getElementById('gift-recipient').value='';
   }catch(e){ document.getElementById('gift-status').textContent='Erreur: '+e.message; document.getElementById('gift-status').className='online-status err'; }
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  UPGRADES SPÉCIFIQUES AUX SKINS
+//  Apparaissent uniquement quand le skin correspondant est équipé
+// ═══════════════════════════════════════════════════════
+const SKIN_UPGRADES = {
+  'default':   [{id:'sk_hex_charge',  ico:'🔋', n:'SURCHARGE HEXAGONALE', d:'Chaque 6e kill recharge 10% de bombe.', tier:'rare', stacks:false,
+    apply:p=>{ p.hexCharge=true; }}],
+  'crimson':   [{id:'sk_crim_fury',   ico:'🩸', n:'FRÉNÉSIE ÉCARLATE',    d:'En dessous de 30% PV, cadence ×1.4.', tier:'rare', stacks:false,
+    apply:p=>{ p.furyOnLowHp=true; }}],
+  'gold':      [{id:'sk_gold_greed',  ico:'💰', n:'AVIDITÉ',              d:'+30% de pièces à chaque kill.', tier:'rare', stacks:false,
+    apply:p=>{ p.greedCoin=true; }}],
+  'violet':    [{id:'sk_viol_phase',  ico:'👁',  n:'PHASE SPECTRALE',     d:'10% de chance de traverser les projectiles.', tier:'epic', stacks:false,
+    apply:p=>{ p.spectralPhase=true; }}],
+  'ice':       [{id:'sk_ice_freeze',  ico:'❄',  n:'AURA DE GEL',          d:'Les ennemis à moins de 80px sont ralentis.', tier:'rare', stacks:false,
+    apply:p=>{ p.iceAura=true; }}],
+  'fire':      [{id:'sk_fire_trail',  ico:'🔥', n:'TRAÎNE ENFLAMMÉE',     d:'Tes balles laissent des dommages sur la zone.', tier:'epic', stacks:false,
+    apply:p=>{ p.fireTrail=true; }}],
+  'rainbow':   [{id:'sk_rain_chaos',  ico:'🌈', n:'CHAOS CHROMATIQUE',    d:'Les ennemis tués laissent des balles aléatoires.', tier:'legendary', stacks:false,
+    apply:p=>{ p.rainbowChaos=true; }}],
+  'ghost':     [{id:'sk_ghost_fear',  ico:'👻', n:'TERREUR',              d:'Les ennemis proches fuient brièvement à ta mort.', tier:'rare', stacks:false,
+    apply:p=>{ p.ghostFear=true; }}],
+  'circuit':   [{id:'sk_circ_hack',   ico:'🔌', n:'PIRATAGE',             d:'1 ennemi par vague retourne contre ses alliés.', tier:'epic', stacks:false,
+    apply:(p,g)=>{ if(g) g._hackNextSpawn=true; }}],
+  'star':      [{id:'sk_star_burst',  ico:'💫', n:'NOVA STELLAIRE',       d:'À chaque level-up, explosion autour du joueur.', tier:'rare', stacks:false,
+    apply:p=>{ p.starNova=true; }}],
+  'pulsering': [{id:'sk_pulse_emp',   ico:'📡', n:'IMPULSION EMP',        d:'La bombe désactive les capacités ennemies 3s.', tier:'rare', stacks:false,
+    apply:p=>{ p.pulseEmp=true; }}],
+  'arrow':     [{id:'sk_arrow_pierce',ico:'🏹', n:'PÉNÉTRATION',          d:'Les balles traversent 2 ennemis de plus.', tier:'rare', stacks:false,
+    apply:p=>{ p.piercing=(p.piercing||0)+2; }}],
+};
+
+function getSkinUpgrades(){
+  return SKIN_UPGRADES[equippedSkin]||[];
+}
+
+// Inject skin upgrades into the upgrade pool each wave
+function addSkinUpgradesToPool(pool){
+  const skinUpgs = getSkinUpgrades();
+  return skinUpgs.length ? [...pool, ...skinUpgs] : pool;
+}
+
+
+function applyTempBonuses(p){
+  const bonuses=loadData('pulse_temp_bonuses_v1',[]);
+  if(!bonuses.length) return;
+  const used=[]; let applied=0;
+  bonuses.forEach(b=>{
+    if(applied>=2){ used.push(b); return; } // max 2 active at once
+    if(b.id==='temp_hp3'){ p.maxHp+=25; p.hp=Math.min(p.hp+25,p.maxHp); p._tempHp3=G.wave+3; }
+    else if(b.id==='temp_dmg3'){ p.bulletDmg*=1.3; p._tempDmg3=G.wave+3; }
+    else if(b.id==='temp_dash3'){ p.dashCd=100; p._tempDash3=G.wave+3; }
+    else if(b.id==='temp_regen3'){ p.regen+=2; p._tempRegen3=G.wave+3; }
+    else if(b.id==='temp_magnet3'){ p.speedBoost=999; G.magnet=999; p._tempMagnet3=G.wave+3; }
+    else if(b.id==='temp_coins3'){ p._tempCoins3=G.wave+3; }
+    applied++;
+    if(applied<=2) addKF('⏱ '+b.label,'g');
+  });
+  // Remove used ones (keep remainder for later)
+  saveData('pulse_temp_bonuses_v1', used);
 }
 
 // ═══════════════════════════════════════════════════════
