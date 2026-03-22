@@ -39,7 +39,10 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #xhair::before{width:1px;height:22px;left:10.5px;top:0;}
 #xhair::after{width:22px;height:1px;top:10.5px;left:0;}
 .xdot{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--c1);top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px var(--c1);}
-body.touch #xhair{display:none;}body.game-active:not(.touch){cursor:none;}
+body.touch #xhair{display:none;}
+body.game-active:not(.touch){cursor:none;}
+body.game-active:not(.touch) *{cursor:none !important;}
+body:not(.game-active) #xhair{display:none !important;}
 body.gamepad-active{cursor:none;}
 
 /* GAMEPAD INDICATOR */
@@ -58,13 +61,16 @@ body.gamepad-active{cursor:none;}
 /* iOS WebView fix — remove tap delay everywhere */
 * { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 /* Custom crosshair only when game is active */
-body.game-active:not(.touch) { cursor:none; }
-body.game-active:not(.touch) button,
-body.game-active:not(.touch) [onclick],
-body.game-active:not(.touch) a,
-body.game-active:not(.touch) [role="button"] { cursor:none !important; }
-/* Normal cursor on menus and inputs always */
-body:not(.game-active) #xhair { display:none !important; }
+/* Normal cursor on menus — clickable elements show pointer */
+body:not(.touch):not(.game-active) button,
+body:not(.touch):not(.game-active) [onclick],
+body:not(.touch):not(.game-active) a,
+body:not(.touch):not(.game-active) [role="button"],
+body:not(.touch):not(.game-active) [style*="cursor:pointer"],
+body:not(.touch):not(.game-active) .toggle,
+body:not(.touch):not(.game-active) .skin-card,
+body:not(.touch):not(.game-active) .mode-card,
+body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
@@ -1041,20 +1047,48 @@ body.touch #minimap{display:none;}
 
 <!-- DUO LOCAL — CONFIG TOUCHES -->
 <div class="scr" id="s-duo-config">
-  <div class="scr-inner" style="align-items:center;">
+  <div class="scr-inner" style="align-items:center;gap:12px;">
     <div class="scr-h">👥 DUO LOCAL</div>
-    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-bottom:4px;">Configure les touches puis lance la partie</div>
-    <div class="duo-config-grid">
-      <div class="duo-player-box duo-p1">
-        <div class="duo-player-title">🎮 JOUEUR 1</div>
-        <div id="duo-p1-binds"></div>
-      </div>
-      <div class="duo-player-box duo-p2">
-        <div class="duo-player-title">🎮 JOUEUR 2</div>
-        <div id="duo-p2-binds"></div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;">2 joueurs sur le même écran · chaque joueur contrôle son propre personnage</div>
+
+    <!-- Mode selection -->
+    <div style="width:min(560px,96vw);display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0;border-bottom:1px solid var(--border);">MODE DE JEU</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="mode-card" id="duo-mode-classic" style="flex:1;min-width:120px;border-color:rgba(0,245,212,.5);background:rgba(0,245,212,.05);" onclick="selectDuoMode('classic')">
+          <div class="mode-icon" style="font-size:18px;">🌊</div>
+          <div class="mode-name" style="font-size:9px;">CLASSIQUE</div>
+          <div class="mode-desc" style="font-size:7px;">Vagues infinies ensemble</div>
+        </div>
+        <div class="mode-card" id="duo-mode-chrono" style="flex:1;min-width:120px;" onclick="selectDuoMode('chrono')">
+          <div class="mode-icon" style="font-size:18px;">⏱</div>
+          <div class="mode-name" style="font-size:9px;">CHRONO</div>
+          <div class="mode-desc" style="font-size:7px;">90s, meilleur score</div>
+        </div>
+        <div class="mode-card" id="duo-mode-arena" style="flex:1;min-width:120px;" onclick="selectDuoMode('arena')">
+          <div class="mode-icon" style="font-size:18px;">💀</div>
+          <div class="mode-name" style="font-size:9px;">ARÈNE</div>
+          <div class="mode-desc" style="font-size:7px;">Une vague massive</div>
+        </div>
       </div>
     </div>
-    <div class="btn-row" style="margin-top:16px;gap:10px;">
+
+    <!-- Controls config -->
+    <div style="width:min(560px,96vw);display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0;border-bottom:1px solid var(--border);">CONTRÔLES</div>
+      <div class="duo-config-grid">
+        <div class="duo-player-box duo-p1">
+          <div class="duo-player-title">🎮 JOUEUR 1</div>
+          <div id="duo-p1-binds"></div>
+        </div>
+        <div class="duo-player-box duo-p2">
+          <div class="duo-player-title">🎮 JOUEUR 2</div>
+          <div id="duo-p2-binds"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:8px;gap:10px;">
       <button class="btn btn-p" onclick="launchDuo()"><span>▶ JOUER</span></button>
     </div>
   </div>
@@ -1085,7 +1119,23 @@ body.touch #minimap{display:none;}
       <div id="ol-create-sec" style="display:none;flex-direction:column;gap:8px;">
         <input class="online-room-name" id="ol-room-name-input" maxlength="20" placeholder="NOM DE LA ROOM (ex: VIENS JOUER !)"
           oninput="this.value=this.value.toUpperCase()">
-        <div style="font-size:7px;letter-spacing:.12em;color:var(--txt2);">Jusqu'à 4 joueurs · Partie co-op</div>
+        <!-- Online mode selection -->
+        <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-top:2px;">MODE DE JEU</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div id="ol-mode-classic" onclick="selectOlMode('classic')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid rgba(0,245,212,.5);background:rgba(0,245,212,.05);cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:14px;">🌊</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--c1);">CLASSIQUE</div>
+          </div>
+          <div id="ol-mode-chrono" onclick="selectOlMode('chrono')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:14px;">⏱</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">CHRONO</div>
+          </div>
+          <div id="ol-mode-arena" onclick="selectOlMode('arena')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:14px;">💀</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">ARÈNE</div>
+          </div>
+          <div id="ol-mode-duo" onclick="selectOlMode('duo')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
+            <div style="font-size:14px;">👥</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">DUO</div>
+          </div>
+        </div>
+        <div style="font-size:7px;letter-spacing:.12em;color:var(--txt2);">Jusqu'à 4 joueurs · Partie co-op partagée</div>
         <div class="online-status" id="ol-create-status"></div>
         <div class="online-lobby-players" id="ol-lobby-players" style="display:none;"></div>
         <button class="btn btn-p" id="ol-create-btn" onclick="olCreate()"><span>🎮 CRÉER LA ROOM</span></button>
@@ -1131,6 +1181,14 @@ body.touch #minimap{display:none;}
     <button id="hud-pause-btn" onclick="togglePause()">❙❙</button>
   </div>
   <div id="hud-passives"></div>
+  <!-- P2 HP bar — visible only in duo -->
+  <div id="hud-p2" style="display:none;position:absolute;top:0;right:0;padding:clamp(4px,1.5vmin,10px) clamp(8px,2.5vmin,16px);pointer-events:none;">
+    <div class="hb hw-hp" style="opacity:.85;">
+      <div class="hl" style="color:#b44fff;">💜 P2</div>
+      <div class="bt"><div class="bf" id="bfhp-p2" style="background:linear-gradient(90deg,#7a1fa0,#b44fff);width:100%;"></div></div>
+      <div class="hv hv2" id="hv-hp-p2" style="color:#b44fff;">100</div>
+    </div>
+  </div>
 </div>
 <div id="boss-hud"><div id="boss-lbl">BOSS</div><div id="boss-track"><div id="boss-fill"></div></div></div>
 <div id="wbanner"><div id="wb-num"></div><div id="wb-sub"></div><div id="wb-tip"></div></div>
@@ -1269,6 +1327,8 @@ body.touch #minimap{display:none;}
     <div class="scr-h">📊 STATISTIQUES</div>
     <div class="scr-sub">TOTAUX DEPUIS LE DÉBUT</div>
     <div class="stats-grid" id="stats-grid"></div>
+    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.22em;color:var(--txt2);margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--border);width:min(600px,96vw);">🕐 DERNIÈRES PARTIES</div>
+    <div id="scores-history" style="width:min(600px,96vw);max-height:280px;overflow-y:auto;"></div>
     <div class="btn-row" style="margin-top:14px;">
       <button class="btn btn-d" onclick="pulseConfirm('Remettre toutes les stats à zéro ?').then(ok=>{if(ok){resetGlobalStats();renderStats();}})"><span>RESET</span></button>
     </div>
@@ -3388,7 +3448,7 @@ function update(now){
   G.enemies=G.enemies.filter(e=>!e.dead);
   G.bullets=G.bullets.filter(b=>!b.dead);
   updateModeLogic();
-  if(currentMode==='duo') updateP2(now);
+  if(_duoActive) updateP2(now);
 
   // Throttle HUD text updates to every 4 frames (reduces layout thrash)
   if(frame%4===0){
@@ -3512,6 +3572,10 @@ function onKill(e){
   if(p.lifesteal>0){ p.hp=Math.min(p.maxHp,p.hp+p.lifesteal); updateHPBar(); }
   p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate);
   updateSpecBar();
+  // P2 bomb charge on kills
+  if(_duoActive&&P2&&!P2._dead){
+    P2.specCharge=Math.min(P2.specMax,P2.specCharge+(e.boss?28:e.mini?15:7)*P2.specRate);
+  }
   if(e.boss||e.mini){ gStats.bossKills=(gStats.bossKills||0)+1; checkAch('boss_kill',gStats.bossKills); checkAch('boss_5',gStats.bossKills); saveGStats(); }
   const cls=e.boss?'g':e.mini?'p':pts>50?'g':'';
   addKF(`+${pts} ${e.lbl}`, cls);
@@ -3920,7 +3984,7 @@ function draw(){
     ctx.restore();
   }
   ctx.restore();
-  if(currentMode==='duo') drawP2();
+  if(_duoActive) drawP2();
   if(currentMode==='online') olDrawPeers();
   drawMinimap();
 }
@@ -4081,7 +4145,7 @@ function gameOver(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
   const m=Math.floor(elapsed/60), s=elapsed%60;
-  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?'Chrono':currentMode==='arena'?'Arène':currentMode==='duo'?'Duo':'Classique';
+  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arène':'Arène'):_duoActive?'Duo Classique':'Classique';
   const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
   addToHistory(entry);
   if(currentMode==='daily') saveDailyScore(G.score);
@@ -4337,20 +4401,40 @@ function renderStats(){
   const totalTime=g.totalTime||0;
   const hh=Math.floor(totalTime/3600), mm=Math.floor((totalTime%3600)/60);
   const data=[
-    ['Parties jouées',g.gamesPlayed||0],['Kills total',g.totalKills||0],['Meilleur score',g.maxScore||0],
-    ['Meilleure vague',g.maxWave||0],['Meilleur combo',g.maxCombo||0],['Niveau max',g.maxLevel||0],
-    ['Boss tués',g.bossKills||0],['Vagues parfaites',g.noHitWaves||0],['Score total',g.totalScore||0],
-    ['Malédictions',g.cursesAccepted||0],['Fantômes tués',g.ghostKills||0],
-    ['Temps total',`${hh}h${mm.toString().padStart(2,'0')}m`],
+    ['Parties jouées',    g.gamesPlayed||0,     '🎮'],
+    ['Kills total',       g.totalKills||0,      '💀'],
+    ['Meilleur score',    (g.maxScore||0).toLocaleString('fr-FR'), '🏆'],
+    ['Score total',       (g.totalScore||0).toLocaleString('fr-FR'), '📈'],
+    ['Meilleure vague',   g.maxWave||0,         '🌊'],
+    ['Meilleur combo',    g.maxCombo||0,         '🔥'],
+    ['Niveau max',        g.maxLevel||0,         '⭐'],
+    ['Boss tués',         g.bossKills||0,        '☠️'],
+    ['Vagues parfaites',  g.noHitWaves||0,       '🛡'],
+    ['Malédictions',      g.cursesAccepted||0,   '😈'],
+    ['Fantômes tués',     g.ghostKills||0,       '👻'],
+    ['Temps total',       hh+'h'+mm.toString().padStart(2,'0')+'m', '⏱'],
   ];
-  document.getElementById('stats-grid').innerHTML=data.map(([l,v])=>`<div class="stat-card"><div class="stat-v">${v}</div><div class="stat-l">${l}</div></div>`).join('');
-}
+  const grid = document.getElementById('stats-grid');
+  if(!grid) return;
+  grid.innerHTML = data.map(([l,v,ico])=>
+    `<div class="stat-card"><div class="stat-v">${v}</div><div class="stat-l">${ico ? ico+' ':''} ${l}</div></div>`
+  ).join('');
 
-// Hook history render into renderStats
-const _origRenderStats = renderStats;
-function renderStats(){
-  if(_origRenderStats) _origRenderStats();
-  renderHistory();
+  // Scores history
+  const histEl = document.getElementById('scores-history');
+  if(histEl){
+    if(!scores||!scores.length){
+      histEl.innerHTML='<div style="font-size:8px;color:var(--dim);letter-spacing:.1em;text-align:center;padding:10px;">Aucune partie enregistrée.</div>';
+    } else {
+      const recent=[...scores].reverse().slice(0,10);
+      histEl.innerHTML=recent.map(s=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--border);background:var(--dim2);margin-bottom:4px;">
+          <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c3);min-width:70px;">${(s.score||0).toLocaleString('fr-FR')}</div>
+          <div style="font-size:7px;color:var(--txt2);flex:1;">Vague ${s.wave||0} · ${s.kills||0} kills · ${s.mode||'Classique'}</div>
+          <div style="font-size:7px;color:var(--dim);">${s.date||''}</div>
+        </div>`).join('');
+    }
+  }
 }
 
 function renderSettings(){
@@ -4363,7 +4447,6 @@ function renderSettings(){
     {lbl:'Afficher FPS',hint:'Compteur images/seconde',key:'showFps',type:'toggle'},
     {lbl:'Mode Éco',hint:'Réduit ombres/effets — améliore perf. mobile',key:'lowQuality',type:'toggle'},
     {lbl:'Vitesse de jeu',hint:'',key:'gameSpeed',type:'speed'},
-    {lbl:'Mode Eco',hint:'Réduit ombres/effets — améliore perf. mobile',key:'lowQuality',type:'toggle'},
     {lbl:'Volume sons',hint:'',key:'sfxVol',type:'range',min:0,max:100},
   ];
   list.innerHTML = rows.map(r=>{
@@ -4809,6 +4892,15 @@ function startGame(){
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
   P2=null; initModeHud();
+  // Spawn P2 if duo active
+  if(_duoActive){
+    P2 = mkP2(W*.62, H/2);
+    applyPermaUpgrades(P2, G);
+    document.getElementById('hud-p2').style.display='block';
+    updateP2HUD();
+  } else {
+    document.getElementById('hud-p2').style.display='none';
+  }
   resetRelics();
   initDomCache();
   // Apply permanent upgrades
@@ -5355,8 +5447,25 @@ document.addEventListener('mousedown',function(e){
   duoRemapTarget=null; duoRemapBtn=null;
 },true);
 
+let duoMode = 'classic';
+let _duoActive = false;
+
+function selectDuoMode(mode){
+  duoMode = mode;
+  ['classic','chrono','arena'].forEach(m=>{
+    const el = document.getElementById('duo-mode-'+m);
+    if(!el) return;
+    if(m===mode){
+      el.style.borderColor='rgba(0,245,212,.7)'; el.style.background='rgba(0,245,212,.07)';
+    } else {
+      el.style.borderColor='var(--border)'; el.style.background='var(--dim2)';
+    }
+  });
+}
+
 function launchDuo(){
-  currentMode='duo';
+  _duoActive = true;
+  currentMode = duoMode; // 'classic', 'chrono', or 'arena'
   startGame();
 }
 
@@ -5374,6 +5483,7 @@ function showModeSelect(){ show('s-mode'); }
 
 function startMode(mode){
   currentMode = mode;
+  _duoActive = false;
   if(mode==='online') return; // handled by olStart/olLaunchGame
   startGame();
 }
@@ -5390,15 +5500,16 @@ function initModeHud(){
     const el=document.createElement('div');
     el.id='mode-hud-extra';
     el.style.cssText='position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:102;font-family:Orbitron,monospace;font-size:10px;color:var(--c2);letter-spacing:.25em;pointer-events:none;';
-    el.textContent='⚠ ARÈNE — SURVIVE LA VAGUE';
+    el.textContent=(_duoActive?'👥 DUO ':'')+'⚠ ARÈNE — SURVIVE LA VAGUE';
     document.body.appendChild(el);
-  } else if(currentMode==='duo'){
+  }
+  if(_duoActive && currentMode!=='arena'){
     const el=document.createElement('div');
     el.id='mode-hud-extra';
     el.style.cssText='position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:102;font-family:Orbitron,monospace;font-size:9px;color:var(--c4);letter-spacing:.2em;pointer-events:none;';
-    el.textContent='👥 DUO — P1: WASD  P2: IJKL';
+    const p2keys=`P2: ${kbKeyName(p2KeyMap.up||'i')}${kbKeyName(p2KeyMap.down||'k')}${kbKeyName(p2KeyMap.left||'j')}${kbKeyName(p2KeyMap.right||'l')}`;
+    el.textContent='👥 DUO LOCAL · '+p2keys;
     document.body.appendChild(el);
-    P2 = mkP2(W*.6, H/2);
   }
 }
 
@@ -5454,46 +5565,168 @@ function p2KeyDown(action){
 }
 
 function mkP2(x,y){
-  return {x:x,y:y,r:12,hp:100,maxHp:100,speed:3.2,bulletDmg:1,bulletSpeed:9.5,
-    fireRate:165,lastShot:performance.now(),lastDash:0,
-    dashCd:1100,dashTimer:0,dashing:false,dashVx:0,dashVy:0,dashFrames:0,
-    invincible:0,aimDx:1,aimDy:0};
+  return {
+    x,y,r:12,hp:100,maxHp:100,speed:3.2,
+    bulletDmg:1,bulletSpeed:9.5,fireRate:165,multishot:0,
+    lastShot:performance.now(),
+    dashCd:1100,dashTimer:0,dashCharges:1,dashChargesLeft:1,
+    dashing:false,dashVx:0,dashVy:0,dashFrames:0,
+    invincible:0,aimDx:1,aimDy:0,
+    specCharge:0,specMax:100,specRate:1,
+    _respawnTimer:0,_dead:false,
+    armor:0,piercing:0,lifesteal:0,regen:0,regenTimer:0,xpMult:1,
+  };
+}
+
+function updateP2HUD(){
+  if(!P2) return;
+  const p=P2;
+  const pct = p._dead ? 0 : Math.max(0,p.hp/p.maxHp*100);
+  const hpBar = document.getElementById('bfhp-p2');
+  const hpVal = document.getElementById('hv-hp-p2');
+  if(hpBar) hpBar.style.width = pct+'%';
+  if(hpVal) hpVal.textContent = p._dead ? '💀 REVIE DANS...' : Math.ceil(p.hp);
 }
 
 function updateP2(now){
   if(!P2||!G||!G.running||G.paused) return;
-  const p=P2, k=G.keys;
+  const p=P2;
+
+  // Respawn logic
+  if(p._dead){
+    p._respawnTimer--;
+    if(p._respawnTimer<=0){
+      p._dead=false; p.hp=p.maxHp; p.invincible=120;
+      p.x=G.player.x+60; p.y=G.player.y;
+      showPopup('💜 P2 REVIENT !','#b44fff');
+    }
+    updateP2HUD();
+    return;
+  }
+
+  const k=G.keys;
   let mx=0,my=0;
-  if(p2KeyDown('up')  ||k['i']||k['I']||k['ArrowUp'])    my-=1;
-  if(p2KeyDown('down')||k['k']||k['K']||k['ArrowDown'])   my+=1;
-  if(p2KeyDown('left')||k['j']||k['J']||k['ArrowLeft'])   mx-=1;
-  if(p2KeyDown('right')||k['l']||k['L']||k['ArrowRight']) mx+=1;
+  if(p2KeyDown('up')  ||k['i']||k['I'])  my-=1;
+  if(p2KeyDown('down')||k['k']||k['K'])  my+=1;
+  if(p2KeyDown('left')||k['j']||k['J'])  mx-=1;
+  if(p2KeyDown('right')||k['l']||k['L']) mx+=1;
   const ml=Math.sqrt(mx*mx+my*my); if(ml>1){mx/=ml;my/=ml;}
-  if(p.dashing){ p.x+=p.dashVx; p.y+=p.dashVy; p.dashFrames--; if(p.dashFrames<=0){p.dashing=false;p.invincible=22;} }
-  else{ p.x=Math.max(p.r,Math.min(W-p.r,p.x+mx*p.speed)); p.y=Math.max(p.r,Math.min(H-p.r,p.y+my*p.speed)); }
-  // auto-aim
+
+  const spd=p.speed*getGameSpeed();
+  if(p.dashing){
+    const nx=p.x+p.dashVx, ny=p.y+p.dashVy;
+    if(!blocked(nx,p.y,p.r)) p.x=nx;
+    if(!blocked(p.x,ny,p.r)) p.y=ny;
+    p.dashFrames--;
+    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; }
+  } else {
+    const nx=p.x+mx*spd, ny=p.y+my*spd;
+    if(!blocked(nx,p.y,p.r)) p.x=nx;
+    if(!blocked(p.x,ny,p.r)) p.y=ny;
+  }
+  p.x=Math.max(p.r,Math.min(W-p.r,p.x));
+  p.y=Math.max(p.r,Math.min(H-p.r,p.y));
+
+  // Obstacle pushout
+  for(const o of G.obstacles){
+    const ox1=o.x-o.w/2,ox2=o.x+o.w/2,oy1=o.y-o.h/2,oy2=o.y+o.h/2;
+    if(p.x+p.r>ox1&&p.x-p.r<ox2&&p.y+p.r>oy1&&p.y-p.r<oy2){
+      const dL=p.x+p.r-ox1,dR=ox2-(p.x-p.r),dT=p.y+p.r-oy1,dB=oy2-(p.y-p.r);
+      const m=Math.min(dL,dR,dT,dB);
+      if(m===dL) p.x=ox1-p.r; else if(m===dR) p.x=ox2+p.r;
+      else if(m===dT) p.y=oy1-p.r; else p.y=oy2+p.r;
+    }
+  }
+
+  // Auto-aim at nearest enemy
   let nearest=null,nd=Infinity;
-  G.enemies.forEach(function(e){ if(!e.dead){ const d=Math.hypot(e.x-p.x,e.y-p.y); if(d<nd){nd=d;nearest=e;} } });
-  if(nearest){ const d=Math.hypot(nearest.x-p.x,nearest.y-p.y); p.aimDx=(nearest.x-p.x)/d; p.aimDy=(nearest.y-p.y)/d; }
+  for(const e of G.enemies){ if(!e.dead){ const d=Math.hypot(e.x-p.x,e.y-p.y); if(d<nd){nd=d;nearest=e;} } }
+  if(nearest){ const d=nd; p.aimDx=(nearest.x-p.x)/d; p.aimDy=(nearest.y-p.y)/d; }
+
+  // Shoot
   if(now-p.lastShot>=p.fireRate&&G.bullets.length<200){
     p.lastShot=now;
-    G.bullets.push({x:p.x,y:p.y,vx:p.aimDx*p.bulletSpeed,vy:p.aimDy*p.bulletSpeed,dmg:p.bulletDmg,r:4.5,piercing:0,pierced:0,aoe:false,homing:false,ricochet:false,life:135,dead:false,big:false,enemy:false,trail:[{x:p.x,y:p.y}]});
+    const angles=[0];
+    for(let i=1;i<=p.multishot;i++){const s=.15*i;angles.push(s,-s);}
+    angles.forEach(a=>{
+      const cos=Math.cos(a),sin=Math.sin(a);
+      const vx=p.aimDx*cos-p.aimDy*sin, vy=p.aimDx*sin+p.aimDy*cos;
+      G.bullets.push({x:p.x,y:p.y,vx:vx*p.bulletSpeed,vy:vy*p.bulletSpeed,
+        dmg:p.bulletDmg,r:4.5,piercing:p.piercing,pierced:0,
+        aoe:false,homing:false,ricochet:false,life:135,dead:false,
+        big:false,enemy:false,trail:[{x:p.x,y:p.y}],_p2:true});
+    });
   }
-  if(p2KeyDown('dash')&&!p.dashing&&p.dashTimer<=0&&now-p.lastDash>p.dashCd){
-    p.dashVx=p.aimDx*18; p.dashVy=p.aimDy*18; p.dashing=true; p.dashFrames=7; p.lastDash=now;
+
+  // Bomb charge from kills handled in onKill via _p2 flag
+  // Spec bar update
+  if(p.specCharge>=p.specMax && !p._bombReady){
+    p._bombReady=true; showPopup('💜 P2 BOMBE PRÊTE !','#b44fff');
   }
+
+  // Dash
+  if(p2KeyDown('dash')&&!p.dashing&&p.dashTimer<=0&&p.dashChargesLeft>0){
+    const dl=Math.hypot(mx,my)>0.1?Math.hypot(mx,my):1;
+    const dvx=mx/dl||p.aimDx, dvy=my/dl||p.aimDy;
+    p.dashVx=dvx*20; p.dashVy=dvy*20;
+    p.dashing=true; p.dashFrames=7;
+    p.dashChargesLeft=Math.max(0,p.dashChargesLeft-1);
+    if(p.dashChargesLeft===0) p.dashTimer=p.dashCd;
+    spawnFx(p.x,p.y,'#b44fff',3); vib(30);
+  }
+
+  // Bomb — P2 specific key (defaults to 'l' if not set)
+  const bombKey = p2KeyMap['bomb']||'n';
+  const bombPressed = bombKey.startsWith('Mouse')?!!_mouseButtons[bombKey]:!!k[bombKey];
+  if(bombPressed&&!p._prevBombPressed&&p.specCharge>=p.specMax){
+    p.specCharge=0; p._bombReady=false;
+    doNuke(G, p.bulletDmg*60);
+    showPopup('💜 P2 BOMBE !','#b44fff');
+    spawnFx(p.x,p.y,'#b44fff',20);
+    if(settings.screenshake) G.shk=Math.max(G.shk,16);
+  }
+  p._prevBombPressed=bombPressed;
+
+  // Dash timer recharge
+  if(p.dashTimer>0){ p.dashTimer-=16; if(p.dashTimer<=0){p.dashTimer=0;p.dashChargesLeft=p.dashCharges;} }
   if(p.invincible>0) p.invincible--;
-  G.enemies.forEach(function(e){
+
+  // Regen
+  if(p.regen>0){ p.regenTimer++; if(p.regenTimer>=180){p.regenTimer=0;p.hp=Math.min(p.maxHp,p.hp+p.regen);} }
+
+  // Enemy collision
+  for(const e of G.enemies){
     if(!e.dead&&p.invincible<=0&&Math.hypot(e.x-p.x,e.y-p.y)<p.r+e.r){
-      p.hp=Math.max(0,p.hp-e.dmg); p.invincible=42;
-      if(p.hp<=0){ P2=null; }
+      const dmg=Math.max(1,Math.round(e.dmg*(1-p.armor)));
+      p.hp=Math.max(0,p.hp-dmg); p.invincible=42;
+      flashEl('dmg-fx'); vib(40);
+      if(p.hp<=0){
+        p._dead=true; p._respawnTimer=300; // 5s respawn
+        spawnDeathFx(p.x,p.y,'#b44fff');
+        showPopup('💜 P2 ÉLIMINÉ — REVIE DANS 5s','#ff1a6e');
+      }
     }
-  });
+  }
+
+  updateP2HUD();
 }
 
 function drawP2(){
   if(!P2) return;
   const ctx=gCtx, p=P2;
+
+  // If dead, show respawn countdown at last position
+  if(p._dead){
+    const sec=Math.ceil(p._respawnTimer/60);
+    ctx.save();
+    ctx.globalAlpha=0.55;
+    ctx.fillStyle='#b44fff'; ctx.font='bold 11px Orbitron,monospace'; ctx.textAlign='center';
+    ctx.shadowColor='#b44fff'; ctx.shadowBlur=10;
+    ctx.fillText('P2 '+sec+'s', p.x, p.y);
+    ctx.restore();
+    return;
+  }
+
   if(p.invincible>0&&Math.floor(frame/4)%2===0) return;
   ctx.save();
   ctx.shadowColor='#b44fff'; ctx.shadowBlur=20;
@@ -5501,12 +5734,22 @@ function drawP2(){
   ctx.fillStyle='rgba(180,79,255,0.85)';
   ctx.beginPath(); ctx.moveTo(p.r,0); ctx.lineTo(-p.r*.7,p.r*.7); ctx.lineTo(-p.r*.7,-p.r*.7); ctx.closePath(); ctx.fill();
   ctx.restore();
-  const bw=36, hpPct=p.hp/p.maxHp;
+
+  // HP bar
+  const bw=40, hpPct=p.hp/p.maxHp;
   ctx.globalAlpha=0.85; ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(p.x-bw/2,p.y-p.r-14,bw,4);
-  ctx.fillStyle=hpPct>0.4?'#b44fff':'#ff1a6e'; ctx.fillRect(p.x-bw/2,p.y-p.r-14,bw*hpPct,4);
-  ctx.fillStyle='rgba(180,79,255,.6)'; ctx.font='7px Orbitron,monospace'; ctx.textAlign='center';
-  ctx.fillText('P2',p.x,p.y-p.r-17);
+  ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(p.x-bw/2,p.y-p.r-16,bw,4);
+  ctx.fillStyle=hpPct>0.4?'#b44fff':'#ff1a6e'; ctx.fillRect(p.x-bw/2,p.y-p.r-16,bw*hpPct,4);
+
+  // Spec bar (bomb)
+  const specPct=p.specCharge/p.specMax;
+  ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(p.x-bw/2,p.y-p.r-10,bw,3);
+  ctx.fillStyle='#b44fff'; ctx.fillRect(p.x-bw/2,p.y-p.r-10,bw*specPct,3);
+
+  // Label
+  ctx.fillStyle=p._bombReady?'#b44fff':'rgba(180,79,255,.6)';
+  ctx.font=(p._bombReady?'bold ':'')+' 7px Orbitron,monospace'; ctx.textAlign='center';
+  ctx.fillText(p._bombReady?'P2 💥':'P2',p.x,p.y-p.r-19);
   ctx.restore();
 }
 
@@ -5566,7 +5809,7 @@ function olAnnounceRoom(){
   olLobbyChannel.send({type:'broadcast',event:'room_announce',payload:{
     code:olRoomCode, name:olRoomName,
     players:Object.keys(olPlayers).length,
-    host:olGetName(), ts:Date.now()
+    host:olGetName(), mode:olMode||'classic', ts:Date.now()
   }});
 }
 
@@ -5590,15 +5833,32 @@ function olRenderRoomList(){
   if(!rooms.length){ el.innerHTML='<div class="online-empty">Aucune partie ouverte · Crée la tienne !</div>'; return; }
   el.innerHTML='';
   rooms.forEach(function(r){
+    const modeIcons={classic:'🌊',chrono:'⏱',arena:'💀',duo:'👥'};
+    const modeIco = modeIcons[r.mode||'classic']||'🌊';
     const div=document.createElement('div'); div.className='room-item';
     div.innerHTML=`<div class="room-item-name">${r.name||'Room sans nom'}</div>
-      <div class="room-item-info">${r.players}/${OL_MAX_PLAYERS} · HOST: ${r.host||'?'}</div>
+      <div class="room-item-info">${modeIco} ${(r.mode||'CLASSIQUE').toUpperCase()} · ${r.players}/${OL_MAX_PLAYERS} · ${r.host||'?'}</div>
       <button class="room-item-join" onclick="olJoin('${r.code}','${(r.name||'').replace(/'/g,'')}')">REJOINDRE</button>`;
     el.appendChild(div);
   });
 }
 
 // ── CREATE ──
+let olMode = 'classic'; // 'classic' | 'chrono' | 'arena' | 'duo'
+
+function selectOlMode(mode){
+  olMode = mode;
+  const cols={classic:'rgba(0,245,212,.5)',chrono:'rgba(255,190,11,.5)',arena:'rgba(255,26,110,.5)',duo:'rgba(180,79,255,.5)'};
+  const bgs={classic:'rgba(0,245,212,.06)',chrono:'rgba(255,190,11,.05)',arena:'rgba(255,26,110,.05)',duo:'rgba(180,79,255,.06)'};
+  ['classic','chrono','arena','duo'].forEach(m=>{
+    const el=document.getElementById('ol-mode-'+m); if(!el) return;
+    if(m===mode){ el.style.borderColor=cols[m]; el.style.background=bgs[m]; }
+    else { el.style.borderColor='var(--border)'; el.style.background='var(--dim2)'; }
+    const lbl=el.querySelector('[style*="Orbitron"]');
+    if(lbl) lbl.style.color=m===mode?(Object.values(cols)[['classic','chrono','arena','duo'].indexOf(m)]):'var(--txt2)';
+  });
+}
+
 async function olCreate(){
   if(!SB){ olStatus('create','Connexion requise.','err'); return; }
   const nameEl=document.getElementById('ol-room-name-input');
@@ -5607,14 +5867,13 @@ async function olCreate(){
   olPlayers={}; olPlayers[olMyUid]={name:olGetName(),hp:100,maxHp:100,wave:1,dead:false,score:0,isMe:true};
   olStatus('create','Création de la room…','wait');
   await olSubscribe(olRoomCode);
-  olSend({t:'join',uid:olMyUid,name:olGetName()});
-  olStatus('create','Room créée ! Code: '+olRoomCode,'ok');
+  olSend({t:'join',uid:olMyUid,name:olGetName(),mode:olMode});
+  olStatus('create','Room créée ! Code: '+olRoomCode+' · Mode: '+olMode.toUpperCase(),'ok');
   document.getElementById('ol-create-btn').style.display='none';
   document.getElementById('ol-start-btn').style.display='block';
   document.getElementById('ol-leave-btn').style.display='block';
   document.getElementById('ol-lobby-players').style.display='flex';
   olRenderLobby('ol-lobby-players');
-  // Keep announcing to lobby every 5s
   olAnnounceRoom();
   setInterval(olAnnounceRoom, 5000);
 }
@@ -5669,7 +5928,7 @@ function olHandle(data){
     if(olIsHost) olAnnounceRoom();
     return;
   }
-  if(data.t==='start'&&!olStarted){ olStarted=true; olLaunchGame(); return; }
+  if(data.t==='start'&&!olStarted){ olStarted=true; olMode=data.mode||'classic'; olLaunchGame(data.mode); return; }
   if(data.t==='pos'){
     if(!olPlayers[data.uid]) olPlayers[data.uid]={name:'?',hp:100,maxHp:100,wave:1,dead:false,score:0};
     Object.assign(olPlayers[data.uid],{hp:data.hp,maxHp:data.maxHp,wave:data.wave,score:data.score,x:data.x,y:data.y,aimDx:data.ax,aimDy:data.ay,dead:data.dead||false});
@@ -5691,13 +5950,15 @@ function olSyncPos(){
 function olStart(){
   if(!olIsHost) return;
   if(Object.keys(olPlayers).length<2){ olStatus('create','Au moins 2 joueurs requis !','err'); return; }
-  olStarted=true; olSend({t:'start',uid:olMyUid}); olLaunchGame();
-  // Close room from public list
+  olStarted=true; olSend({t:'start',uid:olMyUid,mode:olMode}); olLaunchGame();
   if(olLobbyChannel) olLobbyChannel.send({type:'broadcast',event:'room_close',payload:{code:olRoomCode}});
 }
 
-function olLaunchGame(){
-  currentMode='online'; startGame();
+function olLaunchGame(mode){
+  const m = mode || olMode || 'classic';
+  currentMode = m==='duo' ? 'classic' : m; // duo en ligne = classic avec tous les joueurs
+  _duoActive = false; // online uses its own sync, not local P2
+  startGame();
   document.getElementById('online-hud').classList.add('on');
 }
 
