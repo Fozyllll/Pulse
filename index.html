@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
-<title>PULSE v25 — Twin-Stick Survivor</title>
+<title>PULSE v26 — Twin-Stick Survivor</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -944,6 +944,21 @@ body.touch #minimap{display:none;}
 /* Speed setting */
 .speed-select{background:var(--dim2);border:1px solid var(--border);color:var(--txt);font-family:'Orbitron',monospace;font-size:9px;padding:6px 10px;letter-spacing:.1em;outline:none;cursor:pointer;}
 
+
+/* ═══ INVENTAIRE ═══ */
+#s-inventory{background:rgba(3,3,10,.98);}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(90px,20vw,130px),1fr));gap:8px;width:min(720px,96vw);margin-top:10px;overflow-y:auto;max-height:calc(100vh - 180px);}
+.inv-sec-hdr{grid-column:1/-1;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3em;color:var(--txt2);padding:8px 0 5px;border-bottom:1px solid var(--border);margin-top:4px;}
+.inv-card{border:1px solid var(--border);background:var(--dim2);padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:all .15s;position:relative;}
+.inv-card:hover{border-color:var(--c1);transform:translateY(-2px);}
+.inv-card.equipped{border-color:var(--c1);background:rgba(0,245,212,.05);}
+.inv-card.locked{opacity:.35;cursor:pointer;}
+.inv-card-badge{position:absolute;top:4px;right:4px;font-size:5px;letter-spacing:.15em;padding:2px 4px;}
+.inv-card-badge.eq{color:var(--c1);background:rgba(0,245,212,.12);}
+.inv-card-badge.lock{color:var(--dim);background:var(--dim2);}
+.inv-card-name{font-family:'Orbitron',monospace;font-size:clamp(6px,1.5vmin,8px);letter-spacing:.06em;color:var(--txt);text-align:center;}
+.inv-card-price{font-size:7px;color:var(--c3);}
+
 </style>
 </head>
 <body>
@@ -979,9 +994,7 @@ body.touch #minimap{display:none;}
       <div class="bp-section-label" style="margin-top:8px;">TOUTES LES RÉCOMPENSES</div>
       <div class="bp-grid" id="bp-track"></div>
     </div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -1011,7 +1024,6 @@ body.touch #minimap{display:none;}
       </div>
     </div>
     <div class="btn-row" style="margin-top:16px;gap:10px;">
-      <button class="btn btn-s" onclick="show('s-mode')"><span>← RETOUR</span></button>
       <button class="btn btn-p" onclick="launchDuo()"><span>▶ JOUER</span></button>
     </div>
   </div>
@@ -1060,9 +1072,7 @@ body.touch #minimap{display:none;}
         <button class="btn btn-s" id="ol-join-leave-btn" style="display:none;" onclick="olLeave()"><span>✕ QUITTER</span></button>
       </div>
     </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-s" onclick="olLeave();show('s-mode')"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -1167,9 +1177,7 @@ body.touch #minimap{display:none;}
         <div class="mode-tag" style="border:1px solid rgba(0,245,212,.35);color:var(--c1);">EN LIGNE</div>
       </div>
     </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 <!-- SCREENS -->
@@ -1177,7 +1185,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 25.0</div>
+    <div class="logo-ver">VERSION 26.0</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1186,6 +1194,8 @@ body.touch #minimap{display:none;}
       <button class="btn btn-p" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
       <button class="btn btn-g" onclick="show('s-daily');initDailyChallenge()"><span>⚡ DÉFI DU JOUR</span></button>
       <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 CLASSEMENT</span></button>
+      <button class="btn btn-s" onclick="openInventory()"><span>🎨 MES SKINS</span></button>
+      <button class="btn btn-s" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
       <button class="btn btn-s" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
       <button class="btn btn-s" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
       <button class="btn btn-s" onclick="show('s-stats');renderStats()"><span>📊 STATISTIQUES</span></button>
@@ -1210,7 +1220,7 @@ body.touch #minimap{display:none;}
     <div class="lb-rows" id="lb-rows"></div>
     <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.3em;color:var(--txt2);margin:14px 0 6px;">📜 HISTORIQUE (10 DERNIÈRES PARTIES)</div>
     <div id="history-list" style="width:min(520px,96vw);"></div>
-    <div class="btn-row" style="margin-top:14px;"><button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button></div>
+    
   </div>
 </div>
 
@@ -1219,7 +1229,7 @@ body.touch #minimap{display:none;}
     <div class="scr-h">🎖 SUCCÈS</div>
     <div class="scr-sub" id="ach-prog-lbl"></div>
     <div class="ach-grid" id="ach-grid"></div>
-    <div class="btn-row" style="margin-top:14px;"><button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button></div>
+    
   </div>
 </div>
 
@@ -1229,7 +1239,6 @@ body.touch #minimap{display:none;}
     <div class="scr-sub">TOTAUX DEPUIS LE DÉBUT</div>
     <div class="stats-grid" id="stats-grid"></div>
     <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
       <button class="btn btn-d" onclick="if(confirm('Remettre toutes les stats à zéro ?')){resetGlobalStats();renderStats();}"><span>RESET</span></button>
     </div>
   </div>
@@ -1252,9 +1261,7 @@ body.touch #minimap{display:none;}
       </div>
       <div id="keybinds-list"></div>
     </div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-s" onclick="show('s-settings');renderSettings()"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -1269,9 +1276,7 @@ body.touch #minimap{display:none;}
       <div class="bind-tip" id="gpmap-tip">Branchez une manette pour configurer les boutons.</div>
       <div id="gpmap-list"></div>
     </div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-s" onclick="show('s-settings');renderSettings()"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -1279,7 +1284,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner">
     <div class="scr-h">⚙ PARAMÈTRES</div>
     <div class="settings-list" id="settings-list" style="width:min(520px,96vw);"></div>
-    <div class="btn-row" style="margin-top:14px;"><button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button></div>
+    
   </div>
 </div>
 
@@ -1352,7 +1357,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v25.0</div>
+<div id="watermark">PULSE v26.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1676,9 +1681,7 @@ body.touch #minimap{display:none;}
       <button class="shop-tab" onclick="shopTab('perma',this)">⬆ AMÉLIORATIONS</button>
     </div>
     <div class="shop-grid" id="shop-grid"></div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -2105,13 +2108,33 @@ let currentShopTab = 'skins';
 
 
 function openInventory(){
-  // Open shop directly on skins tab showing owned skins first
-  openShop();
-  // After a brief delay, scroll to owned skins
-  setTimeout(()=>{
-    const owned = document.querySelectorAll('.skin-card.owned');
-    if(owned.length) owned[0].scrollIntoView({behavior:'smooth',block:'nearest'});
-  },150);
+  renderInventory();
+  show('s-inventory');
+}
+function renderInventory(){
+  const grid=document.getElementById('inv-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  const mine=SKIN_DEFS.filter(s=>ownedSkins.includes(s.id));
+  const locked=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
+  const addSec=(title,skins,isLocked)=>{
+    if(!skins.length) return;
+    const hdr=document.createElement('div');hdr.className='inv-sec-hdr';hdr.textContent=title;grid.appendChild(hdr);
+    skins.forEach(sk=>{
+      const card=document.createElement('div');
+      const eq=equippedSkin===sk.id;
+      card.className='inv-card'+(eq?' equipped':isLocked?' locked':'');
+      if(eq){const b=document.createElement('div');b.className='inv-card-badge eq';b.textContent='ÉQUIPÉ';card.appendChild(b);}
+      if(isLocked){const b=document.createElement('div');b.className='inv-card-badge lock';b.textContent='🔒 '+sk.price+'🪙';card.appendChild(b);}
+      const cvs=document.createElement('canvas');card.appendChild(cvs);
+      setTimeout(()=>{try{drawSkinPreview(cvs,sk.id,54);}catch(e){}},0);
+      const nm=document.createElement('div');nm.className='inv-card-name';nm.textContent=sk.name;card.appendChild(nm);
+      card.onclick=isLocked?()=>openShop():()=>{if(!eq){equipSkin(sk.id);renderInventory();}};
+      grid.appendChild(card);
+    });
+  };
+  addSec('✓ MES SKINS ('+mine.length+')',mine,false);
+  addSec('🔒 À DÉBLOQUER',locked,true);
 }
 function openShop(){
   updateCoinsHUD();
@@ -2519,14 +2542,16 @@ function drawBg(t){
   if(!bgChanged) return;
   _bgLastT=t; _bgLastCombo=comboIntensity; _bgLastHp=hpRatio;
 
-  bCtx.fillStyle='#03030a'; bCtx.fillRect(0,0,W,H);
+  const _st=typeof getSeasonTheme==='function'?getSeasonTheme():{accent:[0,245,212],bg:'#03030a',effect:''};
+  bCtx.fillStyle=_st.bg; bCtx.fillRect(0,0,W,H);
+  const [_r,_g,_b]=_st.accent;
 
   // Grid — single batched path (MUCH faster than individual strokes)
   const gridAlpha = 0.022 + comboIntensity*0.028;
   const gridR = hpRatio<0.3 ? 255 : 0;
   const gridG = Math.round(245 - comboIntensity*60);
   const gridB = Math.round(212 - comboIntensity*100);
-  bCtx.strokeStyle=`rgba(${gridR},${gridG},${gridB},${gridAlpha})`; bCtx.lineWidth=.5;
+  bCtx.strokeStyle=`rgba(${hpRatio<0.3?255:_r},${hpRatio<0.3?10:Math.round(_g-comboIntensity*60)},${hpRatio<0.3?20:Math.round(_b-comboIntensity*80)},${gridAlpha})`; bCtx.lineWidth=.5;
   bCtx.beginPath();
   const gs=58;
   for(let x=0;x<W;x+=gs){ bCtx.moveTo(x,0); bCtx.lineTo(x,H); }
@@ -2545,7 +2570,7 @@ function drawBg(t){
   for(let bi=0;bi<buckets.length;bi++){
     const bucket=buckets[bi]; if(!bucket||!bucket.length) continue;
     const avgA=bucket.reduce((s,x)=>s+x.a,0)/bucket.length;
-    bCtx.fillStyle=`rgba(0,245,212,${avgA.toFixed(3)})`;
+    bCtx.fillStyle=`rgba(${_r},${_g},${_b},${avgA.toFixed(3)})`;
     bCtx.beginPath();
     for(const s of bucket){ bCtx.moveTo(s.x+s.r,s.y); bCtx.arc(s.x,s.y,s.r,0,Math.PI*2); }
     bCtx.fill();
@@ -3778,7 +3803,8 @@ function renderUpgradeChoices(){
   grid.innerHTML='';
   const rChance=Math.min(.65,.18+G.wave*.022);
   const legChance=Math.min(.25,.02+G.wave*.01);
-  const pool=[...UPGRADE_DEFS].sort(()=>Math.random()-.5);
+  const _skinUpgs=typeof getSkinSpecificUpgrades==='function'?getSkinSpecificUpgrades().filter(u=>!G.player.upgradeCounts[u.id]):[];
+  const pool=[...UPGRADE_DEFS,..._skinUpgs].sort(()=>Math.random()-.5);
   const chosen=[];
   for(const u of pool){
     if(chosen.length>=3) break;
@@ -5847,6 +5873,117 @@ function renderDetailedStats(G){
 // ═══════════════════════════════════════════════════════
 function getGameSpeed(){ return settings.gameSpeed||1; }
 
+
+// ── DIFFICULTÉ ADAPTATIVE ──
+function getDifficultyMult(){
+  if(!G||!G.player) return 1;
+  const upgCount=Object.keys(G.player.upgradeCounts||{}).length;
+  const permaTotal=Object.values(permaUpgrades||{}).reduce((a,b)=>a+(b||0),0);
+  return 1+Math.min(0.8,upgCount*0.05+permaTotal*0.03);
+}
+
+// ── UPGRADES SPÉCIFIQUES AUX SKINS ──
+const SKIN_UPGRADES = {
+  'default':  [{id:'sk_hex',ico:'🔋',n:'SURCHARGE HEX',d:'6e kill = +10% bombe.',tier:'rare',stacks:false,apply:p=>{p.hexCharge=true;}}],
+  'crimson':  [{id:'sk_fury',ico:'🩸',n:'FRÉNÉSIE',d:'<30% PV → cadence ×1.4.',tier:'rare',stacks:false,apply:p=>{p.furyOnLowHp=true;}}],
+  'gold':     [{id:'sk_greed',ico:'💰',n:'AVIDITÉ',d:'+30% pièces par kill.',tier:'rare',stacks:false,apply:p=>{p.greedCoin=true;}}],
+  'fire':     [{id:'sk_burn',ico:'🔥',n:'TRAÎNE ENFLAMMÉE',d:'Balles brûlent les ennemis.',tier:'epic',stacks:false,apply:p=>{p.fireTrail=true;}}],
+  'ice':      [{id:'sk_freeze',ico:'❄',n:'AURA DE GEL',d:'Ennemis <80px ralentis.',tier:'rare',stacks:false,apply:p=>{p.iceAura=true;}}],
+  'rainbow':  [{id:'sk_chaos',ico:'🌈',n:'CHAOS CHROMATIQUE',d:'Kills spawnt 3 balles aléatoires.',tier:'legendary',stacks:false,apply:p=>{p.rainbowChaos=true;}}],
+  'ghost':    [{id:'sk_fear',ico:'👻',n:'TERREUR',d:'Ennemis fuient à ta mort.',tier:'rare',stacks:false,apply:p=>{p.ghostFear=true;}}],
+  'star':     [{id:'sk_nova',ico:'💫',n:'NOVA STELLAIRE',d:'Level-up → explosion.',tier:'rare',stacks:false,apply:p=>{p.starNova=true;}}],
+};
+function getSkinSpecificUpgrades(){
+  return SKIN_UPGRADES[equippedSkin]||[];
+}
+
+// ── DÉCOR PAR SAISON ──
+const SEASON_THEMES = [
+  {name:'NEON CITY',  accent:[0,245,212],   bg:'#03030a', effect:'scanlines'},
+  {name:'BLOOD MOON', accent:[255,26,110],   bg:'#120308', effect:'radial'},
+  {name:'VOID',       accent:[180,79,255],  bg:'#080810', effect:'scanlines'},
+  {name:'SOLAR STORM',accent:[255,107,26],  bg:'#140a00', effect:'diagonal'},
+  {name:'DEEP SEA',   accent:[0,187,249],   bg:'#000d14', effect:'waves'},
+  {name:'GLITCH',     accent:[255,26,110],  bg:'#050514', effect:'glitch'},
+];
+function getSeasonTheme(){return SEASON_THEMES[(getCurrentSeason()-1)%SEASON_THEMES.length];}
+
+
+function renderRelicEquip(){
+  const grid=document.getElementById('relic-eq-grid');
+  if(!grid) return;
+  const unlocked=loadData('pulse_unlocked_relics_v1',[]);
+  const equipped=loadData('pulse_eq_relics_v1',[]);
+  grid.innerHTML='';
+
+  // Slots display
+  const slots=document.getElementById('relic-slots-display');
+  if(slots){
+    slots.innerHTML='';
+    const RDEF=[
+      {id:'dash_trail',ico:'💫'},{id:'chain_kill',ico:'⚡'},{id:'armor_regen',ico:'🛡'},
+      {id:'coin_magnet',ico:'🧲'},{id:'vampire',ico:'🩸'},{id:'double_dash',ico:'⚡⚡'},
+      {id:'berserker',ico:'😡'},{id:'overclock',ico:'⚙'},{id:'ghost_walk',ico:'👻'},{id:'transcend',ico:'✨'}
+    ];
+    for(let i=0;i<2;i++){
+      const r=equipped[i]?RDEF.find(x=>x.id===equipped[i]):null;
+      const sl=document.createElement('div');
+      sl.style.cssText='width:52px;height:52px;border:2px '+(r?'solid rgba(255,190,11,.5)':'dashed rgba(255,190,11,.3)')+';display:flex;align-items:center;justify-content:center;font-size:22px;background:'+(r?'rgba(255,190,11,.06)':'transparent')+';position:relative;';
+      sl.innerHTML='<span>'+(r?r.ico:'?')+'</span><div style="position:absolute;bottom:-14px;font-size:6px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;">SLOT '+(i+1)+'</div>';
+      slots.appendChild(sl);
+    }
+  }
+
+  const ALL=[
+    {id:'dash_trail',ico:'💫',name:'TRAÎNE DE DASH',desc:'Dash blesse les ennemis (15 dmg).',tag:'MOBILITÉ',price:800},
+    {id:'chain_kill',ico:'⚡',name:'RÉACTION EN CHAÎNE',desc:'5 kills = mini-nuke auto.',tag:'OFFENSIF',price:900},
+    {id:'armor_regen',ico:'🛡',name:'BLINDAGE RÉGÉNÉRANT',desc:'Chaque upgrade restore 15 PV.',tag:'DÉFENSIF',price:700},
+    {id:'coin_magnet',ico:'🧲',name:'MAGNÉTISME',desc:'+50% pièces gagnées.',tag:'ÉCONOMIE',price:600},
+    {id:'vampire',ico:'🩸',name:'VAMPIRISME',desc:'+2 PV par kill.',tag:'SURVIE',price:750},
+    {id:'double_dash',ico:'⚡⚡',name:'DOUBLE DASH',desc:'+1 charge de dash.',tag:'MOBILITÉ',price:850},
+    {id:'berserker',ico:'😡',name:'BERSERKER',desc:'Dégâts +5% par vague.',tag:'SCALING',price:1000},
+    {id:'overclock',ico:'⚙',name:'SURCHAUFFE',desc:'Cadence +30%, bombe -20%.',tag:'RISQUE',price:700},
+    {id:'ghost_walk',ico:'👻',name:'FANTÔME',desc:'Traverse les murs pendant le dash. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
+    {id:'transcend',ico:'✨',name:'TRANSCENDANCE',desc:'Régénère 50% HP toutes les 5 vagues. Exclusif Premium.',tag:'⭐ PREMIUM',price:0,premium:true},
+  ];
+
+  ALL.forEach(r=>{
+    const owned=unlocked.includes(r.id)||(r.premium&&typeof hasPremiumPass!=='undefined'&&hasPremiumPass.owned);
+    const isEq=equipped.includes(r.id);
+    const div=document.createElement('div');
+    div.style.cssText='border:1px solid '+(isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)')+';background:'+(isEq?'rgba(255,190,11,.06)':'var(--dim2)')+';padding:12px 10px;cursor:pointer;transition:all .15s;';
+    div.innerHTML=`<div style="font-size:22px;margin-bottom:4px;">${r.ico}</div>
+      <div style="font-family:Orbitron,monospace;font-size:clamp(8px,2vmin,10px);letter-spacing:.08em;color:${owned?'var(--txt)':'var(--dim)'};">${r.name}</div>
+      <div style="font-size:7px;color:var(--txt2);margin:3px 0;line-height:1.4;">${r.desc}</div>
+      <div style="font-size:6px;letter-spacing:.2em;padding:2px 6px;border:1px solid rgba(255,190,11,.3);color:var(--c3);display:inline-block;margin-top:3px;">${r.tag}</div>
+      ${owned?'':'<div style="margin-top:5px;font-size:8px;color:'+(r.premium?'var(--c3)':coins>=r.price?'var(--c1)':'var(--c2)')+';">'+(r.premium?'⭐ Passe Amélioré requis':'🪙 '+r.price)+'</div>'}
+      ${isEq?'<div style="margin-top:5px;font-size:7px;color:var(--c1);">✓ ÉQUIPÉE</div>':''}`;
+    div.onmouseover=()=>div.style.borderColor='var(--c1)';
+    div.onmouseout=()=>div.style.borderColor=isEq?'rgba(255,190,11,.6)':owned?'var(--border)':'rgba(255,255,255,.06)';
+    div.onclick=()=>{
+      if(!owned&&!r.premium){
+        if(coins<r.price){showPopup('Pas assez de pièces ! ('+r.price+' requis)','#ff1a6e');return;}
+        if(!confirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?'))return;
+        coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
+        const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+        showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
+        renderRelicEquip(); return;
+      }
+      if(owned){
+        const eq2=[...equipped];
+        if(eq2.includes(r.id)){
+          saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
+        } else {
+          if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
+          eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
+        }
+        renderRelicEquip();
+      }
+    };
+    grid.appendChild(div);
+  });
+}
+
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
 // ═══════════════════════════════════════════════════════
@@ -6563,9 +6700,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       <div id="daily-my-score" style="font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);text-align:center;min-height:18px;"></div>
       <button class="btn btn-p" onclick="startDailyChallenge()"><span>⚡ JOUER LE DÉFI</span></button>
     </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
-    </div>
+    
   </div>
 </div>
 
@@ -6600,9 +6735,27 @@ document.addEventListener('DOMContentLoaded',()=>{
       <!-- Results -->
       <div id="admin-results"></div>
     </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
+    
+  </div>
+</div>
+
+
+<div class="scr" id="s-relics">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="scr-h">✨ RELIQUES</div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-bottom:8px;">
+      Achète des reliques · Équipe max 2 avant de jouer
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;" id="relic-slots-display"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(130px,25vw,180px),1fr));gap:8px;width:min(640px,96vw);max-height:60vh;overflow-y:auto;" id="relic-eq-grid"></div>
+  </div>
+</div>
+
+<div class="scr" id="s-inventory">
+  <div class="scr-inner" style="align-items:center;">
+    <div class="scr-h">🎨 MES SKINS</div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-bottom:8px;">Clique pour équiper</div>
+    <div id="inv-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(90px,20vw,130px),1fr));gap:8px;width:min(720px,96vw);overflow-y:auto;max-height:70vh;"></div>
   </div>
 </div>
 
