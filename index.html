@@ -31,8 +31,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);overscroll
 @supports (height: 100dvh) {
   html,body { height: 100dvh; }
 }
-body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
-canvas{display:block;position:absolute;top:0;left:0;}
+body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+canvas{display:block;position:absolute;top:0;left:0;touch-action:none;}
 #cvs-bg{z-index:0;}#cvs-game{z-index:1;}
 
 /* ═══ RESPONSIVE CANVAS WRAPPER ═══ */
@@ -60,9 +60,12 @@ body.gamepad-active{cursor:none;}
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
 }
-/* iOS WebView fix — remove tap delay everywhere */
-* { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-button, [onclick] { cursor:pointer; }
+/* iOS fix — tous les éléments interactifs sont tappables */
+* { -webkit-tap-highlight-color:transparent; }
+button, a, [onclick], .scr-inner, .btn, .mode-card, .skin-card, .bp-card, .relic-card, .shop-tab { 
+  touch-action:manipulation !important; 
+  cursor:pointer;
+}
 .scr.on{display:flex;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
