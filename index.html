@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<title>PULSE v22 — Twin-Stick Survivor</title>
+<title>PULSE v23 — Twin-Stick Survivor</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -1264,7 +1264,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 22.1</div>
+    <div class="logo-ver">VERSION 23.0</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1441,7 +1441,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v22.1</div>
+<div id="watermark">PULSE v23.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1807,7 +1807,7 @@ async function loadCloudProfile(){
     if(error){
       if(error.code==='PGRST116'||error.message?.includes('0 rows')){
         // Nouveau joueur — créer profil
-        const fresh={id:currentUser.id,pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1}};
+        const fresh={id:currentUser.id,pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1},gifts:[],premium_pass:{season:0,owned:false}};
         const {error:insertErr}=await SB.from('profiles').insert(fresh);
         if(insertErr) console.warn('Erreur création profil:',insertErr.message);
         return fresh;
@@ -1909,6 +1909,7 @@ async function afterLogin(isNewAccount=false){
       if(profile.stats) gStats=profile.stats;
       if(profile.ach) achDone=profile.ach;
       // Load battle pass
+      if(profile.gifts){ /* gifts loaded on demand */ }
       if(profile.premium_pass && profile.premium_pass.season===BP_SEASON){
         hasPremiumPass=profile.premium_pass;
         saveData('pulse_premium_v1',hasPremiumPass);
@@ -2029,6 +2030,13 @@ const SKIN_DEFS = [
   {id:'pulsering',name:'PULSE RING',    price:200, color:'#ffbe0b', shape:'pulseRing',sides:6, trail:'#ffbe0b', glow:'#ffbe0b', lineOnly:true},
   {id:'cross',    name:'CROIX',         price:170, color:'#b44fff', shape:'cross',    sides:4, trail:'#b44fff', glow:'#b44fff', lineOnly:true},
   {id:'arrow',    name:'FLÈCHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9'},
+  // Skins BP Premium — générés dynamiquement par saison
+  {id:'crimson_ex_s1', name:'SANG NOIR S1',  price:0, color:'#8b0000', shape:'hex', sides:6, trail:'#8b0000', glow:'#cc0000', bpOnly:true},
+  {id:'prism_s1',      name:'PRISME S1',     price:0, color:'rainbow', shape:'pulseRing', sides:6, trail:'rainbow', glow:'#ffffff', rainbow:true, bpOnly:true},
+  {id:'crimson_ex_s2', name:'ABYSSAL S2',    price:0, color:'#001a4d', shape:'hex', sides:6, trail:'#0044cc', glow:'#0066ff', bpOnly:true},
+  {id:'prism_s2',      name:'AURORE S2',     price:0, color:'#ff6b9d', shape:'wire', sides:6, trail:'#c44dff', glow:'#ff6b9d', lineOnly:true, bpOnly:true},
+  {id:'crimson_ex_s3', name:'SOLAIRE S3',    price:0, color:'#ff4500', shape:'star', sides:5, trail:'#ffbe0b', glow:'#ff4500', bpOnly:true},
+  {id:'prism_s3',      name:'NÉBULEUSE S3',  price:0, color:'#6600cc', shape:'pulseRing', sides:6, trail:'#9933ff', glow:'#cc66ff', lineOnly:true, bpOnly:true},
 ];
 
 function getSkin(){ return SKIN_DEFS.find(s=>s.id===equippedSkin)||SKIN_DEFS[0]; }
@@ -2215,7 +2223,17 @@ function renderShop(tab){
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
   if(tab==='skins'){
+    // Section skins BP acquis
+    const bpSkins = SKIN_DEFS.filter(sk=>sk.bpOnly&&ownedSkins.includes(sk.id));
+    if(bpSkins.length){
+      const bpHdr=document.createElement('div');
+      bpHdr.style.cssText='grid-column:1/-1;font-family:Orbitron,monospace;font-size:7px;letter-spacing:.3em;color:var(--c3);padding:4px 0 8px;border-bottom:1px solid rgba(255,190,11,.2);margin-bottom:4px;';
+      bpHdr.textContent='⭐ SKINS PASSE AMÉLIORÉ';
+      grid.appendChild(bpHdr);
+    }
     for(const sk of SKIN_DEFS){
+      // Skip BP-only skins that aren't owned (they appear elsewhere)
+      if(sk.bpOnly && !ownedSkins.includes(sk.id)) continue;
       const owned=ownedSkins.includes(sk.id);
       const equipped=equippedSkin===sk.id;
       const card=document.createElement('div');
@@ -4563,6 +4581,18 @@ async function renderLeaderboard(){
 function show(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   if(id!=='__none__') document.getElementById(id)?.classList.add('on');
+  // Back button update (inline — pas de wrapper pour éviter récursion)
+  if(typeof BACK_ACTIONS !== 'undefined' && typeof _backBtn !== 'undefined'){
+    const action = BACK_ACTIONS[id];
+    const noBack = ['s-title','s-auth','s-go','s-pause','__none__'];
+    if(action && !noBack.includes(id)){
+      _backBtn.style.display = 'block';
+      _backBtn.onclick = ()=>{ action(); };
+    } else {
+      _backBtn.style.display = 'none';
+      _backBtn.onclick = null;
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4881,8 +4911,8 @@ const PREMIUM_PASS_COST = 1500;
 
 // Premium BP rewards (interleaved with free ones, shown as locked to non-premium)
 const BP_PREMIUM_REWARDS = [
-  {lv:2,  ico:'⚡', name:'BOOST TEMPORAIRE',  desc:'Cadence de tir ×1.5 pendant 3 vagues', temp:true, duration:3, apply:(p)=>{ p.tempFireBoost=(p.tempFireBoost||0)+3; }},
-  {lv:5,  ico:'🔴', name:'SKIN SANG NOIR',    desc:'Skin exclusif Saison '+BP_SEASON, type:'skin', value:'crimson_ex_s'+BP_SEASON},
+  {lv:2,  ico:'⚡', name:'BOOST TEMPORAIRE',  desc:'Cadence de tir ×1.5 pendant 3 vagues', type:'temp', value:'temp_fire3'},
+  {lv:5,  ico:'🔴', name:'SKIN EXCLUSIF S'+BP_SEASON, desc:'Skin exclusif de la saison en cours', type:'skin', value:'crimson_ex_s'+BP_SEASON},
   {lv:8,  ico:'🛡', name:'BOUCLIER RENFORCÉ', desc:'Commence chaque vague avec 1 bouclier temporaire', temp:true, apply:(p,g)=>{ if(!g._premShieldApplied){ p.tempShield=true; p.tempShieldHp=2; g._premShieldApplied=true; } }},
   {lv:10, ico:'💜', name:'RELIQUE: FANTÔME',  desc:'EXCLUSIVE: Le joueur peut traverser les murs et les ennemis ne te voient plus pendant le dash', relic:true, relicId:'ghost_walk', exclusive:true},
   {lv:15, ico:'🌈', name:'SKIN PRISME',       desc:'Skin holographique exclusif Saison '+BP_SEASON, type:'skin', value:'prism_s'+BP_SEASON},
@@ -5979,7 +6009,7 @@ async function loadDailyLeaderboard(dateStr){
 function startDailyChallenge(){
   currentMode='daily';
   window._pendingDailyMods=getDailyModifiers();
-  show('s-mode'); // hide daily screen
+  // startGame() appelle show('__none__') puis lance le jeu directement
   startGame();
 }
 
@@ -6242,25 +6272,7 @@ _backBtn.onmouseover = ()=>{ _backBtn.style.borderColor='var(--c1)'; _backBtn.st
 _backBtn.onmouseout  = ()=>{ _backBtn.style.borderColor='rgba(255,255,255,.15)'; _backBtn.style.color='rgba(255,255,255,.5)'; };
 document.body.appendChild(_backBtn);
 
-// Bouton retour — hook sur show() sans récursion
-// On utilise une référence directe à la logique DOM au lieu de wrapper show()
-const _showBase = function(id){
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  if(id!=='__none__') document.getElementById(id)?.classList.add('on');
-};
-// Remplace la fonction show originale par une version augmentée
-show = function(id){
-  _showBase(id);
-  const action = BACK_ACTIONS[id];
-  const noBack = ['s-title','s-auth','s-go','s-pause','__none__'];
-  if(action && !noBack.includes(id)){
-    _backBtn.style.display = 'block';
-    _backBtn.onclick = ()=>{ action(); };
-  } else {
-    _backBtn.style.display = 'none';
-    _backBtn.onclick = null;
-  }
-};
+// Back button intégré directement dans show() ci-dessus
 
 
 // ═══════════════════════════════════════════════════════
@@ -6342,7 +6354,12 @@ async function sendGift(){
   document.getElementById('gift-status').textContent='Envoi…';
   try{
     // Find recipient
-    const {data:recData}=await SB.from('profiles').select('id,gifts,owned_skins').eq('pseudo',recipient).single();
+    // Search by pseudo (case-insensitive)
+    const {data:recData,error:recErr}=await SB.from('profiles').select('id,gifts,owned_skins,pseudo').ilike('pseudo',recipient).limit(1).single();
+    if(recErr||!recData){ 
+      document.getElementById('gift-status').textContent='Joueur "'+recipient+'" introuvable. Vérifie le pseudo exact.'; 
+      document.getElementById('gift-status').className='online-status err'; return; 
+    }
     if(!recData){ document.getElementById('gift-status').textContent='Joueur introuvable.'; document.getElementById('gift-status').className='online-status err'; return; }
     let giftObj={id:Date.now()+'_'+Math.random().toString(36).slice(2,7),from:userPseudo||'Anonyme',claimed:false};
     // Validate and deduct from sender
