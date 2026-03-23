@@ -3429,8 +3429,8 @@ function startWave(){
   }
   // Relic: berserker — +6% damage per wave
   if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
-  // Relic: transcend (premium) — +25 PV every 5 waves
-  if(G.player.transcendRelic && w%5===0){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+25); updateHPBar(); showPopup('✨ TRANSCENDANCE +25 PV','#b44fff'); }
+  // Relic: transcend (premium) — +25 PV every 5 waves (not in hardcore)
+  if(G.player.transcendRelic && w%5===0 && currentMode!=='hardcore'){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+25); updateHPBar(); showPopup('✨ TRANSCENDANCE +25 PV','#b44fff'); }
   // Relic: ghost step reset per wave
   G.player._ghostStepReady=false;
   G.spawnPool=(currentMode==='arena'&&w===1)?buildArenaWave(arenaLevel):buildWavePool(w);
@@ -3934,7 +3934,7 @@ function update(now){
       spawnFx(mx,my,'#ff9f1c',12);
       if(Math.hypot(G.player.x-mx,G.player.y-my)<60) dmgPlayer(6);
     }
-    if(G._weather==='regen' && frame%60===0){
+    if(G._weather==='regen' && frame%60===0 && currentMode!=='hardcore'){
       G.player.hp=Math.min(G.player.maxHp, G.player.hp+5); updateHPBar();
     }
   }
@@ -4405,7 +4405,7 @@ function onKill(e){
   else if(G.combo===100) showPopup('👑 COMBO ×100 !!!','#b44fff');
   const xp=Math.round((e.boss?35:e.mini?20:8)*p.xpMult);
   gainXP(xp);
-  if(p.lifesteal>0){ p.hp=Math.min(p.maxHp,p.hp+p.lifesteal); updateHPBar(); }
+  if(p.lifesteal>0 && currentMode!=='hardcore'){ p.hp=Math.min(p.maxHp,p.hp+p.lifesteal); updateHPBar(); }
   p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate);
   updateSpecBar();
   if(_duoActive&&P2&&!P2._dead){
@@ -4417,8 +4417,8 @@ function onKill(e){
   addKF(`+${pts} ${e.lbl}`, cls);
   checkAch('first_kill',1); checkAch('kills_100',G.sessionKills); checkAch('kills_500',G.sessionKills);
   G.maxComboThisRun = Math.max(G.maxComboThisRun||0, G.combo);
-  // Relic: vampire
-  if(p.vampireRelic){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
+  // Relic: vampire (not in hardcore)
+  if(p.vampireRelic && currentMode!=='hardcore'){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
   // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
   if(p.chainKill && G._chainKillCount>=5 && !e._fromNuke){ 
@@ -4460,8 +4460,11 @@ function onKill(e){
   if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
   // Relic: scavenger
   if(p.scavengerRelic && Math.random()<0.20){ awardCoins(2); }
-  // Relic: soul harvest
-  if(p.soulHarvestRelic && (e.boss||e.mini)){ p.hp=Math.min(p.maxHp,p.hp+30); updateHPBar(); p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.4); updateSpecBar(); showPopup('💀 MOISSON !','#b44fff'); }
+  // Relic: soul harvest (HP part disabled in hardcore)
+  if(p.soulHarvestRelic && (e.boss||e.mini)){
+    if(currentMode!=='hardcore') { p.hp=Math.min(p.maxHp,p.hp+30); updateHPBar(); }
+    p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.4); updateSpecBar(); showPopup('💀 MOISSON !','#b44fff');
+  }
   // Relic: overload core
   if(p.overloadCoreRelic){ p.specCharge=Math.min(p.specMax,p.specCharge+(e.boss?28:e.mini?15:7)*p.specRate); updateSpecBar(); }
   if(currentMode==='daily') G._dailyKills=(G._dailyKills||0)+1;
@@ -4982,10 +4985,13 @@ function renderUpgradeChoices(){
       const unique=Object.keys(G.player.upgradeCounts).length;
       gStats.uniqueUpgrades=Math.max(gStats.uniqueUpgrades||0,unique);
       checkAch('all_upgrades',unique);
-      // Relic: armorRegen — +15 PV par upgrade choisie
-      if(G.player.armorRegen){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+15); updateHPBar(); addKF('🛡 +15 PV','p'); }
+      // Relic: armorRegen — +15 PV par upgrade (not in hardcore)
+      if(G.player.armorRegen && currentMode!=='hardcore'){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+15); updateHPBar(); addKF('🛡 +15 PV','p'); }
+      // Hardcore: enforce 1 HP max after any upgrade
+      if(currentMode==='hardcore'){ G.player.maxHp=1; G.player.hp=1; updateHPBar(); }
       updatePassives();
       show('__none__');
+      document.body.classList.add('game-active'); // restore HUD after overlay
       G.paused=false;
       sfxUpgrade();
       countdown(3,startWave);
@@ -5314,6 +5320,7 @@ function showCurses(){
       updatePassives();
       sfxCurse();
       show('__none__');
+      document.body.classList.add('game-active');
       G.paused=false;
       showPopup(`${curse.ico} ${curse.n} !`,'#ff1a6e');
       G.rerollsLeft=1;
@@ -5328,6 +5335,7 @@ function showCurses(){
 
 function skipCurse(){
   show('__none__');
+  document.body.classList.add('game-active');
   if(G){ G.paused=false; G.rerollsLeft=1; showUpgrades(); }
 }
 
@@ -5862,8 +5870,9 @@ function show(id){
   if(id!=='__none__') document.getElementById(id)?.classList.add('on');
   const noBack=['s-title','s-auth','s-go','s-pause','__none__'];
   if(_backBtn) _backBtn.style.display=(BACK_MAP[id]&&!noBack.includes(id))?'block':'none';
-  // Remove game-active when any menu screen shown (not pause/none)
-  if(id!=='__none__'&&id!=='s-pause') document.body.classList.remove('game-active');
+  // These screens overlay the running game — keep game-active so HUD stays visible
+  const inGameOverlays=['s-upg','s-curse','s-pause','__none__'];
+  if(!inGameOverlays.includes(id)) document.body.classList.remove('game-active');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7695,6 +7704,7 @@ function pickRelic(r){
   activeRelics.push(r);
   r.apply(G.player);
   document.getElementById('relic-offer').classList.remove('on');
+  document.body.classList.add('game-active'); // ensure HUD visible
   G.paused=false; pendingRelicOffer=false;
   showPopup('✨ '+r.name,'#ffbe0b');
   updateRelicHud();
