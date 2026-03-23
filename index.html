@@ -26,7 +26,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);overscroll
 @supports (height: 100dvh) {
   html,body { height: 100dvh; }
 }
-body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+/* Désactiver scroll/zoom uniquement pendant le jeu — menus restent cliquables */
+body.game-active{touch-action:none;}
 canvas{display:block;position:absolute;top:0;left:0;}
 #cvs-bg{z-index:0;}#cvs-game{z-index:1;}
 
@@ -93,6 +95,10 @@ body.game-active #relic-hud { display:flex; }
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
   padding-top:env(safe-area-inset-top);
+  touch-action:pan-y;
+}
+.scr button,.scr [onclick],.scr input,.scr select,.scr label,.scr a{
+  touch-action:manipulation;
 }
 /* iOS WebView fix — remove tap delay everywhere */
 * { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
