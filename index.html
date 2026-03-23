@@ -8413,16 +8413,7 @@ function getSkinSpecificUpgrades(){
   return SKIN_UPGRADES[equippedSkin]||[];
 }
 
-// ── DÉCOR PAR SAISON ──
-const SEASON_THEMES = [
-  {name:'NEON CITY',  accent:[0,245,212],   bg:'#03030a', effect:'scanlines'},
-  {name:'BLOOD MOON', accent:[255,26,110],   bg:'#120308', effect:'radial'},
-  {name:'VOID',       accent:[180,79,255],  bg:'#080810', effect:'scanlines'},
-  {name:'SOLAR STORM',accent:[255,107,26],  bg:'#140a00', effect:'diagonal'},
-  {name:'DEEP SEA',   accent:[0,187,249],   bg:'#000d14', effect:'waves'},
-  {name:'GLITCH',     accent:[255,26,110],  bg:'#050514', effect:'glitch'},
-];
-function getSeasonTheme(){return SEASON_THEMES[(getCurrentSeason()-1)%SEASON_THEMES.length];}
+// ── DÉCOR PAR SAISON (défini dans le système BP) ──
 
 
 function renderRelicEquip(){
