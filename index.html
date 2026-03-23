@@ -2039,11 +2039,27 @@ let currentUser = null;
 let isGuest = false;
 
 try {
-  // Nouveau format de clé Supabase (sb_publishable_...)
-  SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  console.log('✅ Supabase connecté');
+  // Tente l'initialisation — la lib supabase-js@2 accepte les clés sb_publishable
+  // mais si elle échoue on reste en mode invité
+  if(typeof supabase !== 'undefined' && supabase.createClient) {
+    SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+    // Test rapide pour vérifier que le client répond
+    SB.auth.getSession().catch(e => {
+      console.warn('Supabase session check failed:', e);
+    });
+    console.log('✅ Supabase client initialisé');
+  } else {
+    console.warn('Supabase lib non disponible');
+  }
 } catch(e) {
   console.warn('Supabase erreur init:', e);
+  SB = null;
 }
 
 // ─── Cloud profile schema (table: profiles) ───
@@ -2170,9 +2186,12 @@ async function doAuth(){
     }
   } catch(e){
     console.error('Auth error:',e);
-    errEl.textContent='Erreur réseau ('+e.message+'). Essaie le mode invité.';
+    if(e.message&&e.message.includes('fetch')) errEl.textContent='Impossible de rejoindre le serveur. Vérifie ta connexion ou joue en invité.';
+    else if(e.message&&e.message.includes('Invalid API key')) errEl.textContent='Clé API invalide — contacte l\'admin.';
+    else errEl.textContent='Erreur : '+e.message+'. Essaie le mode invité.';
+  } finally {
+    btn.style.opacity=''; btn.style.pointerEvents='';
   }
-  btn.style.opacity=''; btn.style.pointerEvents='';
 }
 
 function translateAuthErr(msg){
@@ -8165,14 +8184,25 @@ async function initDailyChallenge(){
   const saved=loadData('pulse_daily_v1',{date:'',score:0,rewarded:false});
   const playBtn=document.getElementById('daily-play-btn');
   if(saved.date===dateStr){
-    const rewardLabel = saved.score>=100000?'👑 +800🪙':saved.score>=50000?'🥇 +400🪙':saved.score>=10000?'🥈 +150🪙':'🥉 +50🪙';
-    document.getElementById('daily-my-score').textContent=`Ton score : ${saved.score.toLocaleString('fr-FR')} pts · ${rewardLabel} reçus`;
+    let rewardLabel;
+    if(saved.rankRewarded && saved.finalRank){
+      const medal = saved.finalRank===1?'👑 1er':saved.finalRank===2?'🥇 2e':saved.finalRank===3?'🥈 3e':saved.finalRank<=10?'🥉 Top 10':'';
+      const totalCoins = (saved.baseRewarded||50) + (saved.finalRank===1?750:saved.finalRank===2?350:saved.finalRank===3?150:saved.finalRank<=10?50:0);
+      rewardLabel = medal ? `${medal} · +${totalCoins}🪙 total` : `+${saved.baseRewarded||50}🪙`;
+    } else if(saved.date === dateStr) {
+      rewardLabel = `+${saved.baseRewarded||50}🪙 (rang attribué à minuit)`;
+    } else {
+      rewardLabel = `+${saved.baseRewarded||50}🪙`;
+    }
+    document.getElementById('daily-my-score').textContent=`Ton score : ${saved.score.toLocaleString('fr-FR')} pts · ${rewardLabel}`;
     if(playBtn){ playBtn.querySelector('span').textContent='✓ DÉJÀ JOUÉ AUJOURD\'HUI'; playBtn.style.opacity='.4'; playBtn.style.pointerEvents='none'; }
   } else {
     document.getElementById('daily-my-score').textContent='';
     if(playBtn){ playBtn.querySelector('span').textContent='⚡ JOUER LE DÉFI'; playBtn.style.opacity=''; playBtn.style.pointerEvents=''; }
   }
   await loadDailyLeaderboard(dateStr);
+  // Vérifie si une récompense de rang du jour précédent est due
+  checkDailyRankReward();
 }
 
 async function loadDailyLeaderboard(dateStr){
@@ -8216,30 +8246,89 @@ function startDailyChallenge(){
 }
 
 async function saveDailyScore(score){
-  const dateStr=getDailyDateStr();
-  const saved=loadData('pulse_daily_v1',{date:'',score:0});
-  // Only save first run (daily = 1 per day)
-  if(saved.date===dateStr) return;
-  // Award coins based on score tier
-  let coinsReward=50; // bronze: just for playing
-  if(score>=100000) coinsReward=800;
-  else if(score>=50000) coinsReward=400;
-  else if(score>=10000) coinsReward=150;
-  // Bonus based on wave reached
-  const wave=G?.wave||0;
-  const waveBonus=Math.min(200, wave*5);
-  const total=coinsReward+waveBonus;
-  awardCoins(total);
-  showPopup(`⚡ DÉFI +${total}🪙 (vague ${wave})`,'#ffbe0b');
-  saveData('pulse_daily_v1',{date:dateStr,score,wave,rewarded:true});
-  if(!SB||!currentUser) return;
-  const profile=await loadCloudProfile();
-  if(!profile) return;
-  const scores=profile.scores||[];
-  const existing=scores.findIndex(s=>s.daily===dateStr);
-  const entry={daily:dateStr,score,wave,date:dateStr};
-  if(existing>=0) scores[existing]=entry; else scores.push(entry);
-  await saveCloudProfile({scores:scores.slice(-50)});
+  const dateStr = getDailyDateStr();
+  const saved   = loadData('pulse_daily_v1', {date:'', score:0, rewarded:false, rankRewarded:false});
+  // Une seule tentative par jour
+  if(saved.date === dateStr) return;
+
+  const wave = G?.wave || 0;
+
+  // Récompense immédiate : +50🪙 juste pour avoir joué (bronze garanti)
+  const baseReward = 50;
+  awardCoins(baseReward);
+  showPopup(`⚡ DÉFI JOUÉ · +${baseReward}🪙 — Classement à minuit !`, '#ffbe0b');
+
+  // Sauvegarder localement
+  saveData('pulse_daily_v1', {
+    date:        dateStr,
+    score:       score,
+    wave:        wave,
+    rewarded:    true,      // bronze déjà reçu
+    rankRewarded:false,     // rang final pas encore attribué
+    baseRewarded:baseReward
+  });
+
+  // Sauvegarder sur le cloud
+  if(!SB || !currentUser) return;
+  try {
+    const profile = await loadCloudProfile();
+    if(!profile) return;
+    const scores  = profile.scores || [];
+    const existing= scores.findIndex(s => s.daily === dateStr);
+    const entry   = {daily:dateStr, score, wave, date:dateStr};
+    if(existing >= 0) scores[existing] = entry; else scores.push(entry);
+    await saveCloudProfile({scores: scores.slice(-50)});
+  } catch(e){ console.warn('saveDailyScore cloud error:', e); }
+}
+
+// Appelée à chaque ouverture du défi — vérifie si une récompense de rang est due
+async function checkDailyRankReward(){
+  if(!SB || !currentUser) return;
+
+  const todayStr     = getDailyDateStr();
+  const saved        = loadData('pulse_daily_v1', {date:'', rankRewarded:false});
+
+  // Rien joué ou rang déjà attribué
+  if(!saved.date || saved.rankRewarded) return;
+  // On n'attribue le rang qu'une fois le jour terminé (date sauvée ≠ aujourd'hui)
+  if(saved.date === todayStr) return;
+
+  // Le joueur a joué hier (ou avant) → calculer son rang final
+  const playedDateStr = saved.date;
+  try {
+    const {data} = await SB.from('profiles').select('pseudo,scores').limit(500);
+    if(!data) return;
+
+    const dailyScores = [];
+    data.forEach(p => {
+      if(!p.scores) return;
+      const ds = p.scores.find(s => s.daily === playedDateStr);
+      if(ds) dailyScores.push({name: p.pseudo||'?', score: ds.score});
+    });
+    dailyScores.sort((a,b) => b.score - a.score);
+
+    const myRank = dailyScores.findIndex(e => {
+      // Cherche notre score (peut avoir des ex-aequo — prend le premier)
+      return e.score === saved.score;
+    });
+
+    // Pièces bonus selon rang (au-delà du bronze déjà reçu)
+    let rankBonus = 0;
+    let rankLabel = '';
+    if(myRank === 0)       { rankBonus = 800 - (saved.baseRewarded||50); rankLabel = '👑 1ER !'; }
+    else if(myRank === 1)  { rankBonus = 400 - (saved.baseRewarded||50); rankLabel = '🥇 2E !'; }
+    else if(myRank === 2)  { rankBonus = 200 - (saved.baseRewarded||50); rankLabel = '🥈 3E !'; }
+    else if(myRank <= 9)   { rankBonus = 100 - (saved.baseRewarded||50); rankLabel = '🥉 TOP 10'; }
+    // else : bronze déjà reçu, pas de bonus supplémentaire
+
+    if(rankBonus > 0) {
+      awardCoins(rankBonus);
+      showPopup(`⚡ DÉFI HIER — ${rankLabel} +${rankBonus}🪙 bonus !`, '#ffbe0b');
+    }
+
+    // Marquer comme attribué
+    saveData('pulse_daily_v1', Object.assign({}, saved, {rankRewarded:true, finalRank:myRank+1}));
+  } catch(e){ console.warn('checkDailyRankReward error:', e); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -9168,26 +9257,34 @@ document.addEventListener('DOMContentLoaded',()=>{
       <!-- Reward tiers -->
       <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:8px;">RÉCOMPENSES</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;" id="daily-rewards">
-        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+        <div style="flex:1;min-width:72px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
           <div style="font-size:16px;">🥉</div>
           <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+50🪙</div>
           <div style="font-size:6px;color:var(--dim);">Participé</div>
         </div>
-        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
-          <div style="font-size:16px;">🥈</div>
-          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+150🪙</div>
-          <div style="font-size:6px;color:var(--dim);">&gt; 10 000 pts</div>
+        <div style="flex:1;min-width:72px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+          <div style="font-size:16px;">🏅</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+100🪙</div>
+          <div style="font-size:6px;color:var(--dim);">Top 10</div>
         </div>
-        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+        <div style="flex:1;min-width:72px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
+          <div style="font-size:16px;">🥈</div>
+          <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+200🪙</div>
+          <div style="font-size:6px;color:var(--dim);">3e place</div>
+        </div>
+        <div style="flex:1;min-width:72px;padding:8px;border:1px solid rgba(255,190,11,.3);background:rgba(255,190,11,.03);text-align:center;">
           <div style="font-size:16px;">🥇</div>
           <div style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c3);">+400🪙</div>
-          <div style="font-size:6px;color:var(--dim);">&gt; 50 000 pts</div>
+          <div style="font-size:6px;color:var(--dim);">2e place</div>
         </div>
-        <div style="flex:1;min-width:80px;padding:8px;border:1px solid rgba(180,79,255,.3);background:rgba(180,79,255,.04);text-align:center;">
+        <div style="flex:1;min-width:72px;padding:8px;border:1px solid rgba(180,79,255,.3);background:rgba(180,79,255,.04);text-align:center;">
           <div style="font-size:16px;">👑</div>
           <div style="font-family:'Orbitron',monospace;font-size:7px;color:#b44fff;">+800🪙</div>
-          <div style="font-size:6px;color:var(--dim);">&gt; 100 000 pts</div>
+          <div style="font-size:6px;color:var(--dim);">1ère place</div>
         </div>
+      </div>
+      <div style="font-size:7px;color:var(--dim);letter-spacing:.1em;text-align:center;margin:-2px 0 6px;">
+        🕛 Récompenses de rang attribuées au lendemain
       </div>
       <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-top:8px;">CLASSEMENT DU JOUR</div>
       <div class="daily-lb" id="daily-lb"><div style="color:var(--dim);font-size:8px;text-align:center;padding:12px;">Connecte-toi pour voir le classement</div></div>
