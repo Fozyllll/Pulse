@@ -26,7 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);overscroll
 @supports (height: 100dvh) {
   html,body { height: 100dvh; }
 }
-body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Share Tech Mono',monospace;color:var(--txt);user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}body:not(.touch){cursor:none;}
 /* Désactiver scroll/zoom uniquement pendant le jeu — menus restent cliquables */
 body.game-active{touch-action:none;}
 canvas{display:block;position:absolute;top:0;left:0;}
@@ -36,11 +36,13 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
 
 /* CROSSHAIR */
-#xhair{position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;transform:translate(-50%,-50%);left:-100px;top:-100px;}
+#xhair{position:fixed;z-index:9999;pointer-events:none;width:32px;height:32px;transform:translate(-50%,-50%);left:-100px;top:-100px;transition:opacity .1s;}
 .xdot{display:none;}
 body.touch #xhair{display:none !important;}
-body.game-active:not(.touch) #xhair{display:block;}
-body:not(.game-active) #xhair{visibility:hidden;}
+/* Curseur visible pendant le jeu ET dans les menus desktop */
+body:not(.touch) #xhair{display:block;}
+body:not(.touch):not(.game-active) #xhair{opacity:0.55;}
+body:not(.touch).game-active #xhair{opacity:1;}
 /* ── GAME-ONLY ELEMENTS: hidden outside of active gameplay ── */
 /* These elements should ONLY be visible while game-active */
 #hud,
@@ -79,7 +81,7 @@ body.game-active #relic-hud { display:flex; }
 /* BUTTONS — kept in main block below */
 /* ── cursor rules ── cleaned up ── */
 .hdiv{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--c1)18,transparent);margin:16px 0;}
-.scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5.5vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 30px rgba(0,245,212,.35);}
+.scr-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(18px,5vmin,28px);letter-spacing:.12em;color:var(--txt);margin-bottom:6px;text-align:center;text-shadow:0 0 30px rgba(0,245,212,.25);}
 .scr-sub{font-size:9px;letter-spacing:.35em;color:var(--txt2);margin-top:4px;text-align:center;margin-bottom:14px;}
 
 /* GAMEPAD INDICATOR */
@@ -648,11 +650,11 @@ body.touch #minimap{display:none;}
 
 
 #s-auth{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a1e16 0%,var(--bg) 70%);z-index:600;}
-.auth-box{width:min(360px,92vw);display:flex;flex-direction:column;gap:10px;}
+.auth-box{width:min(380px,92vw);display:flex;flex-direction:column;gap:12px;background:rgba(3,3,10,.95);border:1px solid rgba(0,245,212,.15);padding:32px 28px;border-radius:4px;box-shadow:0 0 60px rgba(0,245,212,.05),0 20px 60px rgba(0,0,0,.5);}
 .auth-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,6vw,36px);letter-spacing:.14em;color:var(--c1);text-align:center;margin-bottom:4px;}
 .auth-sub{font-size:8px;letter-spacing:.35em;color:var(--txt2);text-align:center;margin-bottom:10px;}
-.auth-input{background:var(--dim2);border:1px solid var(--border);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:13px;padding:12px 14px;outline:none;transition:border-color .15s;width:100%;}
-.auth-input:focus{border-color:var(--c1);}
+.auth-input{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:13px;padding:13px 16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;border-radius:2px;}
+.auth-input:focus{border-color:var(--c1);box-shadow:0 0 0 1px rgba(0,245,212,.2),0 0 12px rgba(0,245,212,.08);}
 .auth-err{color:var(--c2);font-size:9px;letter-spacing:.1em;min-height:14px;text-align:center;}
 .auth-ok{color:var(--c1);font-size:9px;letter-spacing:.1em;min-height:14px;text-align:center;}
 .auth-switch{font-size:8px;color:var(--txt2);text-align:center;margin-top:4px;cursor:pointer;letter-spacing:.1em;}
@@ -2526,18 +2528,26 @@ let _xhairCanvas=null;
 function drawXhair(){
   if(!_xhairCanvas) _xhairCanvas=document.getElementById('xhair');
   const cvs=_xhairCanvas; if(!cvs) return;
-  const s=28; cvs.width=s; cvs.height=s;
+  const s=32; cvs.width=s; cvs.height=s;
   const ctx=cvs.getContext('2d');
   ctx.clearRect(0,0,s,s);
-  // Color from current skin
   let col='#00f5d4';
   try{ const sk=getSkin(); col=sk.rainbow?'#00f5d4':(sk.color&&sk.color!=='rainbow'?sk.color:'#00f5d4'); }catch(e){}
-  ctx.shadowColor=col; ctx.shadowBlur=5;
+  ctx.shadowColor=col; ctx.shadowBlur=8;
   getCursorDef().draw(ctx,s,col);
 }
-
+// Suivre la souris partout (menus + jeu)
+document.addEventListener('mousemove',e=>{
+  const xh=document.getElementById('xhair');
+  if(xh){ xh.style.left=e.clientX+'px'; xh.style.top=e.clientY+'px'; }
+},{passive:true});
 // Draw crosshair once on startup; refreshed each frame during game
 drawXhair();
+// SFX clic sur tous les boutons de menu
+document.addEventListener('click',e=>{
+  if(e.target.closest('.btn,.mode-card,.skin-card,.relic-card,.bp-cell-claim,.bp-card-claim,.shop-tab,.auth-guest,.auth-switch,.back-btn'))
+    sfxClick&&sfxClick();
+},{passive:true});
 
 const SKIN_DEFS = [
   {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4'},
@@ -2558,6 +2568,11 @@ const SKIN_DEFS = [
   {id:'pulsering',name:'PULSE RING',    price:200, color:'#ffbe0b', shape:'pulseRing',sides:6, trail:'#ffbe0b', glow:'#ffbe0b', lineOnly:true},
   {id:'cross',    name:'CROIX',         price:170, color:'#b44fff', shape:'cross',    sides:4, trail:'#b44fff', glow:'#b44fff', lineOnly:true},
   {id:'arrow',    name:'FLÈCHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9'},
+  // ── SKINS EXCLUSIFS PASS PREMIUM ──
+  {id:'void',     name:'VOID',          price:0,   color:'#1a0a2e', shape:'void',     sides:6, trail:'#6600ff', glow:'#6600ff', premium:true, lineOnly:true},
+  {id:'solar',    name:'SOLAIRE',       price:0,   color:'#ff9f1c', shape:'solar',    sides:8, trail:'#ffbe0b', glow:'#ff6b1a', premium:true},
+  {id:'glitch',   name:'GLITCH',        price:0,   color:'#00ff88', shape:'glitch',   sides:6, trail:'#ff1a6e', glow:'#00ff88', premium:true, lineOnly:true},
+  {id:'cosmic',   name:'COSMIQUE',      price:0,   color:'#b44fff', shape:'cosmic',   sides:5, trail:'#00f5d4', glow:'#b44fff', premium:true},
 ];
 
 function getSkin(){ return SKIN_DEFS.find(s=>s.id===equippedSkin)||SKIN_DEFS[0]; }
@@ -2700,6 +2715,81 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     // Noyau
     ctx.fillStyle=col;
     ctx.beginPath(); ctx.arc(0,0,r*.2,0,Math.PI*2); ctx.fill();
+
+  } else if(sk.id==='void'){
+    // VOID : hex sombre avec anneau énergie violet
+    const vp=0.6+0.4*Math.sin(fr*.05);
+    ctx.strokeStyle='#6600ff'; ctx.lineWidth=1.5; ctx.shadowColor='#6600ff'; ctx.shadowBlur=16*vp;
+    poly(6,r); ctx.stroke();
+    ctx.globalAlpha=0.4*vp; ctx.lineWidth=1;
+    poly(6,r*.65); ctx.stroke();
+    ctx.globalAlpha=0.25+0.2*vp;
+    poly(6,r*.35); ctx.stroke();
+    ctx.globalAlpha=1;
+    // Noyau abyssal
+    ctx.fillStyle='#6600ff';
+    ctx.beginPath(); ctx.arc(0,0,r*.15,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.6)';
+    ctx.beginPath(); ctx.arc(0,0,r*.08,0,Math.PI*2); ctx.fill();
+
+  } else if(sk.id==='solar'){
+    // SOLAIRE : octogone solaire avec rayons
+    const sp=0.7+0.3*Math.sin(fr*.07);
+    ctx.fillStyle=col; ctx.shadowColor='#ff6b1a'; ctx.shadowBlur=20*sp;
+    poly(8,r); ctx.fill();
+    // Rayons solaires
+    ctx.strokeStyle='#ffbe0b'; ctx.lineWidth=r*.08; ctx.globalAlpha=0.5*sp;
+    for(let i=0;i<8;i++){
+      const a=i/8*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*.9,Math.sin(a)*r*.9);
+      ctx.lineTo(Math.cos(a)*r*1.3,Math.sin(a)*r*1.3); ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    // Couronne brillante
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    poly(8,r*.38); ctx.fill();
+
+  } else if(sk.id==='glitch'){
+    // GLITCH : hex décalé avec artefacts
+    const gp=Math.sin(fr*.15);
+    ctx.strokeStyle='#00ff88'; ctx.lineWidth=2; ctx.shadowColor='#00ff88'; ctx.shadowBlur=12;
+    poly(6,r); ctx.stroke();
+    // Lignes glitch décalées
+    ctx.globalAlpha=0.6;
+    ctx.strokeStyle='#ff1a6e'; ctx.lineWidth=1.5;
+    ctx.save(); ctx.translate(r*.04*gp, 0);
+    poly(6,r*.72); ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle='#00bbf9'; ctx.lineWidth=1;
+    ctx.save(); ctx.translate(-r*.03*gp, r*.02);
+    poly(6,r*.45); ctx.stroke();
+    ctx.restore();
+    ctx.globalAlpha=1;
+    // Pixel central
+    ctx.fillStyle='#00ff88';
+    ctx.fillRect(-r*.1,-r*.1,r*.2,r*.2);
+
+  } else if(sk.id==='cosmic'){
+    // COSMIQUE : étoile à 5 branches avec orbites
+    const cp=0.8+0.2*Math.sin(fr*.04);
+    ctx.fillStyle=col; ctx.shadowColor='#b44fff'; ctx.shadowBlur=18*cp;
+    // Corps étoile
+    ctx.beginPath();
+    for(let i=0;i<10;i++){
+      const a=i/10*Math.PI*2-Math.PI/2;
+      const rad2=i%2===0?r*.82:r*.36;
+      i===0?ctx.moveTo(Math.cos(a)*rad2,Math.sin(a)*rad2):ctx.lineTo(Math.cos(a)*rad2,Math.sin(a)*rad2);
+    }
+    ctx.closePath(); ctx.fill();
+    // Anneaux orbitaux
+    ctx.strokeStyle='#00f5d4'; ctx.lineWidth=1; ctx.globalAlpha=0.4*cp;
+    ctx.beginPath(); ctx.arc(0,0,r*1.1,0,Math.PI*2); ctx.stroke();
+    ctx.globalAlpha=0.25*cp;
+    ctx.beginPath(); ctx.arc(0,0,r*1.3,0,Math.PI*2); ctx.stroke();
+    ctx.globalAlpha=1;
+    // Noyau étoile
+    ctx.fillStyle='rgba(255,255,255,.5)';
+    ctx.beginPath(); ctx.arc(0,0,r*.18,0,Math.PI*2); ctx.fill();
 
   } else {
     // DÉFAUT (hex, crimson, gold, violet, ice, fire, octagon…) : polygone soigné
@@ -3274,33 +3364,170 @@ function playTone(freq,type,dur,vol=0.18,detune=0){
     o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+dur);
   }catch(e){}
 }
-function sfxShoot() { playTone(800,'square',.04,.06,0); }
+// ── SFX helpers ───────────────────────────────────────
+function playNoise(dur, vol=0.08){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const buf=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate);
+    const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    const src=ac.createBufferSource(); src.buffer=buf;
+    const g=ac.createGain(); g.gain.setValueAtTime(vol,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur);
+    // Biquad filter pour colorer le bruit
+    const flt=ac.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value=800; flt.Q.value=1.5;
+    src.connect(flt); flt.connect(g); g.connect(ac.destination); src.start(); src.stop(ac.currentTime+dur);
+  }catch(e){}
+}
+function playChord(freqs,type,dur,vol=0.12){
+  freqs.forEach((f,i)=>setTimeout(()=>playTone(f,type,dur,vol),i*30));
+}
+
+// ── SFX tir — laser court avec bruit d'impact ──────────
+function sfxShoot(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.055,t); g.gain.exponentialRampToValueAtTime(.001,t+.055);
+    const o=ac.createOscillator(); o.type='square';
+    o.frequency.setValueAtTime(1200,t); o.frequency.exponentialRampToValueAtTime(500,t+.055);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.055);
+  }catch(e){}
+}
+
+// ── SFX hit ennemi ──────────────────────────────────────
 let _lastSfxHit=0;
 function sfxHit(){
-  const now=Date.now();
-  if(now-_lastSfxHit<25) return; // max 40 hit sounds/sec
-  _lastSfxHit=now;
-  playTone(200,'sawtooth',.05,.08,0);
+  const now=Date.now(); if(now-_lastSfxHit<30) return; _lastSfxHit=now;
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.07,t); g.gain.exponentialRampToValueAtTime(.001,t+.04);
+    const o=ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(80,t+.04);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.04);
+  }catch(e){}
 }
+
+// ── SFX mort ennemi — crunch + bruit ───────────────────
 let _lastSfxDeath=0;
 function sfxDeath(){
-  const now=Date.now();
-  if(now-_lastSfxDeath<40) return; // max 25 death sounds/sec
-  _lastSfxDeath=now;
-  playTone(120,'sawtooth',.15,.12,-400);
+  const now=Date.now(); if(now-_lastSfxDeath<45) return; _lastSfxDeath=now;
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.13,t); g.gain.exponentialRampToValueAtTime(.001,t+.12);
+    const o=ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(40,t+.12);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.12);
+  }catch(e){} 
+  playNoise(.06,.05);
 }
-function sfxDash()  { playTone(600,'sine',.08,.1,200); }
-function sfxPowerup(){ playTone(880,'sine',.15,.15,0); playTone(1100,'sine',.15,.1,0); }
-function sfxSpecial(){ playTone(60,'sawtooth',.3,.2,0); playTone(120,'square',.25,.15,0); }
-function sfxUpgrade(){ playTone(660,'sine',.1,.12,0); playTone(880,'sine',.12,.1,200); }
-function sfxWave()  { playTone(440,'sine',.18,.12,0); playTone(660,'sine',.22,.1,0); }
-function sfxBossDeath(){ playTone(80,'sawtooth',.4,.2,-600); playTone(160,'square',.3,.15,-300); }
-function sfxAch()   { [523,659,784,1047].forEach((f,i)=>{ setTimeout(()=>playTone(f,'sine',.18,.12),i*80); }); }
-function sfxLevelUp(){ [392,523,659,784].forEach((f,i)=>{ setTimeout(()=>playTone(f,'sine',.14,.1),i*60); }); }
-function sfxCurse() { [300,240,180].forEach((f,i)=>{ setTimeout(()=>playTone(f,'sawtooth',.18,.14,-200),i*90); }); }
-function sfxOverheat(){ playTone(1200,'sawtooth',.08,.08,400); }
-function sfxLaser() { const ac=getAC(); if(!ac||!settings.sfx) return; try{ const g=ac.createGain(); g.gain.setValueAtTime(.12,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.18); const o=ac.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(2400,ac.currentTime); o.frequency.exponentialRampToValueAtTime(800,ac.currentTime+.18); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.18); }catch(e){} }
-function sfxTimeSlow(){ playTone(220,'sine',.4,.1,-300); playTone(110,'sine',.4,.08,-200); }
+
+// ── SFX dash — whoosh ──────────────────────────────────
+function sfxDash(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.12,t); g.gain.exponentialRampToValueAtTime(.001,t+.14);
+    const o=ac.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(1200,t+.08);
+    o.frequency.exponentialRampToValueAtTime(400,t+.14);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.14);
+  }catch(e){}
+  playNoise(.1,.04);
+}
+
+// ── SFX powerup — jingle montant ───────────────────────
+function sfxPowerup(){
+  [440,554,659,880].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.12,.12),i*40));
+}
+
+// ── SFX bombe — explosion basse ────────────────────────
+function sfxSpecial(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.35,t); g.gain.exponentialRampToValueAtTime(.001,t+.35);
+    const o=ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(80,t); o.frequency.exponentialRampToValueAtTime(25,t+.35);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.35);
+    // Sub-bass punch
+    const g2=ac.createGain(); g2.gain.setValueAtTime(.25,t); g2.gain.exponentialRampToValueAtTime(.001,t+.2);
+    const o2=ac.createOscillator(); o2.type='sine'; o2.frequency.value=55;
+    o2.connect(g2); g2.connect(ac.destination); o2.start(t); o2.stop(t+.2);
+  }catch(e){}
+  playNoise(.25,.12);
+}
+
+// ── SFX upgrade — accord positif ───────────────────────
+function sfxUpgrade(){
+  [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.14,.11),i*50));
+}
+
+// ── SFX nouvelle vague — fanfare courte ────────────────
+function sfxWave(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    [[440,.08],[660,.06],[880,.06]].forEach(([f,d],i)=>{
+      const g=ac.createGain(); g.gain.setValueAtTime(.15,t+i*d*1.2); g.gain.exponentialRampToValueAtTime(.001,t+i*d*1.2+.14);
+      const o=ac.createOscillator(); o.type='square'; o.frequency.value=f;
+      o.connect(g); g.connect(ac.destination); o.start(t+i*d*1.2); o.stop(t+i*d*1.2+.14);
+    });
+  }catch(e){}
+}
+
+// ── SFX mort boss — impact lourd ───────────────────────
+function sfxBossDeath(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.4,t); g.gain.exponentialRampToValueAtTime(.001,t+.5);
+    const o=ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(100,t); o.frequency.exponentialRampToValueAtTime(20,t+.5);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.5);
+  }catch(e){}
+  playNoise(.3,.15);
+  setTimeout(()=>playNoise(.2,.1),150);
+}
+
+// ── SFX succès ─────────────────────────────────────────
+function sfxAch(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.2,.14),i*90)); }
+
+// ── SFX level up ───────────────────────────────────────
+function sfxLevelUp(){ [392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.16,.12),i*55)); }
+
+// ── SFX malédiction ────────────────────────────────────
+function sfxCurse(){ [300,240,180,140].forEach((f,i)=>setTimeout(()=>playTone(f,'sawtooth',.2,.14,-200),i*100)); }
+
+// ── SFX surchauffe ─────────────────────────────────────
+function sfxOverheat(){
+  playTone(1400,'sawtooth',.1,.1,600);
+  setTimeout(()=>playNoise(.08,.06),50);
+}
+
+// ── SFX laser ──────────────────────────────────────────
+function sfxLaser(){
+  const ac=getAC(); if(!ac||!settings.sfx) return;
+  try{
+    const t=ac.currentTime;
+    const g=ac.createGain(); g.gain.setValueAtTime(.14,t); g.gain.exponentialRampToValueAtTime(.001,t+.22);
+    const o=ac.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(2800,t); o.frequency.exponentialRampToValueAtTime(700,t+.22);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+.22);
+  }catch(e){}
+}
+
+// ── SFX ralenti ────────────────────────────────────────
+function sfxTimeSlow(){
+  playTone(180,'sine',.5,.12,-400);
+  playTone(90,'sine',.45,.1,-300);
+}
+
+// ── SFX clic menu ──────────────────────────────────────
+function sfxClick(){
+  playTone(900,'square',.04,.04,0);
+  setTimeout(()=>playTone(1100,'sine',.03,.03,0),25);
+}
 
 // ═══════════════════════════════════════════════════════
 //  GAME STATE
@@ -6113,8 +6340,6 @@ function spawnDeathFx(x,y,col){
 //  INPUT — KEYBOARD / MOUSE
 // ═══════════════════════════════════════════════════════
 document.addEventListener('mousemove',e=>{
-  const xh=document.getElementById('xhair');
-  if(xh){ xh.style.left=e.clientX+'px'; xh.style.top=e.clientY+'px'; }
   if(G){
     G.mouseX=e.clientX - (canvasOffsetX||0);
     G.mouseY=e.clientY - (canvasOffsetY||0);
@@ -6319,7 +6544,7 @@ const BP_REWARDS = [
   {lv:3,  track:'premium', type:'coins',  value:200,         label:'+200 pièces',          icon:'🪙', rarity:'rare'},
   // NIV 4
   {lv:4,  track:'free',    type:'skin',   value:'crimson',   label:'Skin Crimson',         icon:'🔴', rarity:'rare'},
-  {lv:4,  track:'premium', type:'skin',   value:'fire',      label:'Skin Flamme',          icon:'🔥', rarity:'epic'},
+  {lv:4,  track:'premium', type:'skin',   value:'void',      label:'Skin VOID',             icon:'🌌', rarity:'epic'},
   // NIV 5
   {lv:5,  track:'free',    type:'coins',  value:100,         label:'+100 pièces',          icon:'🪙', rarity:'common'},
   {lv:5,  track:'premium', type:'relic',  value:'berserker', label:'Relique : Berserker',  icon:'😤', rarity:'epic'},
@@ -6337,7 +6562,7 @@ const BP_REWARDS = [
   {lv:9,  track:'premium', type:'perma',  value:'p_spec',    label:'Bombe +',              icon:'💜', rarity:'rare'},
   // NIV 10
   {lv:10, track:'free',    type:'perma',  value:'p_coins',   label:'Fortune +',            icon:'💰', rarity:'rare'},
-  {lv:10, track:'premium', type:'skin',   value:'gold',      label:'Skin Or Pur',          icon:'🥇', rarity:'epic'},
+  {lv:10, track:'premium', type:'skin',   value:'solar',     label:'Skin Solaire',          icon:'☀️', rarity:'epic'},
   // NIV 11
   {lv:11, track:'free',    type:'coins',  value:150,         label:'+150 pièces',          icon:'🪙', rarity:'common'},
   {lv:11, track:'premium', type:'coins',  value:300,         label:'+300 pièces',          icon:'🪙', rarity:'rare'},
@@ -6358,7 +6583,7 @@ const BP_REWARDS = [
   {lv:16, track:'premium', type:'coins',  value:400,         label:'+400 pièces',          icon:'🪙', rarity:'epic'},
   // NIV 17
   {lv:17, track:'free',    type:'coins',  value:200,         label:'+200 pièces',          icon:'🪙', rarity:'common'},
-  {lv:17, track:'premium', type:'skin',   value:'ice',       label:'Skin Glace',           icon:'🧊', rarity:'epic'},
+  {lv:17, track:'premium', type:'skin',   value:'glitch',    label:'Skin Glitch',           icon:'⚡', rarity:'epic'},
   // NIV 18
   {lv:18, track:'free',    type:'perma',  value:'p_dmg',     label:'Puissance + (x2)',     icon:'💥', rarity:'rare'},
   {lv:18, track:'premium', type:'perma',  value:'p_spec',    label:'Bombe + (x2)',         icon:'💜', rarity:'rare'},
@@ -6388,7 +6613,7 @@ const BP_REWARDS = [
   {lv:26, track:'premium', type:'coins',  value:600,         label:'+600 pièces',          icon:'🪙', rarity:'epic'},
   // NIV 27
   {lv:27, track:'free',    type:'coins',  value:300,         label:'+300 pièces',          icon:'🪙', rarity:'common'},
-  {lv:27, track:'premium', type:'relic',  value:'transcend', label:'Relique : Transcend.',icon:'✨', rarity:'legendary'},
+  {lv:27, track:'premium', type:'skin',   value:'cosmic',    label:'Skin Cosmique',         icon:'🌠', rarity:'legendary'},
   // NIV 28
   {lv:28, track:'free',    type:'perma',  value:'p_spd',     label:'Agilité + (x3)',       icon:'💨', rarity:'rare'},
   {lv:28, track:'premium', type:'perma',  value:'p_dmg',     label:'Puissance + (x3)',     icon:'💥', rarity:'rare'},
