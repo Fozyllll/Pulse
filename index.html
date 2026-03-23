@@ -96,6 +96,7 @@ body.game-active #relic-hud { display:flex; }
   scroll-behavior:smooth;
   padding-top:env(safe-area-inset-top);
   touch-action:pan-y;
+  background:var(--bg);
 }
 .scr button,.scr [onclick],.scr input,.scr select,.scr label,.scr a{
   touch-action:manipulation;
@@ -863,6 +864,28 @@ body.touch #minimap{display:none;}
 .bp-claim-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4vmin,22px);color:var(--c3);letter-spacing:.1em;}
 .bp-claim-desc{font-size:9px;color:var(--txt2);letter-spacing:.1em;}
 @keyframes bpPulse{0%,100%{box-shadow:0 0 10px rgba(255,190,11,.2);}50%{box-shadow:0 0 22px rgba(255,190,11,.5);}}
+
+
+/* ═══ MODE SELECT ═══ */
+#s-mode{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a0e1a 0%,var(--bg) 70%);}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,42vw),1fr));gap:10px;width:min(700px,94vw);margin-top:16px;}
+.mode-card{border:1px solid var(--border);background:rgba(13,26,18,.95);padding:18px 16px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+.mode-card:hover{transform:translateY(-3px);}
+.mode-card:active{transform:scale(.97);}
+.mode-card.c1{border-color:rgba(0,245,212,.3);}.mode-card.c1:hover{box-shadow:0 6px 24px rgba(0,245,212,.18);}
+.mode-card.c2{border-color:rgba(255,190,11,.3);}.mode-card.c2:hover{box-shadow:0 6px 24px rgba(255,190,11,.18);}
+.mode-card.c3{border-color:rgba(255,26,110,.3);}.mode-card.c3:hover{box-shadow:0 6px 24px rgba(255,26,110,.18);}
+.mode-card.c4{border-color:rgba(180,79,255,.3);}.mode-card.c4:hover{box-shadow:0 6px 24px rgba(180,79,255,.18);}
+.mode-icon{font-size:clamp(28px,7vmin,38px);line-height:1;}
+.mode-name{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(11px,2.5vmin,14px);letter-spacing:.1em;}
+.mode-card.c1 .mode-name{color:var(--c1);}.mode-card.c2 .mode-name{color:var(--c3);}
+.mode-card.c3 .mode-name{color:var(--c2);}.mode-card.c4 .mode-name{color:var(--c4);}
+.mode-desc{font-size:clamp(8px,1.7vmin,10px);color:var(--txt);line-height:1.65;}
+.mode-tag{font-size:6px;letter-spacing:.22em;padding:2px 7px;align-self:flex-start;margin-top:2px;}
+.mode-card.c1 .mode-tag{border:1px solid rgba(0,245,212,.3);color:var(--c1);}
+.mode-card.c2 .mode-tag{border:1px solid rgba(255,190,11,.3);color:var(--c3);}
+.mode-card.c3 .mode-tag{border:1px solid rgba(255,26,110,.3);color:var(--c2);}
+.mode-card.c4 .mode-tag{border:1px solid rgba(180,79,255,.3);color:var(--c4);}
 
 /* ═══ DUO CONFIG ═══ */
 #s-duo-config{background:radial-gradient(ellipse 90% 70% at 50% 35%,#0a1018 0%,var(--bg) 70%);}
@@ -2543,306 +2566,152 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
   fr = fr||0;
   ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle);
 
-  // ── Helpers ──────────────────────────────────────────
-  function hex(rad){
+  function poly(sides, rad, off=0){
     ctx.beginPath();
-    for(let i=0;i<6;i++){const a=i/6*Math.PI*2-Math.PI/2;
-      i===0?ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad):ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}
+    for(let i=0;i<sides;i++){
+      const a=i/sides*Math.PI*2-Math.PI/2+off;
+      i===0?ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad):ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);
+    }
     ctx.closePath();
   }
-  function glow(c,b=14){ctx.shadowColor=c;ctx.shadowBlur=b;}
-  const bob = Math.sin(fr*.07)*r*.06; // gentle float
-
-  // ── PERSONNAGES ─────────────────────────────────────
-  // default / wire / neon : ASTRONAUTE NÉON
-  if(sk.id==='default'||sk.id==='wire'||sk.id==='neon'){
-    const c=col;
-    // Casque
-    ctx.strokeStyle=c; ctx.lineWidth=r*.12; glow(c,12);
-    ctx.beginPath(); ctx.arc(0,bob-r*.1,r*.52,0,Math.PI*2); ctx.stroke();
-    // Visière brillante
-    ctx.fillStyle='rgba(0,245,212,.22)';
-    ctx.beginPath(); ctx.ellipse(r*.05,bob-r*.08,r*.28,r*.22,0,0,Math.PI*2); ctx.fill();
-    // Corps
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.moveTo(0,bob+r*.42); ctx.lineTo(0,bob+r*.16); ctx.stroke();
-    // Bras
-    ctx.beginPath(); ctx.moveTo(-r*.36,bob+r*.28); ctx.lineTo(r*.36,bob+r*.28); ctx.stroke();
-    // Jambes
-    ctx.beginPath(); ctx.moveTo(0,bob+r*.42); ctx.lineTo(-r*.22,bob+r*.72); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,bob+r*.42); ctx.lineTo(r*.22,bob+r*.72); ctx.stroke();
-    // Antenne
-    ctx.lineWidth=r*.07;
-    ctx.beginPath(); ctx.moveTo(r*.15,bob-r*.6); ctx.lineTo(r*.3,bob-r*.82); ctx.stroke();
-    ctx.fillStyle=c; ctx.beginPath(); ctx.arc(r*.3,bob-r*.82,r*.08,0,Math.PI*2); ctx.fill();
-  }
-
-  // crimson : GUERRIER CYBER (masque angulaire)
-  else if(sk.id==='crimson'){
-    const c=col;
-    ctx.strokeStyle=c; ctx.lineWidth=r*.1; glow(c,14);
-    // Tête/masque angulaire
+  function star(pts, r1, r2, off=0){
     ctx.beginPath();
-    ctx.moveTo(0,bob-r*.72); ctx.lineTo(r*.42,bob-r*.5);
-    ctx.lineTo(r*.5,bob-r*.1); ctx.lineTo(r*.3,bob+r*.08);
-    ctx.lineTo(-r*.3,bob+r*.08); ctx.lineTo(-r*.5,bob-r*.1);
-    ctx.lineTo(-r*.42,bob-r*.5); ctx.closePath(); ctx.stroke();
-    // Fente œil
-    ctx.lineWidth=r*.13; ctx.strokeStyle='#ff4488';
-    ctx.beginPath(); ctx.moveTo(-r*.22,bob-r*.28); ctx.lineTo(r*.22,bob-r*.28); ctx.stroke();
-    // Corps blindé
-    ctx.strokeStyle=c; ctx.lineWidth=r*.08;
-    ctx.strokeRect(-r*.38,bob+r*.12,r*.76,r*.52);
-    // Ligne centrale armure
-    ctx.lineWidth=r*.05; ctx.globalAlpha=.55;
-    ctx.beginPath(); ctx.moveTo(0,bob+r*.12); ctx.lineTo(0,bob+r*.64); ctx.stroke();
-    ctx.globalAlpha=1;
-    // Jambes
-    ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.moveTo(-r*.2,bob+r*.64); ctx.lineTo(-r*.28,bob+r*.9); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.2,bob+r*.64); ctx.lineTo(r*.28,bob+r*.9); ctx.stroke();
-  }
-
-  // gold / pulsering : ROI DORÉ (couronne)
-  else if(sk.id==='gold'||sk.id==='pulsering'){
-    const c=col;
-    glow(c,16);
-    // Corps
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.ellipse(0,bob+r*.22,r*.32,r*.42,0,0,Math.PI*2); ctx.stroke();
-    // Couronne
-    ctx.lineWidth=r*.08;
-    ctx.beginPath();
-    ctx.moveTo(-r*.4,bob-r*.28); ctx.lineTo(-r*.4,bob-r*.58);
-    ctx.lineTo(-r*.2,bob-r*.44); ctx.lineTo(0,bob-r*.64);
-    ctx.lineTo(r*.2,bob-r*.44); ctx.lineTo(r*.4,bob-r*.58);
-    ctx.lineTo(r*.4,bob-r*.28); ctx.closePath(); ctx.stroke();
-    // Joyaux couronne
-    ctx.fillStyle=c;
-    ctx.beginPath(); ctx.arc(0,bob-r*.64,r*.08,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-r*.4,bob-r*.58,r*.06,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(r*.4,bob-r*.58,r*.06,0,Math.PI*2); ctx.fill();
-    // Cape
-    ctx.globalAlpha=.35;
-    ctx.beginPath(); ctx.moveTo(-r*.32,bob+r*.32); ctx.lineTo(-r*.55,bob+r*.85);
-    ctx.lineTo(r*.55,bob+r*.85); ctx.lineTo(r*.32,bob+r*.32); ctx.closePath();
-    ctx.fillStyle=c; ctx.fill(); ctx.globalAlpha=1;
-  }
-
-  // violet / ghost : SPECTRE VIOLET (silhouette vaporeuse)
-  else if(sk.id==='violet'||sk.id==='ghost'){
-    const c=col;
-    const pulse=0.7+0.3*Math.sin(fr*.06);
-    glow(c,18*pulse);
-    ctx.globalAlpha=sk.ghost?0.72*pulse:0.9;
-    // Corps fantôme
-    ctx.strokeStyle=c; ctx.lineWidth=r*.08;
-    ctx.beginPath();
-    ctx.moveTo(-r*.4,bob+r*.8);
-    ctx.bezierCurveTo(-r*.5,bob+r*.2,-r*.55,bob-r*.1,-r*.35,bob-r*.55);
-    ctx.bezierCurveTo(-r*.15,bob-r*.85,r*.15,bob-r*.85,r*.35,bob-r*.55);
-    ctx.bezierCurveTo(r*.55,bob-r*.1,r*.5,bob+r*.2,r*.4,bob+r*.8);
-    ctx.stroke();
-    // Yeux brillants
-    ctx.fillStyle=c; ctx.globalAlpha=1;
-    ctx.beginPath(); ctx.ellipse(-r*.16,bob-r*.28,r*.1,r*.13,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(r*.16,bob-r*.28,r*.1,r*.13,0,0,Math.PI*2); ctx.fill();
-    // Traîne bas
-    ctx.strokeStyle=c; ctx.lineWidth=r*.07; ctx.globalAlpha=.45;
-    for(let i=-2;i<=2;i++){
-      const ox=i*r*.15, wig=Math.sin(fr*.1+i)*r*.08;
-      ctx.beginPath(); ctx.moveTo(ox,bob+r*.75); ctx.lineTo(ox+wig,bob+r*.98); ctx.stroke();
+    for(let i=0;i<pts*2;i++){
+      const a=i/(pts*2)*Math.PI*2-Math.PI/2+off;
+      const rad=i%2===0?r1:r2;
+      i===0?ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad):ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);
     }
-    ctx.globalAlpha=1;
+    ctx.closePath();
   }
 
-  // ice : CRYO-BOT
-  else if(sk.id==='ice'){
-    const c=col;
-    glow(c,14);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    // Tête hexagonale
-    hex(r*.44); ctx.translate(0,bob-r*.22); hex(r*.44); ctx.translate(0,-(bob-r*.22));
-    ctx.save(); ctx.translate(0,bob-r*.22); hex(r*.44); ctx.stroke(); ctx.restore();
-    // Corps rectangulaire
-    ctx.strokeRect(-r*.3,bob+r*.06,r*.6,r*.5);
-    // Cristaux d'épaules
-    ctx.lineWidth=r*.07;
-    ctx.beginPath(); ctx.moveTo(-r*.3,bob+r*.1); ctx.lineTo(-r*.55,bob-r*.1); ctx.lineTo(-r*.42,bob-r*.28); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.3,bob+r*.1); ctx.lineTo(r*.55,bob-r*.1); ctx.lineTo(r*.42,bob-r*.28); ctx.stroke();
-    // Noyau énergie
-    ctx.fillStyle=c; ctx.globalAlpha=.7;
-    ctx.beginPath(); ctx.arc(0,bob+r*.31,r*.12,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-    // Jambes
-    ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.moveTo(-r*.18,bob+r*.56); ctx.lineTo(-r*.22,bob+r*.82); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.18,bob+r*.56); ctx.lineTo(r*.22,bob+r*.82); ctx.stroke();
-  }
+  const pulse = 0.5+0.5*Math.sin(fr*.06);
 
-  // fire : PYRO
-  else if(sk.id==='fire'){
-    const c=col; const flicker=0.85+0.15*Math.sin(fr*.18);
-    glow('#ff9f1c',20*flicker);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    // Corps
-    ctx.beginPath(); ctx.ellipse(0,bob+r*.2,r*.3,r*.38,0,0,Math.PI*2); ctx.stroke();
-    // Flamme tête (1ère)
-    ctx.fillStyle='#ff6b1a'; ctx.globalAlpha=flicker;
-    ctx.beginPath(); ctx.moveTo(0,bob-r*.72);
-    ctx.bezierCurveTo(r*.2,bob-r*.9,r*.35,bob-r*.4,r*.1,bob-r*.28);
-    ctx.bezierCurveTo(-r*.1,bob-r*.2,-r*.35,bob-r*.6,0,bob-r*.72);
-    ctx.fill();
-    // Flamme 2ème (plus claire)
-    ctx.fillStyle='#ffbe0b'; ctx.globalAlpha=flicker*.8;
-    ctx.beginPath(); ctx.moveTo(0,bob-r*.52);
-    ctx.bezierCurveTo(r*.14,bob-r*.68,r*.2,bob-r*.4,0.05,bob-r*.3);
-    ctx.bezierCurveTo(-r*.14,bob-r*.22,-r*.18,bob-r*.48,0,bob-r*.52);
-    ctx.fill();
+  if(sk.shape==='wire'||sk.id==='wire'){
+    // WIRE : double hexagone fil + noyau
+    ctx.strokeStyle=col; ctx.lineWidth=1.8; ctx.shadowColor=col; ctx.shadowBlur=10;
+    poly(6,r); ctx.stroke();
+    ctx.globalAlpha=.45; ctx.lineWidth=1;
+    poly(6,r*.6); ctx.stroke();
+    ctx.globalAlpha=.8; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(0,0,r*.16,0,Math.PI*2); ctx.fill();
     ctx.globalAlpha=1;
-    // Bras flammes
-    ctx.strokeStyle='#ff9f1c'; ctx.lineWidth=r*.1;
-    ctx.beginPath(); ctx.moveTo(-r*.3,bob+r*.08); ctx.lineTo(-r*.6,bob-r*.12); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.3,bob+r*.08); ctx.lineTo(r*.6,bob-r*.12); ctx.stroke();
-    // Jambes
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.moveTo(-r*.14,bob+r*.58); ctx.lineTo(-r*.2,bob+r*.82); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.14,bob+r*.58); ctx.lineTo(r*.2,bob+r*.82); ctx.stroke();
-  }
 
-  // triangle / arrow : NINJA
-  else if(sk.id==='triangle'||sk.id==='arrow'){
-    const c=col;
-    glow(c,12);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.08;
-    // Shuriken : 2 triangles pivotants
-    const spin=fr*.03;
-    ctx.save(); ctx.rotate(spin);
-    ctx.beginPath();
-    ctx.moveTo(0,-r*.55); ctx.lineTo(r*.44,r*.32); ctx.lineTo(-r*.44,r*.32); ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-    ctx.save(); ctx.rotate(spin+Math.PI/3);
-    ctx.beginPath();
-    ctx.moveTo(0,-r*.55); ctx.lineTo(r*.44,r*.32); ctx.lineTo(-r*.44,r*.32); ctx.closePath();
-    ctx.globalAlpha=.55; ctx.stroke();
-    ctx.restore();
-    ctx.globalAlpha=1;
-    // Centre
-    ctx.fillStyle=c;
-    ctx.beginPath(); ctx.arc(0,0,r*.15,0,Math.PI*2); ctx.fill();
-    // Traîne vitesse
-    ctx.globalAlpha=.3; ctx.strokeStyle=c; ctx.lineWidth=r*.05;
-    ctx.beginPath(); ctx.moveTo(-r*.7,r*.1); ctx.lineTo(-r*.45,0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-r*.85,r*.3); ctx.lineTo(-r*.5,r*.2); ctx.stroke();
-    ctx.globalAlpha=1;
-  }
-
-  // square / circuit : MECH-BOT
-  else if(sk.id==='square'||sk.id==='circuit'){
-    const c=col;
-    glow(c,12);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.09;
-    // Tête carrée
-    ctx.strokeRect(-r*.32,bob-r*.72,r*.64,r*.52);
-    // Antennes
-    ctx.lineWidth=r*.06;
-    ctx.beginPath(); ctx.moveTo(-r*.16,bob-r*.72); ctx.lineTo(-r*.22,bob-r*.95); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.16,bob-r*.72); ctx.lineTo(r*.22,bob-r*.95); ctx.stroke();
-    // Yeux carrés
-    ctx.fillStyle=c;
-    ctx.fillRect(-r*.24,bob-r*.58,r*.16,r*.12);
-    ctx.fillRect(r*.08,bob-r*.58,r*.16,r*.12);
-    // Corps
-    ctx.lineWidth=r*.09;
-    ctx.strokeRect(-r*.38,bob+r*.04,r*.76,r*.52);
-    // Circuits internes
-    ctx.lineWidth=r*.04; ctx.globalAlpha=.5;
-    ctx.beginPath(); ctx.moveTo(-r*.2,bob+r*.18); ctx.lineTo(r*.2,bob+r*.18); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-r*.2,bob+r*.38); ctx.lineTo(r*.2,bob+r*.38); ctx.stroke();
-    ctx.globalAlpha=1;
-    // Jambes
-    ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.moveTo(-r*.24,bob+r*.56); ctx.lineTo(-r*.28,bob+r*.82); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r*.24,bob+r*.56); ctx.lineTo(r*.28,bob+r*.82); ctx.stroke();
-  }
-
-  // octagon : TITAN
-  else if(sk.id==='octagon'){
-    const c=col;
-    glow(c,16);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.1;
-    // Corps octogonal
-    ctx.beginPath();
-    for(let i=0;i<8;i++){const a=i/8*Math.PI*2-Math.PI/8;
-      i===0?ctx.moveTo(Math.cos(a)*r*.62,bob+Math.sin(a)*r*.62):ctx.lineTo(Math.cos(a)*r*.62,bob+Math.sin(a)*r*.62);}
-    ctx.closePath(); ctx.stroke();
-    // Anneaux d'énergie intérieurs
-    ctx.lineWidth=r*.05; ctx.globalAlpha=.5;
-    ctx.beginPath(); ctx.arc(0,bob,r*.38,0,Math.PI*2); ctx.stroke();
-    ctx.globalAlpha=1;
-    // Tête
-    ctx.lineWidth=r*.09;
-    ctx.beginPath(); ctx.arc(0,bob-r*.48,r*.22,0,Math.PI*2); ctx.stroke();
-    // Noyau
-    ctx.fillStyle=c;
-    ctx.beginPath(); ctx.arc(0,bob,r*.12,0,Math.PI*2); ctx.fill();
-  }
-
-  // star : NOVA (étoile vivante)
-  else if(sk.id==='star'){
-    const c=col; const pulse=0.9+0.1*Math.sin(fr*.09);
-    glow(c,18*pulse);
-    ctx.strokeStyle=c; ctx.lineWidth=r*.08;
-    // Étoile à 5 branches animée
-    const rot=fr*.012;
-    ctx.save(); ctx.rotate(rot);
-    ctx.beginPath();
-    for(let i=0;i<10;i++){
-      const a=i/10*Math.PI*2-Math.PI/2;
-      const rad=i%2===0?r*.72*pulse:r*.32;
-      i===0?ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad):ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}
-    ctx.closePath(); ctx.stroke();
-    ctx.restore();
-    // Noyau brillant
-    ctx.fillStyle=c; ctx.globalAlpha=pulse;
+  } else if(sk.shape==='circuit'||sk.id==='circuit'){
+    // CIRCUIT : hex + rayons internes + nœuds
+    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.shadowColor=col; ctx.shadowBlur=12;
+    poly(6,r); ctx.stroke();
+    ctx.lineWidth=.9; ctx.globalAlpha=.55;
+    for(let i=0;i<6;i++){
+      const a=i/6*Math.PI*2-Math.PI/2;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(a)*r*.5,Math.sin(a)*r*.5); ctx.stroke();
+      const mx=Math.cos(a)*r*.38, my=Math.sin(a)*r*.38;
+      ctx.globalAlpha=.75; ctx.fillStyle=col;
+      ctx.beginPath(); ctx.rect(mx-2,my-2,4,4); ctx.fill();
+      ctx.globalAlpha=.55;
+    }
+    ctx.globalAlpha=1; ctx.fillStyle=col;
     ctx.beginPath(); ctx.arc(0,0,r*.18,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-    // Rayons
-    ctx.lineWidth=r*.04; ctx.globalAlpha=.4;
-    for(let i=0;i<4;i++){
-      const a=i/4*Math.PI*2+rot;
-      ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*.2,Math.sin(a)*r*.2);
-      ctx.lineTo(Math.cos(a)*r*.9,Math.sin(a)*r*.9); ctx.stroke();}
-    ctx.globalAlpha=1;
-  }
 
-  // rainbow / cross : ENTITÉ CHROMATIQUE
-  else {
-    const pulse=0.85+0.15*Math.sin(fr*.07);
-    glow('#00f5d4',16*pulse);
-    const rot=fr*.015;
-    // Corps : hexagone rotatif
-    ctx.save(); ctx.rotate(rot);
-    ctx.strokeStyle=typeof col==='object'?col:'#00f5d4';
-    ctx.lineWidth=r*.1;
-    hex(r*.6); ctx.stroke();
+  } else if(sk.shape==='pulseRing'||sk.id==='pulsering'){
+    // PULSE RING : 3 anneaux hexagonaux concentriques pulsants
+    for(let ring=0;ring<3;ring++){
+      const rr=r*(0.35+ring*0.3);
+      const alpha=ring===1?0.9:(ring===0?0.4+pulse*.3:0.25+pulse*.2);
+      ctx.globalAlpha=alpha;
+      ctx.strokeStyle=col; ctx.shadowColor=col; ctx.shadowBlur=ring===1?14:6;
+      ctx.lineWidth=ring===1?2:1;
+      poly(6,rr); ctx.stroke();
+    }
+    ctx.globalAlpha=1; ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(0,0,r*.2,0,Math.PI*2); ctx.fill();
+
+  } else if(sk.shape==='cross'||sk.id==='cross'){
+    // CROIX : épaisse avec coins nets
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
+    const t=r*.32, arm=r*.75;
+    ctx.beginPath();
+    ctx.moveTo(-t,-arm); ctx.lineTo(t,-arm); ctx.lineTo(t,-t);
+    ctx.lineTo(arm,-t); ctx.lineTo(arm,t); ctx.lineTo(t,t);
+    ctx.lineTo(t,arm); ctx.lineTo(-t,arm); ctx.lineTo(-t,t);
+    ctx.lineTo(-arm,t); ctx.lineTo(-arm,-t); ctx.lineTo(-t,-t);
+    ctx.closePath(); ctx.fill();
+
+  } else if(sk.shape==='arrow'||sk.id==='arrow'){
+    // FLÈCHE : forme aérodynamique
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=10;
+    ctx.beginPath();
+    ctx.moveTo(r*.9,0); ctx.lineTo(-r*.45,r*.72); ctx.lineTo(-r*.2,0); ctx.lineTo(-r*.45,-r*.72);
+    ctx.closePath(); ctx.fill();
+    // Trait central vitesse
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=r*.08;
+    ctx.beginPath(); ctx.moveTo(r*.55,0); ctx.lineTo(-r*.1,0); ctx.stroke();
+
+  } else if(sk.shape==='star'||sk.id==='star'){
+    // ÉTOILE : 5 branches avec inner glow
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=16+pulse*8;
+    star(5,r*.88,r*.38); ctx.fill();
+    // Centre brillant
+    ctx.fillStyle='rgba(255,255,255,.35)';
+    ctx.beginPath(); ctx.arc(0,0,r*.22,0,Math.PI*2); ctx.fill();
+
+  } else if(sk.shape==='square'||sk.id==='square'){
+    // CUBE : carré avec coins biseautés et highlight
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
+    const s=r*.8;
+    const ch=s*.22; // chanfrein
+    ctx.beginPath();
+    ctx.moveTo(-s+ch,-s); ctx.lineTo(s-ch,-s);
+    ctx.lineTo(s,-s+ch); ctx.lineTo(s,s-ch);
+    ctx.lineTo(s-ch,s); ctx.lineTo(-s+ch,s);
+    ctx.lineTo(-s,s-ch); ctx.lineTo(-s,-s+ch);
+    ctx.closePath(); ctx.fill();
+    // Highlight
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.beginPath(); ctx.rect(-s*.55,-s*.55,s*.5,s*.5); ctx.fill();
+
+  } else if(sk.shape==='tri'||sk.id==='triangle'){
+    // TRIANGLE : effilé avec brillance
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
+    poly(3,r); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.2)';
+    poly(3,r*.38); ctx.fill();
+
+  } else if(sk.id==='ghost'){
+    // FANTÔME : hex semi-transparent avec pulsation
+    ctx.globalAlpha=0.55+0.2*pulse;
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=20*pulse;
+    poly(6,r); ctx.fill();
+    ctx.globalAlpha=0.4+0.15*pulse; ctx.fillStyle='rgba(255,255,255,.3)';
+    poly(6,r*.5); ctx.fill();
+    ctx.globalAlpha=1;
+
+  } else if(sk.id==='rainbow'){
+    // ARC-EN-CIEL : hex rotatif double avec orbes
+    const rot2=fr*.014;
+    ctx.save(); ctx.rotate(rot2);
+    ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.shadowColor='#00f5d4'; ctx.shadowBlur=18;
+    poly(6,r); ctx.stroke();
     ctx.restore();
-    // Inner ring contra-rotatif
-    ctx.save(); ctx.rotate(-rot*1.4);
-    ctx.lineWidth=r*.06; ctx.globalAlpha=.6;
-    hex(r*.38); ctx.stroke();
+    ctx.save(); ctx.rotate(-rot2*1.6);
+    ctx.globalAlpha=.5; ctx.lineWidth=1.2; ctx.strokeStyle=col;
+    poly(6,r*.55); ctx.stroke();
     ctx.restore();
     ctx.globalAlpha=1;
     // Noyau
-    ctx.fillStyle=typeof col==='object'?col:'#00f5d4';
-    ctx.beginPath(); ctx.arc(0,0,r*.18,0,Math.PI*2); ctx.fill();
-    // Petits orbes orbitaux
-    ctx.lineWidth=0;
-    for(let i=0;i<3;i++){
-      const a=rot*2+i/3*Math.PI*2;
-      ctx.fillStyle=['#ff1a6e','#ffbe0b','#b44fff'][i];
-      ctx.beginPath(); ctx.arc(Math.cos(a)*r*.48,Math.sin(a)*r*.48,r*.08,0,Math.PI*2); ctx.fill();}
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(0,0,r*.2,0,Math.PI*2); ctx.fill();
+
+  } else {
+    // DÉFAUT (hex, crimson, gold, violet, ice, fire, octagon…) : polygone soigné
+    const sides = sk.sides||6;
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=14+pulse*6;
+    poly(sides,r); ctx.fill();
+    // Inner highlight
+    ctx.fillStyle='rgba(255,255,255,.22)';
+    poly(sides,r*.42); ctx.fill();
+    // Noyau
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.beginPath(); ctx.arc(0,0,r*.14,0,Math.PI*2); ctx.fill();
   }
 
   ctx.restore();
@@ -2883,8 +2752,10 @@ function drawSkinPreview(canvas, skinId, size=54){
     g.addColorStop(.66,'#00f5d4'); g.addColorStop(1,'#b44fff');
     col=g;
   }
-  ctx.shadowColor=sk.glow==='rainbow'?'#00f5d4':sk.glow; ctx.shadowBlur=10;
-  ctx.save(); ctx.translate(cx, cy);
+  ctx.shadowColor=sk.glow==='rainbow'?'#00f5d4':sk.glow;
+  ctx.shadowBlur=10;
+  ctx.globalAlpha=sk.ghost?0.7:1;
+  ctx.save(); ctx.translate(cx,cy);
   drawSkinShape(ctx, sk, 0, 0, r, 0, col, 0);
   ctx.restore();
 }
