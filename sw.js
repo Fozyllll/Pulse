@@ -1,7 +1,7 @@
 // PULSE — Service Worker v2
 // Cache strategy: Cache First pour les assets, Network First pour Supabase
 
-const CACHE_NAME = 'pulse-v27';
+const CACHE_NAME = 'pulse-v28';
 const ASSETS = [
   '/Pulse/',
   '/Pulse/index.html',
@@ -50,19 +50,31 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Fichiers du jeu = Cache First (marche hors-ligne)
+  // index.html = Network First (toujours la dernière version)
+  if(url.pathname.endsWith('/') || url.pathname.endsWith('index.html')){
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if(response && response.status === 200){
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Autres assets du jeu = Cache First (marche hors-ligne)
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Mettre en cache les nouvelles réponses valides
         if (response && response.status === 200 && event.request.method === 'GET') {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
       }).catch(() => {
-        // Fallback offline — renvoyer l'index.html pour la navigation
         if (event.request.mode === 'navigate') {
           return caches.match('/Pulse/index.html');
         }

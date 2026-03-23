@@ -1346,7 +1346,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 26.0</div>
+    <div class="logo-ver">VERSION 27.0</div>
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1637,6 +1637,10 @@ body.touch #minimap{display:none;}
 <div class="scr on" id="s-auth">
   <div class="auth-box">
     <div class="auth-title">PULSE</div>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.3);padding:3px 10px;border-radius:2px;margin-bottom:2px;">
+      <span style="font-size:8px;color:var(--c1);font-family:'Orbitron',monospace;letter-spacing:.2em;">✦ VERSION 27.0</span>
+      <span id="auth-update-badge" style="font-size:6px;color:var(--c3);letter-spacing:.1em;display:none;">• MISE À JOUR</span>
+    </div>
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
     <input class="auth-input" id="auth-email" type="text" placeholder="EMAIL OU PSEUDO" autocomplete="username" onkeydown="if(event.key==='Enter')doAuth()">
     <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
@@ -2031,7 +2035,7 @@ body.touch #minimap{display:none;}
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '20.0';
+const VERSION = '27.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -9349,8 +9353,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js',{scope:'/Pulse/'})
-      .then(reg=>{ reg.update(); })
+    // Force update: unregister all old SWs then re-register fresh
+    const APP_VERSION = '27.0';
+    const swVersionKey = 'pulse_sw_version';
+    const lastVersion = localStorage.getItem(swVersionKey);
+    if(lastVersion !== APP_VERSION){
+      // Nouvelle version détectée — purger tous les caches + SW
+      navigator.serviceWorker.getRegistrations().then(regs=>{
+        regs.forEach(r=>r.unregister());
+      });
+      caches.keys().then(keys=>{ keys.forEach(k=>caches.delete(k)); });
+      localStorage.setItem(swVersionKey, APP_VERSION);
+      console.log('[SW] Cache purgé — version', APP_VERSION);
+    }
+    navigator.serviceWorker.register('sw.js?v=27',{scope:'/Pulse/'})
+      .then(reg=>{ reg.update(); console.log('[SW] Enregistré v27'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
