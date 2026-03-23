@@ -1507,7 +1507,16 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:12px;">
     <div class="scr-h">💀 NIVEAUX ARÈNE</div>
     <div style="font-size:8px;letter-spacing:.15em;color:var(--txt2);text-align:center;" id="arena-map-sub"></div>
-    <div id="arena-map-grid" style="width:min(640px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,30vw,180px),1fr));gap:8px;max-height:65vh;overflow-y:auto;padding:4px;"></div>
+
+    <!-- Tabs: map / leaderboard -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);width:min(640px,96vw);margin-bottom:4px;">
+      <button id="arena-tab-map" onclick="arenaTabSwitch('map')" style="flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;border:none;background:transparent;color:var(--c1);border-bottom:2px solid var(--c1);cursor:pointer;">📋 NIVEAUX</button>
+      <button id="arena-tab-lb" onclick="arenaTabSwitch('lb')" style="flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;border:none;background:transparent;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;">🏆 CLASSEMENT</button>
+    </div>
+
+    <div id="arena-map-grid" style="width:min(640px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,30vw,180px),1fr));gap:8px;max-height:55vh;overflow-y:auto;padding:4px;"></div>
+    <div id="arena-lb-panel" style="display:none;width:min(640px,96vw);max-height:55vh;overflow-y:auto;"></div>
+
     <div class="btn-row" style="margin-top:8px;gap:10px;">
       <button class="btn btn-p" onclick="arenaNextLevel()"><span>▶ CONTINUER</span></button>
       <button class="btn btn-d" onclick="pulseConfirm('Recommencer l\'Arène depuis le niveau 1 ?').then(ok=>{if(ok){arenaLevel=1;saveData(\'pulse_arena_level_v1\',1);show(\'s-mode\');}})"><span>↺ RECOMMENCER</span></button>
@@ -3118,7 +3127,7 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
-let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0 });
+let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
 let newAchThisRun = [];
 
@@ -3959,6 +3968,17 @@ function update(now){
     if(!blocked(p.x,ny,p.r)) p.y=ny;
     p.dashFrames--;
     if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; }
+    // dashTrail relic: damage enemies touched during dash
+    if(p.dashTrail){
+      for(const e of G.enemies){
+        if(e.dead) continue;
+        if(Math.hypot(p.x-e.x,p.y-e.y)<p.r+e.r+18){
+          e.hp-=15; e.flash=6;
+          spawnFx(e.x,e.y,'#00f5d4',3);
+          if(e.hp<=0&&!e.dead){e.dead=true;onKill(e);spawnDeathFx(e.x,e.y,e.col);dropPowerup(e.x,e.y);}
+        }
+      }
+    }
     spawnFx(p.x,p.y,'#00f5d4',2);
   } else {
     const nx=p.x+mx*spd, ny=p.y+my*spd;
@@ -4366,11 +4386,17 @@ function onKill(e){
   else { G._ksCount=(G._ksCount||1)+1; }
   G._ksTimer=now2;
   if(!e._fromNuke){
-    if(G._ksCount===2) showPopup('💥 DOUBLE KILL !','#ffbe0b');
-    else if(G._ksCount===3) showPopup('⚡ TRIPLE KILL !','#ff9f1c');
-    else if(G._ksCount===4) showPopup('🔥 QUAD KILL !','#ff1a6e');
-    else if(G._ksCount===5) showPopup('👑 PENTA KILL !!','#b44fff');
-    else if(G._ksCount>5&&G._ksCount%5===0) showPopup(`👑 ×${G._ksCount} KILLS !!!`,'#b44fff');
+    let streakTxt=null, streakCol='#ffbe0b';
+    if(G._ksCount===2){ streakTxt='DOUBLE KILL'; streakCol='#ffbe0b'; }
+    else if(G._ksCount===3){ streakTxt='TRIPLE KILL'; streakCol='#ff9f1c'; }
+    else if(G._ksCount===4){ streakTxt='QUAD KILL!'; streakCol='#ff1a6e'; }
+    else if(G._ksCount===5){ streakTxt='PENTA KILL!!'; streakCol='#b44fff'; }
+    else if(G._ksCount>5&&G._ksCount%5===0){ streakTxt=`${G._ksCount}× KILLS!!!`; streakCol='#b44fff'; }
+    if(streakTxt){
+      showPopup((G._ksCount>=5?'👑 ':G._ksCount>=4?'🔥 ':G._ksCount>=3?'⚡ ':'💥 ')+streakTxt, streakCol);
+      // Large floating text on canvas at player position
+      if(G.floats) G.floats.push({x:G.player.x,y:G.player.y-40,txt:streakTxt,col:streakCol,life:70,maxLife:70,vy:-1.8,big:true});
+    }
   }
   // Combo milestones
   if(G.combo===10) showPopup('🔥 COMBO ×10 !','#ffbe0b');
@@ -4850,12 +4876,13 @@ function draw(){
   // Floating damage numbers
   if(G.floats){
     ctx.save();
-    ctx.font='bold 10px "Orbitron",monospace';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     for(const f of G.floats){
-      ctx.globalAlpha=(f.life/f.maxLife)*.85;
+      ctx.globalAlpha=(f.life/f.maxLife)*(f.big?.9:.85);
       ctx.fillStyle=f.col;
-      ctx.shadowColor=f.col; ctx.shadowBlur=8;
+      ctx.shadowColor=f.col; ctx.shadowBlur=f.big?16:8;
+      ctx.font=f.big?`bold clamp(14px,3vmin,18px) "Orbitron",monospace`:'bold 10px "Orbitron",monospace';
+      ctx.font=f.big?'bold 15px "Orbitron",monospace':'bold 10px "Orbitron",monospace';
       ctx.fillText(f.txt,f.x,f.y);
     }
     ctx.restore();
@@ -4955,8 +4982,10 @@ function renderUpgradeChoices(){
       const unique=Object.keys(G.player.upgradeCounts).length;
       gStats.uniqueUpgrades=Math.max(gStats.uniqueUpgrades||0,unique);
       checkAch('all_upgrades',unique);
+      // Relic: armorRegen — +15 PV par upgrade choisie
+      if(G.player.armorRegen){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+15); updateHPBar(); addKF('🛡 +15 PV','p'); }
       updatePassives();
-      show('__none__'); // hide all screens
+      show('__none__');
       G.paused=false;
       sfxUpgrade();
       countdown(3,startWave);
@@ -6662,6 +6691,9 @@ function showArenaVictory(){
   if(level>arenaBestLevel){
     arenaBestLevel=level;
     saveData('pulse_arena_best_v1',arenaBestLevel);
+    // Save to cloud stats for leaderboard
+    gStats.arenaMaxLevel=arenaBestLevel;
+    saveGStats();
   }
   arenaLevel=level+1;
   saveData('pulse_arena_level_v1',arenaLevel);
@@ -6720,10 +6752,76 @@ function arenaReset(){
   saveData('pulse_arena_level_v1',1);
 }
 
+function arenaTabSwitch(tab){
+  const mapGrid=document.getElementById('arena-map-grid');
+  const lbPanel=document.getElementById('arena-lb-panel');
+  const tabMap=document.getElementById('arena-tab-map');
+  const tabLb=document.getElementById('arena-tab-lb');
+  if(tab==='map'){
+    mapGrid.style.display='grid'; lbPanel.style.display='none';
+    tabMap.style.color='var(--c1)'; tabMap.style.borderBottomColor='var(--c1)';
+    tabLb.style.color='var(--txt2)'; tabLb.style.borderBottomColor='transparent';
+  } else {
+    mapGrid.style.display='none'; lbPanel.style.display='block';
+    tabLb.style.color='var(--c1)'; tabLb.style.borderBottomColor='var(--c1)';
+    tabMap.style.color='var(--txt2)'; tabMap.style.borderBottomColor='transparent';
+    loadArenaLeaderboard();
+  }
+}
+
+async function loadArenaLeaderboard(){
+  const panel=document.getElementById('arena-lb-panel');
+  if(!panel) return;
+  panel.innerHTML='<div style="text-align:center;padding:20px;font-size:8px;color:var(--txt2);">Chargement…</div>';
+
+  // Local best first
+  const localBest=arenaBestLevel||0;
+  let html=`<div style="border:1px solid var(--border);background:var(--dim2);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+    <div style="font-size:16px;">📍</div>
+    <div style="flex:1;font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);">TON MEILLEUR</div>
+    <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--c1);">NIV.${localBest}</div>
+  </div>`;
+
+  if(!SB||!currentUser){
+    panel.innerHTML=html+'<div style="text-align:center;padding:16px;font-size:8px;color:var(--txt2);">Connecte-toi pour voir le classement global.</div>';
+    return;
+  }
+
+  try{
+    const {data}=await SB.from('profiles').select('pseudo,stats').limit(50).not('stats','is',null);
+    if(!data||!data.length){ panel.innerHTML=html+'<div style="text-align:center;padding:12px;font-size:8px;color:var(--dim);">Pas encore de données.</div>'; return; }
+
+    const entries=data
+      .map(p=>({name:p.pseudo||'Joueur',level:p.stats?.arenaMaxLevel||0}))
+      .filter(e=>e.level>0)
+      .sort((a,b)=>b.level-a.level)
+      .slice(0,20);
+
+    if(!entries.length){ panel.innerHTML=html+'<div style="text-align:center;padding:12px;font-size:8px;color:var(--dim);">Sois le premier !</div>'; return; }
+
+    html+=`<div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-bottom:6px;">🌍 CLASSEMENT GLOBAL</div>`;
+    entries.forEach((e,i)=>{
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      const isMe=e.name===loadData('pulse_pseudo','');
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid ${isMe?'var(--c1)':'var(--border)'};background:${isMe?'rgba(0,245,212,.05)':'var(--dim2)'};margin-bottom:4px;">
+        <div style="font-size:13px;min-width:24px;text-align:center;">${medal}</div>
+        <div style="flex:1;font-size:9px;color:${isMe?'var(--c1)':'var(--txt)'};">${(e.name||'?').substring(0,18)}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--c3);">NIV.${e.level}</div>
+        <div style="font-size:8px;color:var(--txt2);">${ARENA_LEVELS[(e.level-1)%ARENA_LEVELS.length]?.emoji||''}</div>
+      </div>`;
+    });
+    panel.innerHTML=html;
+  } catch(err){
+    panel.innerHTML=html+'<div style="text-align:center;padding:12px;font-size:8px;color:var(--c2);">Erreur de chargement.</div>';
+  }
+}
+
 function renderArenaMap(){
   const grid=document.getElementById('arena-map-grid');
   const sub=document.getElementById('arena-map-sub');
   if(!grid) return;
+  // Reset to map tab
+  arenaTabSwitch('map');
   const cycle=Math.floor((arenaLevel-1)/ARENA_LEVELS.length);
   sub.textContent=`Progression : Niveau ${arenaLevel} · Meilleur : ${arenaBestLevel}${cycle>0?' · Cycle '+(cycle+1):''}`;
   grid.innerHTML='';
@@ -7747,20 +7845,24 @@ async function saveDailyScore(score){
   const saved=loadData('pulse_daily_v1',{date:'',score:0});
   // Only save first run (daily = 1 per day)
   if(saved.date===dateStr) return;
-  // Award coins based on score
+  // Award coins based on score tier
   let coinsReward=50; // bronze: just for playing
   if(score>=100000) coinsReward=800;
   else if(score>=50000) coinsReward=400;
   else if(score>=10000) coinsReward=150;
-  awardCoins(coinsReward);
-  showPopup(`⚡ DÉFI : +${coinsReward}🪙`,'#ffbe0b');
-  saveData('pulse_daily_v1',{date:dateStr,score,rewarded:true});
+  // Bonus based on wave reached
+  const wave=G?.wave||0;
+  const waveBonus=Math.min(200, wave*5);
+  const total=coinsReward+waveBonus;
+  awardCoins(total);
+  showPopup(`⚡ DÉFI +${total}🪙 (vague ${wave})`,'#ffbe0b');
+  saveData('pulse_daily_v1',{date:dateStr,score,wave,rewarded:true});
   if(!SB||!currentUser) return;
   const profile=await loadCloudProfile();
   if(!profile) return;
   const scores=profile.scores||[];
   const existing=scores.findIndex(s=>s.daily===dateStr);
-  const entry={daily:dateStr,score,date:dateStr};
+  const entry={daily:dateStr,score,wave,date:dateStr};
   if(existing>=0) scores[existing]=entry; else scores.push(entry);
   await saveCloudProfile({scores:scores.slice(-50)});
 }
