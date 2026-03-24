@@ -2308,8 +2308,13 @@ function translateAuthErr(msg){
 }
 
 async function playAsGuest(){
-  currentUser=null; isGuest=true;
-  await afterLogin(false); // maybeShowOnboard will check localStorage
+  try {
+    currentUser=null; isGuest=true;
+    await afterLogin(false);
+  } catch(e){
+    console.warn('playAsGuest error',e);
+    try { show('s-title'); renderTitleBest(); } catch(e2){}
+  }
 }
 
 async function afterLogin(isNewAccount=false){
@@ -2381,9 +2386,9 @@ async function afterLogin(isNewAccount=false){
       }
     }
   }
-  updateCoinsHUD();
-  updateUserBar();
-  maybeShowOnboard(isNewAccount);
+  try { updateCoinsHUD(); } catch(e){}
+  try { updateUserBar(); } catch(e){}
+  try { maybeShowOnboard(isNewAccount); } catch(e){ console.warn(e); show("s-title"); }
 }
 
 async function doLogout(){
@@ -10376,13 +10381,19 @@ function obFinish(){
 
 // Show onboarding for new players (first registration, or never seen tutorial)
 function maybeShowOnboard(isNewAccount=false){
-  const done = loadData('pulse_onboard_done', false);
-  if(isNewAccount || !done){
-    obInit();
-    show('s-onboard');
-  } else {
+  try {
+    const done = loadData('pulse_onboard_done', false);
+    if(isNewAccount || !done){
+      try { obInit(); } catch(e){ console.warn('obInit failed',e); }
+      show('s-onboard');
+    } else {
+      show('s-title');
+      renderTitleBest();
+    }
+  } catch(e){
+    console.warn('maybeShowOnboard failed',e);
     show('s-title');
-    renderTitleBest();
+    try { renderTitleBest(); } catch(e2){}
   }
 }
 
