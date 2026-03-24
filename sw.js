@@ -1,84 +1,21 @@
-// PULSE — Service Worker v2
-// Cache strategy: Cache First pour les assets, Network First pour Supabase
+// PULSE — Service Worker v29 — RESET COMPLET
+const CACHE_NAME = 'pulse-v29';
 
-const CACHE_NAME = 'pulse-v28b';
-const ASSETS = [
-  '/Pulse/',
-  '/Pulse/index.html',
-  '/Pulse/manifest.json',
-  '/Pulse/icon-192.png',
-  '/Pulse/icon-512.png',
-];
-
-// Install — pre-cache les fichiers du jeu
+// À l'installation : vider TOUS les anciens caches sans exception
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(() => {
-        // Si un asset échoue, on continue quand même
-        console.log('[SW] Certains assets non cachés');
-      });
-    })
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
   );
   self.skipWaiting();
 });
 
-// Activate — supprimer les anciens caches
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    )
-  );
-  self.clients.claim();
+  event.waitUntil(self.clients.claim());
 });
 
-// Fetch — stratégie hybride
+// Stratégie : TOUJOURS le réseau, jamais le cache
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-
-  // Supabase + CDN = toujours réseau (pas de cache)
-  if (
-    url.hostname.includes('supabase.co') ||
-    url.hostname.includes('jsdelivr.net') ||
-    url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('fonts.gstatic.com')
-  ) {
-    event.respondWith(fetch(event.request).catch(() => new Response('', { status: 503 })));
-    return;
-  }
-
-  // index.html = Network First (toujours la dernière version)
-  if(url.pathname.endsWith('/') || url.pathname.endsWith('index.html')){
-    event.respondWith(
-      fetch(event.request).then(response => {
-        if(response && response.status === 200){
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Autres assets du jeu = Cache First (marche hors-ligne)
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (response && response.status === 200 && event.request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/Pulse/index.html');
-        }
-      });
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });

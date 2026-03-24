@@ -10707,7 +10707,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purgé — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=28b',{scope:'/Pulse/'})
+    navigator.serviceWorker.register('sw.js?v=29',{scope:'/Pulse/'})
       .then(reg=>{ reg.update(); console.log('[SW] Enregistré v27'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
