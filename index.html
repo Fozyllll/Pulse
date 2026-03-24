@@ -2462,27 +2462,130 @@ function removeFriend(friendId){
 
 function renderFriendsTab(el){
   const friends=loadData('pulse_friends_v1',[]);
+
+  let html = '<div style="display:flex;gap:8px;margin-bottom:10px;">'
+    + '<input class="acc-input" id="friend-search-input" type="text" placeholder="Rechercher par pseudo..." style="flex:1;font-size:11px;" onkeydown="if(event.key===\'Enter\')searchAndAddFriend()">'
+    + '<button class="btn btn-g" style="white-space:nowrap;" onclick="searchAndAddFriend()"><span>Chercher</span></button>'
+    + '</div>'
+    + '<div id="friend-search-results" style="margin-bottom:10px;"></div>';
+
+  html += '<div style="font-family:\'Orbitron\',monospace;font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:6px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">AMIS (' + friends.length + ')</div>';
+
   if(!friends.length){
-    el.innerHTML=`<div style="text-align:center;padding:20px;">
-      <div style="font-size:8px;color:var(--txt2);margin-bottom:12px;">Aucun ami pour l'instant.</div>
-      <div style="font-size:7px;color:var(--dim);">Cherche un joueur dans le classement pour l'ajouter.</div>
-    </div>`;
+    html += '<div style="font-size:8px;color:var(--dim);text-align:center;padding:14px;">Aucun ami pour l instant. Utilise la recherche.</div>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;gap:6px;" id="friends-list">';
+    friends.forEach(function(f){
+      var fid = f.id || '';
+      var fpseudo = (f.pseudo||'?').replace(/'/g,"\'");
+      var fskin = f.skin||'default';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">'
+        + '<canvas width="36" height="36" data-skin="' + fskin + '" style="border-radius:50%;border:1px solid var(--border);flex-shrink:0;"></canvas>'
+        + '<div style="flex:1;min-width:0;"><div style="font-family:\'Orbitron\',monospace;font-size:9px;color:var(--c1);">' + (f.pseudo||'?') + '</div></div>'
+        + '<button class="btn btn-p" style="font-size:6px;padding:4px 8px;" onclick="show(\'s-gift\');openGift(\'' + fpseudo + '\')"><span>Cadeau</span></button>'
+        + '<button class="btn btn-s" style="font-size:6px;padding:4px 8px;" onclick="viewFriendProfile(\'' + fid + '\')"><span>Profil</span></button>'
+        + '<button class="btn btn-d" style="font-size:6px;padding:4px 8px;" onclick="removeFriend(\'' + fid + '\');renderFriendsTab(document.getElementById(\'profile-tab-content\'))"><span>X</span></button>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+  el.querySelectorAll('canvas[data-skin]').forEach(function(cvs){ drawSkinPreview(cvs,cvs.dataset.skin,36); });
+  setTimeout(function(){ var inp=document.getElementById('friend-search-input'); if(inp) inp.focus(); },100);
+}
+
+async function searchAndAddFriend(){
+  const input=document.getElementById('friend-search-input');
+  const resultsEl=document.getElementById('friend-search-results');
+  if(!input||!resultsEl) return;
+  const query=input.value.trim();
+  if(!query){ resultsEl.innerHTML=''; return; }
+  if(!SB||!currentUser){
+    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Connexion requise.</div>';
     return;
   }
-  el.innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      ${friends.map(f=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">
-          <canvas width="36" height="36" data-skin="${f.skin||'default'}" style="border-radius:50%;border:1px solid var(--border);"></canvas>
-          <div style="flex:1;">
-            <div style="font-family:'Orbitron',monospace;font-size:9px;color:var(--c1);">${f.pseudo||'?'}</div>
-          </div>
-          <button class="btn btn-p" style="font-size:6px;padding:4px 8px;" onclick="show('s-gift');openGift('${f.pseudo||''}')"><span>🎁</span></button>
-          <button class="btn btn-s" style="font-size:6px;padding:4px 8px;" onclick="viewFriendProfile('${f.id}')"><span>👤</span></button>
-          <button class="btn btn-d" style="font-size:6px;padding:4px 8px;" onclick="removeFriend('${f.id}');renderFriendsTab(this.closest('#profile-tab-content'))"><span>✕</span></button>
-        </div>`).join('')}
+  resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);">Recherche...</div>';
+  try{
+    const {data,error}=await SB.from('profiles')
+      .select('id,pseudo,equipped_skin,stats')
+      .ilike('pseudo','%'+query+'%')
+      .neq('id',currentUser.id)
+      .limit(6);
+    if(error||!data||!data.length){
+      resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Aucun joueur trouve.</div>';
+      return;
+    }
+    const friends=loadData('pulse_friends_v1',[]);
+    let rhtml='<div style="display:flex;flex-direction:column;gap:4px;">';
+    data.forEach(function(p){
+      const already=friends.some(function(f){ return f.id===p.id; });
+      const safeJson=JSON.stringify({id:p.id,pseudo:p.pseudo||'?',skin:p.equipped_skin||'default'}).replace(/"/g,'&quot;');
+      rhtml+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid '+(already?'rgba(0,245,212,.3)':'var(--border)')+';background:var(--dim2);">'
+        +'<div style="flex:1;font-family:\'Orbitron\',monospace;font-size:9px;color:var(--c1);">'+(p.pseudo||'?')+'</div>'
+        +'<div style="font-size:7px;color:var(--txt2);">V.'+(p.stats&&p.stats.maxWave||0)+'</div>'
+        +(already
+          ?'<span style="font-size:7px;color:var(--c1);">Ami</span>'
+          :'<button class="btn btn-g" style="font-size:6px;padding:4px 8px;" onclick="addFriendFromSearch('+safeJson+')"><span>+ Ami</span></button>')
+        +'</div>';
+    });
+    rhtml+='</div>';
+    resultsEl.innerHTML=rhtml;
+  }catch(e){
+    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Erreur.</div>';
+  }
+}
+
+function addFriendFromSearch(friendObj){
+  addFriend(friendObj);
+  const el=document.getElementById('profile-tab-content');
+  if(el) renderFriendsTab(el);
+}
+async function searchAndAddFriend(){
+  const input = document.getElementById('friend-search-input');
+  const resultsEl = document.getElementById('friend-search-results');
+  if(!input || !resultsEl) return;
+  const query = input.value.trim();
+  if(!query){ resultsEl.innerHTML=''; return; }
+  if(!SB || !currentUser){
+    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Connexion requise pour chercher des joueurs.</div>';
+    return;
+  }
+  resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">⏳ Recherche…</div>';
+  try{
+    const {data,error}=await SB.from('profiles')
+      .select('id,pseudo,equipped_skin,stats')
+      .ilike('pseudo', '%'+query+'%')
+      .neq('id', currentUser.id)
+      .limit(5);
+    if(error||!data||!data.length){
+      resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Aucun joueur trouvé.</div>';
+      return;
+    }
+    const friends=loadData('pulse_friends_v1',[]);
+    resultsEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:4px;">
+      ${data.map(p=>{
+        const already=friends.some(f=>f.id===p.id);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid ${already?'rgba(0,245,212,.3)':'var(--border)'};background:var(--dim2);">
+          <div style="flex:1;font-family:'Orbitron',monospace;font-size:9px;color:var(--c1);">${p.pseudo||'?'}</div>
+          <div style="font-size:7px;color:var(--txt2);">V.${p.stats?.maxWave||0} · ${(p.stats?.totalKills||0).toLocaleString('fr-FR')} kills</div>
+          ${already
+            ? '<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;">✓ AMI</span>'
+            : `<button class="btn btn-g" style="font-size:6px;padding:4px 8px;" onclick="addFriendFromSearch(${JSON.stringify({id:p.id,pseudo:p.pseudo||'?',skin:p.equipped_skin||'default'}).replace(/"/g,'&quot;')})"><span>+ AMI</span></button>`
+          }
+        </div>`;
+      }).join('')}
     </div>`;
-  el.querySelectorAll('canvas[data-skin]').forEach(cvs=>drawSkinPreview(cvs,cvs.dataset.skin,36));
+  }catch(e){
+    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Erreur : '+e.message+'</div>';
+  }
+}
+
+function addFriendFromSearch(friendObj){
+  addFriend(friendObj);
+  // Re-render friends tab pour mettre à jour l'état
+  const el=document.getElementById('profile-tab-content');
+  if(el) renderFriendsTab(el);
 }
 
 async function loadAndViewProfile(userId){
