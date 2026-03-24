@@ -1702,6 +1702,9 @@ body.touch #minimap{display:none;}
     <div class="auth-switch" id="auth-switch-lbl">Pas de compte ? <span onclick="toggleAuthMode()">S'INSCRIRE</span></div>
     <div class="auth-switch" style="margin-top:2px;"><span onclick="show('s-reset')" style="color:var(--txt2);cursor:pointer;">Mot de passe oublié ?</span></div>
     <div class="auth-guest" onclick="playAsGuest()">Jouer sans compte (progression locale)</div>
+    <div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px;text-align:center;">
+      <button onclick="hardReload()" style="background:transparent;border:1px solid rgba(0,245,212,.25);color:var(--txt2);font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;padding:6px 14px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--c1)';this.style.color='var(--c1)'" onmouseout="this.style.borderColor='rgba(0,245,212,.25)';this.style.color='var(--txt2)'">🔄 MISE À JOUR / PROBLÈME DE CACHE</button>
+    </div>
   </div>
 </div>
 
@@ -2189,6 +2192,24 @@ function toggleAuthMode(){
   if(emailEl) emailEl.placeholder = authMode==='login' ? 'EMAIL OU PSEUDO' : 'EMAIL';
   document.getElementById('auth-err').textContent='';
   document.getElementById('auth-ok').textContent='';
+}
+
+async function hardReload(){
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ Nettoyage en cours…';
+  btn.style.pointerEvents = 'none';
+  try {
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    localStorage.removeItem('pulse_sw_version');
+  } catch(e){ console.warn('hardReload err:',e); }
+  location.reload(true);
 }
 
 async function doAuth(){
@@ -10685,7 +10706,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purgé — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=27',{scope:'/Pulse/'})
+    navigator.serviceWorker.register('sw.js?v=28b',{scope:'/Pulse/'})
       .then(reg=>{ reg.update(); console.log('[SW] Enregistré v27'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });

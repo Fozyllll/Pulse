@@ -1,7 +1,7 @@
 // PULSE — Service Worker v2
 // Cache strategy: Cache First pour les assets, Network First pour Supabase
 
-const CACHE_NAME = 'pulse-v28';
+const CACHE_NAME = 'pulse-v28b';
 const ASSETS = [
   '/Pulse/',
   '/Pulse/index.html',
