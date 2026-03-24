@@ -1,4 +1,4 @@
-// PULSE — Service Worker v29 — réseau prioritaire
+// PULSE — Service Worker v29
 const CACHE_NAME = 'pulse-v29';
 
 self.addEventListener('install', event => {
