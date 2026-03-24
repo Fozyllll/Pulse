@@ -2202,6 +2202,10 @@ async function doAuth(){
   if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caractères.'; return; }
   const btn=document.getElementById('auth-submit-btn');
   btn.style.opacity='.5'; btn.style.pointerEvents='none';
+  const _authTimeout=setTimeout(()=>{
+    btn.style.opacity=''; btn.style.pointerEvents='';
+    errEl.textContent='Serveur inaccessible. Joue en invité ou réessaie plus tard.';
+  }, 8000);
   try {
     let res;
     if(authMode==='login'){
@@ -2265,6 +2269,7 @@ async function doAuth(){
     else if(e.message&&e.message.includes('Invalid API key')) errEl.textContent='Clé API invalide — contacte l\'admin.';
     else errEl.textContent='Erreur : '+e.message+'. Essaie le mode invité.';
   } finally {
+    clearTimeout(_authTimeout);
     btn.style.opacity=''; btn.style.pointerEvents='';
   }
 }
@@ -10453,8 +10458,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     updateUserBar();
     renderTitleBest();
   } else if(SB){
-    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
-    SB.auth.getSession().then(({data})=>{
+    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 1500);
+    const _sessionRace = Promise.race([
+      SB.auth.getSession(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),2000))
+    ]);
+    _sessionRace.then(({data})=>{
       clearTimeout(sbTimeout);
       if(data?.session?.user){
         currentUser=data.session.user;
