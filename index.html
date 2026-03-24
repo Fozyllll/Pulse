@@ -857,6 +857,27 @@ body.touch #minimap{display:none;}
 .bp-unclaimed-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.3);margin:8px 0 4px;border-radius:3px;}
 .bp-unclaimed-lbl{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;color:var(--c3);flex:1;}
 
+/* Skin detail modal */
+#skin-detail-modal{position:fixed;inset:0;z-index:910;display:none;align-items:center;justify-content:center;background:rgba(3,3,10,.92);padding:16px;}
+#skin-detail-modal.on{display:flex;}
+.sdm-box{width:min(400px,95vw);background:var(--bg);border:1px solid var(--border);display:flex;flex-direction:column;gap:0;overflow:hidden;}
+.sdm-header{display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid var(--border);}
+.sdm-canvas-wrap{flex-shrink:0;width:72px;height:72px;}
+.sdm-info{flex:1;}
+.sdm-name{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(12px,3vw,16px);letter-spacing:.1em;}
+.sdm-tag{font-size:6px;letter-spacing:.2em;padding:2px 7px;border:1px solid;align-self:flex-start;margin-top:4px;}
+.sdm-perk{padding:14px 16px;border-bottom:1px solid var(--border);}
+.sdm-perk-title{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--txt2);margin-bottom:8px;}
+.sdm-perk-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px;}
+.sdm-perk-lvl{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;flex-shrink:0;}
+.sdm-perk-lvl.active{border-color:var(--c1);background:rgba(0,245,212,.1);color:var(--c1);}
+.sdm-perk-lvl.done{border-color:rgba(0,245,212,.3);color:var(--c1);}
+.sdm-perk-lvl.locked{border-color:var(--dim);color:var(--dim);}
+.sdm-perk-desc{font-size:8px;color:var(--txt2);line-height:1.5;padding-top:6px;}
+.sdm-perk-desc.active{color:var(--txt);}
+.sdm-upgrade{padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.sdm-equip-hint{font-size:7px;color:var(--dim);letter-spacing:.1em;text-align:center;padding:0 16px 10px;}
+
 /* Claim animation overlay */
 #bp-claim-overlay{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,3,10,.88);}
 #bp-claim-overlay.on{display:flex;}
@@ -1712,7 +1733,7 @@ body.touch #minimap{display:none;}
           <div class="ob-card-ico">🎯</div>
           <div class="ob-card-txt">
             <div class="ob-card-lbl">L'OBJECTIF</div>
-            <div class="ob-card-desc">Survive le plus longtemps possible contre des vagues d'ennemis sans fin. Chaque vague est plus intense — ennemis plus rapides, plus nombreux, plus résistants.</div>
+            <div class="ob-card-desc">Survive le plus longtemps possible contre des vagues d ennemis sans fin. Chaque vague est plus intense — ennemis plus rapides, plus nombreux, plus résistants.</div>
           </div>
         </div>
         <div class="ob-2col">
@@ -2292,6 +2313,7 @@ async function afterLogin(isNewAccount=false){
         }
       }
       if(profile.friends) saveData('pulse_friends_v1',profile.friends);
+      if(profile.skin_perks){ skinPerkLevels=Object.assign({},skinPerkLevels,profile.skin_perks); saveData('pulse_skin_perks_v1',skinPerkLevels); }
     }
   }
   updateCoinsHUD();
@@ -2468,6 +2490,69 @@ function renderProfileTab(tab, profileData){
 }
 
 // ── AMIS ─────────────────────────────────────────────────────────
+let _sdmCurrentSkin = '';
+
+function openSkinDetail(skinId){
+  _sdmCurrentSkin = skinId;
+  const sk = SKIN_DEFS.find(function(s){ return s.id===skinId; });
+  if(!sk) return;
+  const perk = SKIN_PERKS[skinId];
+  const lvl = getSkinPerkLvl(skinId);
+  const maxLvl = getSkinPerkMaxLvl();
+  const isEquipped = equippedSkin === skinId;
+  const isPrem = !!sk.premium;
+
+  // Header
+  const cvs = document.getElementById('sdm-canvas');
+  drawSkinPreview(cvs, skinId, 72);
+  document.getElementById('sdm-name').textContent = sk.name;
+  const rarityTxt = isPrem ? 'PREMIUM' : sk.id==='rainbow'||sk.id==='cosmic' ? 'LÉGENDAIRE' : sk.rarity==='epic'||['fire','star','octagon','circuit'].includes(sk.id) ? 'ÉPIQUE' : 'RARE';
+  const rarityCol = rarityTxt==='LÉGENDAIRE'?'var(--c3)':rarityTxt==='PREMIUM'?'#b44fff':rarityTxt==='ÉPIQUE'?'var(--c4)':'#00bbf9';
+  document.getElementById('sdm-tag-wrap').innerHTML = '<div style="display:inline-block;font-size:6px;letter-spacing:.2em;padding:2px 8px;border:1px solid '+rarityCol+';color:'+rarityCol+';">'+rarityTxt+'</div>';
+  document.getElementById('sdm-flavor').textContent = isEquipped ? 'EQUIPE ACTUELLEMENT' : 'Cliquer pour equiper dans l inventaire';
+
+  // Perk section
+  const perkSection = document.getElementById('sdm-perk-section');
+  if(!perk){
+    perkSection.innerHTML = '<div style="font-size:8px;color:var(--dim);text-align:center;padding:8px;">Aucun passif disponible pour ce skin.</div>';
+  } else {
+    document.getElementById('sdm-perk-name').textContent = perk.name + ' — NIV.' + lvl + '/' + maxLvl;
+    const levelsEl = document.getElementById('sdm-perk-levels');
+    levelsEl.innerHTML = '';
+    for(let i=1;i<=maxLvl;i++){
+      const row = document.createElement('div');
+      row.className = 'sdm-perk-row';
+      const circle = document.createElement('div');
+      circle.className = 'sdm-perk-lvl ' + (i===lvl?'active':i<lvl?'done':'locked');
+      circle.textContent = i;
+      const desc = document.createElement('div');
+      desc.className = 'sdm-perk-desc' + (i===lvl?' active':'');
+      desc.textContent = perk.desc[i-1] || '';
+      row.appendChild(circle);
+      row.appendChild(desc);
+      levelsEl.appendChild(row);
+    }
+  }
+
+  // Upgrade section
+  const upgradeSection = document.getElementById('sdm-upgrade-section');
+  const equipSection = document.getElementById('sdm-equip-section');
+  if(perk && lvl < maxLvl){
+    upgradeSection.style.display = 'flex';
+    const cost = SKIN_PERK_COSTS[lvl];
+    document.getElementById('sdm-upgrade-label').textContent = 'Améliorer vers NIV.' + (lvl+1);
+    document.getElementById('sdm-upgrade-cost').textContent = cost + ' 🪙  (solde : ' + coins.toLocaleString('fr-FR') + ')';
+    document.getElementById('sdm-upgrade-btn').style.opacity = coins >= cost ? '1' : '.5';
+    equipSection.style.display = 'none';
+  } else {
+    upgradeSection.style.display = 'none';
+    equipSection.style.display = lvl>=maxLvl ? 'block' : 'none';
+    equipSection.textContent = lvl>=maxLvl ? '✨ PASSIF AU NIVEAU MAXIMUM' : '';
+  }
+
+  document.getElementById('skin-detail-modal').classList.add('on');
+}
+
 function addFriend(friendObj){
   const friends=loadData('pulse_friends_v1',[]);
   if(!friends.some(f=>f.id===friendObj.id)){
@@ -3174,6 +3259,8 @@ function applyPermaUpgrades(player, gameState){
     const lvl=getPermaLvl(def.id);
     if(lvl>0) def.apply(player,lvl,gameState);
   }
+  // Apply equipped skin passive
+  applySkinPerk(player, equippedSkin);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4424,6 +4511,8 @@ function doDash(){
     G.particles.push({x:p.x,y:p.y,vx:0,vy:0,r:8,col:'#00f5d4',life:12,maxLife:12,alpha:0.6,ring:true});
   }
   sfxDash(); vib(18); vibGp(0.2,0.4,60);
+  // Spectre: invisibilité après dash
+  if(G.player._spectreInvis){ G.player._spectreActive=G.player._spectreInvis; G.player._spectreOn=true; if(G.player._spectreSpeed) G.player._spectreSpeedBoost=G.player._spectreSpeed; }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4508,6 +4597,37 @@ function update(now){
   if(p.regen>0){
     p.regenTimer++;
     if(p.regenTimer>=120){ p.regenTimer=0; p.hp=Math.min(p.maxHp,p.hp+p.regen); updateHPBar(); }
+  }
+  // ── SKIN PASSIFS continus ──────────────────────────────────────
+  // Crimson frénésie
+  if(p._furyActive){
+    const lowHP = p.hp/p.maxHp < 0.30;
+    p._furyOn = lowHP;
+    if(lowHP && p._furyRegen){ p.regenTimer2=(p.regenTimer2||0)+1; if(p.regenTimer2>=60){ p.regenTimer2=0; p.hp=Math.min(p.maxHp,p.hp+p._furyRegen); updateHPBar(); } }
+  }
+  // Ice aura: ralentir ennemis proches
+  if(p._iceRange && G.enemies){
+    G.enemies.forEach(function(en){
+      if(en.dead) return;
+      const dist=Math.hypot(en.x-p.x,en.y-p.y);
+      en._iceSlowed = dist < p._iceRange ? p._iceSlow : 0;
+    });
+  }
+  // Circuit boost timer
+  if(G._circuitBoostTimer>0){
+    G._circuitBoostTimer--;
+    if(G._circuitBoostTimer===0){ p._circuitBoosted=false; }
+  }
+  // Solar scaling: dégâts augmentent par vague
+  if(p._solarScaling && G.wave){
+    const mult=Math.min(p._solarMax||2, 1+G.wave*p._solarScaling);
+    p._solarCurrentMult=mult;
+    if(p._solarRegen){ p.regenTimer3=(p.regenTimer3||0)+1; if(p.regenTimer3>=120){ p.regenTimer3=0; p.hp=Math.min(p.maxHp,p.hp+p._solarRegen); updateHPBar(); } }
+  }
+  // Spectre: invisibilité après dash
+  if(p._spectreInvis && p._spectreActive>0){
+    p._spectreActive--;
+    if(p._spectreActive===0){ p._spectreOn=false; }
   }
   // Overheat curse mechanic
   if(p.overheatCurse){
@@ -5048,6 +5168,49 @@ function onKill(e){
   G.maxComboThisRun = Math.max(G.maxComboThisRun||0, G.combo);
   // Relic: vampire (not in hardcore)
   if(p.vampireRelic && currentMode!=='hardcore'){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
+
+  // ── SKIN PASSIFS ───────────────────────────────────────────────
+  // Hexagone: recharge bombe à chaque N kills
+  if(p._hexChargeEvery){
+    G._hexKillCount=(G._hexKillCount||0)+1;
+    if(G._hexKillCount>=p._hexChargeEvery){
+      G._hexKillCount=0;
+      p.specCharge=Math.min(p.specMax,p.specCharge+p.specMax*0.16);
+      if(p._hexHeal){ p.hp=Math.min(p.maxHp,p.hp+p._hexHeal); updateHPBar(); }
+      updateSpecBar();
+    }
+  }
+  // Or: bonus pièces
+  if(p._greedMult){ awardCoins(Math.round((e.boss?15:e.mini?8:2)*(p._greedMult-1))); }
+  if(p._greedCombo && G.combo>=10){ awardCoins(1); }
+  // Étoile: explosion au level-up (géré dans gainXP)
+  // Triangle: piercing balle (géré dans la création de balle)
+  // Circuit: overclocking
+  if(p._circuitKillThresh){
+    G._circuitKills=(G._circuitKills||0)+1;
+    if(G._circuitKills>=p._circuitKillThresh){
+      G._circuitKills=0;
+      p._circuitBoosted=true;
+      G._circuitBoostTimer=(p._circuitFireBoost?480:360);
+      showPopup('⚡ OVERCLOCKING !','#00bbf9');
+    }
+  }
+  // Rainbow: spawn balles aléatoires
+  if(p._rainbowBullets){
+    for(let i=0;i<p._rainbowBullets;i++){
+      const angle=Math.random()*Math.PI*2;
+      const col=p._rainbowColor?['#ff1a6e','#ffbe0b','#00f5d4','#b44fff'][i%4]:'#ffffff';
+      const dmgMult=p._rainbowEffects?(i%4===0?1.5:i%4===1?1:i%4===2?0.8:1.2):1;
+      spawnBullet&&spawnBullet(e.x,e.y,Math.cos(angle),Math.sin(angle),p.bulletDmg*dmgMult*0.7,col,false);
+    }
+  }
+  // Void: chance de clone
+  if(p._voidCloneChance && Math.random()<p._voidCloneChance){
+    G._voidClones=G._voidClones||[];
+    G._voidClones.push({x:p.x+(Math.random()-.5)*60,y:p.y+(Math.random()-.5)*60,timer:p._voidCloneDur||180,r:p.r*.8});
+  }
+  // Glitch: crit / instakill déjà géré dans le tir
+  
   // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
   if(p.chainKill && G._chainKillCount>=5 && !e._fromNuke){ 
@@ -5148,6 +5311,14 @@ function gainXP(amt){
     _dom['hv-lv'].textContent=p.level;
     showPopup('⭐ NIVEAU '+p.level,'#ffbe0b');
     sfxLevelUp();
+    // Star: nova stellaire
+    if(p._starNovaBullets){
+      for(let i=0;i<p._starNovaBullets;i++){
+        const a=i/p._starNovaBullets*Math.PI*2;
+        spawnBullet&&spawnBullet(p.x,p.y,Math.cos(a),Math.sin(a),(p.bulletDmg+p._starNovaDmgBonus)*0.8,'#ff9f1c',false);
+      }
+      if(p._starNovaHeal){ p.hp=Math.min(p.maxHp,p.hp+p._starNovaHeal); updateHPBar(); }
+    }
     flashEl('lvup-fx');
     checkAch('level_10',p.level);
     if(p.level>=(gStats.maxLevel||0)){ gStats.maxLevel=p.level; saveGStats(); }
@@ -7436,7 +7607,7 @@ const ARENA_LEVELS = [
     reward:{type:'skin_unlock',value:'crimson',label:'SKIN CRIMSON DÉBLOQUÉ',icon:'🔴',desc:'Le rouge du sang versé.'}},
 ];
 
-// Génère la pool d'ennemis pour un niveau Arena donné
+// Génère la pool d ennemis pour un niveau Arena donné
 function buildArenaWave(level){
   const D=ENEMY_DEFS;
   const lvlDef = ARENA_LEVELS[(level-1) % ARENA_LEVELS.length];
@@ -8839,18 +9010,156 @@ function getDifficultyMult(){
 }
 
 // ── UPGRADES SPÉCIFIQUES AUX SKINS ──
-const SKIN_UPGRADES = {
-  'default':  [{id:'sk_hex',ico:'🔋',n:'SURCHARGE HEX',d:'6e kill = +10% bombe.',tier:'rare',stacks:false,apply:p=>{p.hexCharge=true;}}],
-  'crimson':  [{id:'sk_fury',ico:'🩸',n:'FRÉNÉSIE',d:'<30% PV → cadence ×1.4.',tier:'rare',stacks:false,apply:p=>{p.furyOnLowHp=true;}}],
-  'gold':     [{id:'sk_greed',ico:'💰',n:'AVIDITÉ',d:'+30% pièces par kill.',tier:'rare',stacks:false,apply:p=>{p.greedCoin=true;}}],
-  'fire':     [{id:'sk_burn',ico:'🔥',n:'TRAÎNE ENFLAMMÉE',d:'Balles brûlent les ennemis.',tier:'epic',stacks:false,apply:p=>{p.fireTrail=true;}}],
-  'ice':      [{id:'sk_freeze',ico:'❄',n:'AURA DE GEL',d:'Ennemis <80px ralentis.',tier:'rare',stacks:false,apply:p=>{p.iceAura=true;}}],
-  'rainbow':  [{id:'sk_chaos',ico:'🌈',n:'CHAOS CHROMATIQUE',d:'Kills spawnt 3 balles aléatoires.',tier:'legendary',stacks:false,apply:p=>{p.rainbowChaos=true;}}],
-  'ghost':    [{id:'sk_fear',ico:'👻',n:'TERREUR',d:'Ennemis fuient à ta mort.',tier:'rare',stacks:false,apply:p=>{p.ghostFear=true;}}],
-  'star':     [{id:'sk_nova',ico:'💫',n:'NOVA STELLAIRE',d:'Level-up → explosion.',tier:'rare',stacks:false,apply:p=>{p.starNova=true;}}],
+// ══════════════════════════════════════════════════════════════
+//  SKIN PASSIFS — 3 niveaux par skin, stockés dans localStorage
+// ══════════════════════════════════════════════════════════════
+// Format: { skinId: niveau (0-3) }
+let skinPerkLevels = loadData('pulse_skin_perks_v1', {});
+
+function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
+function getSkinPerkMaxLvl(){ return 3; }
+
+// Coût d'upgrade par niveau (0→1, 1→2, 2→3)
+const SKIN_PERK_COSTS = [200, 500, 1000];
+
+const SKIN_PERKS = {
+  // ── SKINS CLASSIQUES ──
+  'default': {
+    ico:'🔋', name:'SURCHARGE HEX',
+    desc: ['Chaque 8e kill recharge +8% bombe', 'Chaque 6e kill recharge +12% bombe', 'Chaque 5e kill recharge +16% bombe et +5 PV'],
+    apply: function(p, lvl){ p._hexChargeEvery=lvl===3?5:lvl===2?6:8; p._hexHeal=lvl===3?5:0; }
+  },
+  'crimson': {
+    ico:'🩸', name:'FRÉNÉSIE',
+    desc: ['<30% PV → cadence de tir ×1.3', '<30% PV → cadence ×1.4 + dégâts +10%', '<30% PV → cadence ×1.5 + dégâts +20% + regen 1/s'],
+    apply: function(p, lvl){ p._furyActive=true; p._furyFireMult=lvl===3?1.5:lvl===2?1.4:1.3; p._furyDmgBonus=lvl===3?0.2:lvl===2?0.1:0; p._furyRegen=lvl===3?1:0; }
+  },
+  'gold': {
+    ico:'💰', name:'AVIDITÉ',
+    desc: ['+20% pièces par kill', '+35% pièces par kill', '+50% pièces par kill + 1 pièce bonus par combo'],
+    apply: function(p, lvl){ p._greedMult=lvl===3?1.5:lvl===2?1.35:1.2; p._greedCombo=lvl===3; }
+  },
+  'violet': {
+    ico:'👁️', name:'SPECTRE',
+    desc: ['Invisibilité 1s après dash (ennemis ignorent)', 'Invisibilité 1.5s + vitesse +15% après dash', 'Invisibilité 2s + vitesse +20% + 1 tir fantôme (traverse tout)'],
+    apply: function(p, lvl){ p._spectreInvis=lvl===3?120:lvl===2?90:60; p._spectreSpeed=lvl>=2?lvl===3?0.2:0.15:0; p._spectreShot=lvl===3; }
+  },
+  'ice': {
+    ico:'❄️', name:'AURA DE GEL',
+    desc: ['Ennemis à <80px ralentis de 30%', 'Ennemis à <100px ralentis de 40%', 'Ennemis à <120px ralentis de 50% + gel à la mort'],
+    apply: function(p, lvl){ p._iceRange=lvl===3?120:lvl===2?100:80; p._iceSlow=lvl===3?0.5:lvl===2?0.4:0.3; p._iceDeathFreeze=lvl===3; }
+  },
+  'fire': {
+    ico:'🔥', name:'TRAÎNE ENFLAMMÉE',
+    desc: ['Balles enflamment les ennemis (5 dégâts/s, 2s)', 'Flammes durent 3s + propagation aux voisins', 'Flammes durent 4s + explosion a mort de l ennemi enflamme'],
+    apply: function(p, lvl){ p._fireDot=lvl===3?4*60:lvl===2?3*60:2*60; p._fireSpread=lvl>=2; p._fireExplode=lvl===3; }
+  },
+  'triangle': {
+    ico:'💨', name:'TRANCHANT',
+    desc: ['1 balle sur 5 traverse les ennemis (piercing)', '1 balle sur 4 perce + +5% vitesse de déplacement', '1 balle sur 3 perce + +10% vitesse + ricochet 1 fois'],
+    apply: function(p, lvl){ p._triPierceEvery=lvl===3?3:lvl===2?4:5; p._triSpeed=lvl===3?0.1:lvl>=2?0.05:0; p._triRicochet=lvl===3; }
+  },
+  'square': {
+    ico:'🛡️', name:'BLINDAGE',
+    desc: ['Reçois 10% moins de dégâts', 'Reçois 15% moins de dégâts + +15 PV max', 'Reçois 20% moins de dégâts + +25 PV max + rebond des dégâts'],
+    apply: function(p, lvl){ p._squareArmor=lvl===3?0.8:lvl===2?0.85:0.9; p._squareHp=lvl===3?25:lvl>=2?15:0; p._squareReflect=lvl===3?0.1:0; if(p._squareHp){ p.maxHp+=p._squareHp; p.hp+=p._squareHp; } }
+  },
+  'octagon': {
+    ico:'⚡', name:'TITAN',
+    desc: ['Bombe recharge +20% plus vite', 'Bombe recharge +35% plus vite + rayon +15%', 'Bombe recharge +50% + rayon +20% + mini-bombe gratuite à chaque vague'],
+    apply: function(p, lvl){ p._octSpecRate=lvl===3?1.5:lvl===2?1.35:1.2; p._octNukeRadius=lvl>=2?lvl===3?1.2:1.15:1; p._octWaveBomb=lvl===3; }
+  },
+  'star': {
+    ico:'💫', name:'NOVA STELLAIRE',
+    desc: ['Level-up → explosion de 8 balles', 'Level-up → explosion de 12 balles + +5 dégâts', 'Level-up → explosion de 16 balles + +10 dégâts + soin 15 PV'],
+    apply: function(p, lvl){ p._starNovaBullets=lvl===3?16:lvl===2?12:8; p._starNovaDmgBonus=lvl===3?10:lvl>=2?5:0; p._starNovaHeal=lvl===3?15:0; }
+  },
+  'rainbow': {
+    ico:'🌈', name:'CHAOS CHROMATIQUE',
+    desc: ['Chaque kill spawne 2 balles aléatoires', 'Chaque kill spawne 3 balles + couleur change les dégâts', 'Chaque kill spawne 4 balles + chaque couleur a son effet'],
+    apply: function(p, lvl){ p._rainbowBullets=lvl===3?4:lvl===2?3:2; p._rainbowColor=lvl>=2; p._rainbowEffects=lvl===3; }
+  },
+  'ghost': {
+    ico:'👻', name:'TERREUR',
+    desc: ['Les ennemis proches fuient à ta mort pendant 3s', 'Les ennemis fuient 5s + vitesse réduite', 'Les ennemis fuient 5s + ralentis + 1 vie bonus'],
+    apply: function(p, lvl){ p._ghostFearDur=lvl===3?300:lvl===2?300:180; p._ghostFearSlow=lvl>=2; p._ghostExtraLife=lvl===3; }
+  },
+  'wire': {
+    ico:'⚡', name:'CADENCE NETTE',
+    desc: ['+8% cadence de tir', '+15% cadence de tir', '+20% cadence + balles perforent 1 ennemi supplémentaire'],
+    apply: function(p, lvl){ p._wireFire=lvl===3?0.8:lvl===2?0.85:0.92; p._wirePierce=lvl===3; if(p._wireFire) p.fireRate=Math.round(p.fireRate*p._wireFire); }
+  },
+  'neon': {
+    ico:'🔴', name:'SURCHARGE ROUGE',
+    desc: ['+10% dégâts', '+18% dégâts + balles plus grandes', '+25% dégâts + balles grandes + saignement'],
+    apply: function(p, lvl){ p._neonDmg=lvl===3?1.25:lvl===2?1.18:1.1; p._neonBig=lvl>=2; p._neonBleed=lvl===3; p.bulletDmg*=p._neonDmg; }
+  },
+  'circuit': {
+    ico:'🔌', name:'OVERCLOCKING',
+    desc: ['Après 10 kills enchaînés : vitesse +25% pendant 5s', 'Après 8 kills : vitesse +35% pendant 6s', 'Après 6 kills : vitesse +40% + tir +20% pendant 8s'],
+    apply: function(p, lvl){ p._circuitKillThresh=lvl===3?6:lvl===2?8:10; p._circuitSpeedBoost=lvl===3?0.4:lvl===2?0.35:0.25; p._circuitFireBoost=lvl===3?0.2:0; }
+  },
+  'pulsering': {
+    ico:'🟡', name:'RÉSONANCE',
+    desc: ['Ondes de choc visuelles à chaque vague', 'Ondes font 5 dégâts aux ennemis proches', 'Ondes font 10 dégâts + ralentissent'],
+    apply: function(p, lvl){ p._pulseWaveShock=lvl>=1; p._pulseWaveDmg=lvl===3?10:lvl===2?5:0; p._pulseWaveSlow=lvl===3; }
+  },
+  'arrow': {
+    ico:'🎯', name:'PRÉCISION',
+    desc: ['+15% dégâts si pas touché depuis 5s', '+20% dégâts + headshot aléatoire (×2)', '+25% dégâts + headshots + balles accélèrent en vol'],
+    apply: function(p, lvl){ p._arrowNoHitBonus=lvl===3?1.25:lvl===2?1.2:1.15; p._arrowHeadshot=lvl>=2; p._arrowAccel=lvl===3; }
+  },
+  // ── SKINS PREMIUM ──
+  'void': {
+    ico:'🌌', name:'ABYSSAL',
+    desc: ['Tuer un ennemi a 8% de chance d invoquer un clone 3s', 'Clone dure 5s et a 15% de chance de spawn', 'Clone dure 8s, 20% chance, et attaque aussi'],
+    apply: function(p, lvl){ p._voidCloneChance=lvl===3?0.2:lvl===2?0.15:0.08; p._voidCloneDur=lvl===3?480:lvl===2?300:180; }
+  },
+  'solar': {
+    ico:'☀️', name:'FUSION SOLAIRE',
+    desc: ['+5% dégâts par vague en cours (cumulatif, max ×2)', '+8% par vague (max ×2.5)', '+10% par vague (max ×3) + régén solaire 0.5/s'],
+    apply: function(p, lvl){ p._solarScaling=lvl===3?0.1:lvl===2?0.08:0.05; p._solarMax=lvl===3?3:lvl===2?2.5:2; p._solarRegen=lvl===3?0.5:0; }
+  },
+  'glitch': {
+    ico:'⚡', name:'ERREUR CRITIQUE',
+    desc: ['5% de chance de doubler les dégâts d une balle', '8% de chance ×2 dégâts + 2% chance d instakill', '12% chance ×2 + 3% instakill + glitch des boss (−20% PV)'],
+    apply: function(p, lvl){ p._glitchCrit=lvl===3?0.12:lvl===2?0.08:0.05; p._glitchInstakill=lvl===3?0.03:lvl>=2?0.02:0; p._glitchBoss=lvl===3?0.8:1; }
+  },
+  'cosmic': {
+    ico:'🌠', name:'GRAVITÉ COSMIQUE',
+    desc: ['Bombe attire les ennemis au centre avant d exploser', 'Attire + ralentit les ennemis +2s après l explosion', 'Attire + ralentit + mini-orbites de balles en permanence'],
+    apply: function(p, lvl){ p._cosmicPull=lvl>=1; p._cosmicSlow=lvl>=2?lvl===3?120:60:0; p._cosmicOrbit=lvl===3; }
+  },
 };
+
+function getSkinPerks(skinId){
+  return SKIN_PERKS[skinId]||null;
+}
+
+function applySkinPerk(player, skinId){
+  const perk = SKIN_PERKS[skinId];
+  if(!perk) return;
+  const lvl = getSkinPerkLvl(skinId);
+  if(lvl > 0) perk.apply(player, lvl);
+}
+
+function upgradeSkinPerk(skinId){
+  const lvl = getSkinPerkLvl(skinId);
+  if(lvl >= 3){ showPopup('Niveau maximum !','#00f5d4'); return; }
+  const cost = SKIN_PERK_COSTS[lvl];
+  pulseConfirm('Améliorer ' + (SKIN_PERKS[skinId]&&SKIN_PERKS[skinId].name||skinId) + ' au niveau ' + (lvl+1) + ' pour ' + cost + ' pièces ?').then(function(ok){
+    if(!ok) return;
+    if(!spendCoins(cost)){ showPopup('Pas assez de pièces !','#ff1a6e'); return; }
+    skinPerkLevels[skinId] = lvl + 1;
+    saveData('pulse_skin_perks_v1', skinPerkLevels);
+    if(currentUser&&SB) saveCloudProfile({skin_perks: skinPerkLevels});
+    showPopup('✨ ' + (SKIN_PERKS[skinId]&&SKIN_PERKS[skinId].name) + ' NIV.' + (lvl+1) + ' !','#ffbe0b');
+    openSkinDetail(skinId);
+  });
+}
+
 function getSkinSpecificUpgrades(){
-  return SKIN_UPGRADES[equippedSkin]||[];
+  return [];
 }
 
 // ── DÉCOR PAR SAISON (défini dans le système BP) ──
@@ -9808,5 +10117,32 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<!-- SKIN DETAIL MODAL -->
+<div id="skin-detail-modal">
+  <div class="sdm-box">
+    <div class="sdm-header">
+      <div class="sdm-canvas-wrap"><canvas id="sdm-canvas" width="72" height="72"></canvas></div>
+      <div class="sdm-info">
+        <div class="sdm-name" id="sdm-name">HEXAGONE</div>
+        <div style="font-size:7px;color:var(--txt2);margin-top:3px;" id="sdm-flavor"></div>
+        <div id="sdm-tag-wrap" style="margin-top:6px;"></div>
+      </div>
+      <button onclick="document.getElementById('skin-detail-modal').classList.remove('on')" style="background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:4px;line-height:1;align-self:flex-start;">×</button>
+    </div>
+    <div class="sdm-perk" id="sdm-perk-section">
+      <div class="sdm-perk-title">PASSIF : <span id="sdm-perk-name"></span></div>
+      <div id="sdm-perk-levels"></div>
+    </div>
+    <div class="sdm-upgrade" id="sdm-upgrade-section">
+      <div style="flex:1;">
+        <div style="font-size:7px;color:var(--dim);letter-spacing:.1em;" id="sdm-upgrade-label"></div>
+        <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c3);margin-top:2px;" id="sdm-upgrade-cost"></div>
+      </div>
+      <button class="btn btn-g" id="sdm-upgrade-btn" onclick="upgradeSkinPerk(_sdmCurrentSkin)"><span>⬆ AMÉLIORER</span></button>
+    </div>
+    <div class="sdm-equip-hint" id="sdm-equip-section"></div>
+  </div>
+</div>
+
 </body>
 </html>
