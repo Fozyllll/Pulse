@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
-<title>PULSE v26 — Twin-Stick Survivor</title>
+<title>PULSE</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -823,6 +823,7 @@ body.touch #minimap{display:none;}
 .bp-row.done .bp-row-lv{color:var(--c1);}
 .bp-row.current .bp-row-lv{color:var(--c3);}
 .bp-cell{padding:7px 10px;display:flex;align-items:center;gap:8px;border-right:1px solid rgba(255,255,255,.05);}
+.bp-cell.claimed-cell{background:rgba(255,255,255,.025);opacity:.55;filter:saturate(.3);}
 .bp-cell:last-child{border-right:none;}
 .bp-cell.premium-cell{background:rgba(180,79,255,.03);}
 .bp-cell.premium-cell.locked-prem{background:rgba(0,0,0,.2);}
@@ -1335,15 +1336,10 @@ body.touch #minimap{display:none;}
         <div class="mode-desc">90 secondes pour faire le meilleur score possible.</div>
         <div class="mode-tag">90 SEC</div>
       </div>
-      <div class="mode-card c3" onclick="startMode('arena')">
+      <div class="mode-card c3" onclick="show('s-arena-map');renderArenaMap()">
         <div class="mode-icon">💀</div><div class="mode-name">ARÈNE</div>
         <div class="mode-desc">Niveaux progressifs. Survive chaque vague, gagne des récompenses.</div>
         <div class="mode-tag">NIVEAUX</div>
-      </div>
-      <div class="mode-card" style="border-color:rgba(255,26,110,.3);background:rgba(255,26,110,.02);" onclick="show('s-arena-map');renderArenaMap()">
-        <div class="mode-icon" style="font-size:20px;">📋</div><div class="mode-name" style="color:var(--c2);font-size:10px;">CARTE ARÈNE</div>
-        <div class="mode-desc">Voir ta progression, rejouer les niveaux terminés.</div>
-        <div class="mode-tag" style="border-color:rgba(255,26,110,.3);color:var(--c2);">PROGRESSION</div>
       </div>
       <div class="mode-card c4" onclick="show('s-duo-config');renderDuoConfig()">
         <div class="mode-icon">👥</div><div class="mode-name">DUO LOCAL</div>
@@ -1371,7 +1367,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;gap:4px;">
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">VERSION 27.0</div>
+    
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
@@ -1520,22 +1516,33 @@ body.touch #minimap{display:none;}
 
 <!-- ARENA LEVELS MAP -->
 <div class="scr" id="s-arena-map">
-  <div class="scr-inner" style="align-items:center;gap:12px;">
-    <div class="scr-h">💀 NIVEAUX ARÈNE</div>
-    <div style="font-size:8px;letter-spacing:.15em;color:var(--txt2);text-align:center;" id="arena-map-sub"></div>
+  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+    <div style="width:min(640px,97vw);display:flex;flex-direction:column;gap:0;">
 
-    <!-- Tabs: map / leaderboard -->
-    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);width:min(640px,96vw);margin-bottom:4px;">
-      <button id="arena-tab-map" onclick="arenaTabSwitch('map')" style="flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;border:none;background:transparent;color:var(--c1);border-bottom:2px solid var(--c1);cursor:pointer;">📋 NIVEAUX</button>
-      <button id="arena-tab-lb" onclick="arenaTabSwitch('lb')" style="flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;border:none;background:transparent;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;">🏆 CLASSEMENT</button>
-    </div>
+      <!-- Header -->
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 0 10px;border-bottom:1px solid var(--border);">
+        <div style="font-size:28px;">💀</div>
+        <div style="flex:1;">
+          <div style="font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4vmin,22px);letter-spacing:.1em;color:var(--c2);">ARÈNE</div>
+          <div style="font-size:7px;color:var(--txt2);margin-top:3px;letter-spacing:.15em;" id="arena-map-sub"></div>
+        </div>
+        <button class="btn btn-p" style="white-space:nowrap;" onclick="arenaNextLevel()"><span id="arena-continue-lbl">▶ CONTINUER</span></button>
+      </div>
 
-    <div id="arena-map-grid" style="width:min(640px,96vw);display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,30vw,180px),1fr));gap:8px;max-height:55vh;overflow-y:auto;padding:4px;"></div>
-    <div id="arena-lb-panel" style="display:none;width:min(640px,96vw);max-height:55vh;overflow-y:auto;"></div>
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--border);">
+        <button class="shop-tab active" id="arena-tab-map" onclick="arenaTabSwitch('map')">📋 NIVEAUX</button>
+        <button class="shop-tab" id="arena-tab-lb" onclick="arenaTabSwitch('lb')">🏆 CLASSEMENT</button>
+      </div>
 
-    <div class="btn-row" style="margin-top:8px;gap:10px;">
-      <button class="btn btn-p" onclick="arenaNextLevel()"><span>▶ CONTINUER</span></button>
-      <button class="btn btn-d" onclick="pulseConfirm('Recommencer l\'Arène depuis le niveau 1 ?').then(ok=>{if(ok){arenaLevel=1;saveData(\'pulse_arena_level_v1\',1);show(\'s-mode\');}})"><span>↺ RECOMMENCER</span></button>
+      <!-- Content -->
+      <div id="arena-map-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,175px),1fr));gap:8px;max-height:calc(100vh - 260px);overflow-y:auto;padding:10px 2px;"></div>
+      <div id="arena-lb-panel" style="display:none;max-height:calc(100vh - 260px);overflow-y:auto;padding:10px 0;"></div>
+
+      <!-- Actions bas -->
+      <div style="display:flex;gap:8px;padding:10px 0;border-top:1px solid var(--border);margin-top:4px;">
+        <button class="btn btn-d" style="flex:1;" onclick="pulseConfirm('Recommencer l\'Arène depuis le niveau 1 ?').then(ok=>{if(ok){arenaLevel=1;saveData(\'pulse_arena_level_v1\',1);show(\'s-mode\');}})"><span>↺ RECOMMENCER</span></button>
+      </div>
     </div>
   </div>
 </div>
@@ -1663,10 +1670,7 @@ body.touch #minimap{display:none;}
 <div class="scr on" id="s-auth">
   <div class="auth-box">
     <div class="auth-title">PULSE</div>
-    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.3);padding:3px 10px;border-radius:2px;margin-bottom:2px;">
-      <span style="font-size:8px;color:var(--c1);font-family:'Orbitron',monospace;letter-spacing:.2em;">✦ VERSION 27.0</span>
-      <span id="auth-update-badge" style="font-size:6px;color:var(--c3);letter-spacing:.1em;display:none;">• MISE À JOUR</span>
-    </div>
+
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
     <input class="auth-input" id="auth-email" type="text" placeholder="EMAIL OU PSEUDO" autocomplete="username" onkeydown="if(event.key==='Enter')doAuth()">
     <input class="auth-input" id="auth-pass"  type="password" placeholder="MOT DE PASSE" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
@@ -7029,6 +7033,7 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
   const rarityLbl=r.rarity==='legendary'?'★ LÉGENDAIRE':r.rarity==='epic'?'◆ ÉPIQUE':r.rarity==='rare'?'✦ RARE':'';
   const typeClass=r.type==='coins'?'coins':r.type==='skin'?'skin':r.type==='perma'||r.type==='relic'?'perma':'title';
   let cls='bp-cell'+(r.track==='premium'?' premium-cell':'');
+  if(claimed) cls+=' claimed-cell';
   if(premiumLocked) cls+=' locked-prem';
   else if(claimable) cls+=' claimable';
   else if(unlocked) cls+=' unlocked';
@@ -7514,7 +7519,9 @@ function renderArenaMap(){
   // Reset to map tab
   arenaTabSwitch('map');
   const cycle=Math.floor((arenaLevel-1)/ARENA_LEVELS.length);
-  sub.textContent=`Progression : Niveau ${arenaLevel} · Meilleur : ${arenaBestLevel}${cycle>0?' · Cycle '+(cycle+1):''}`;
+  sub.textContent=`Niveau ${arenaLevel} en cours · Meilleur atteint : ${arenaBestLevel}${cycle>0?' · Cycle '+(cycle+1):''}`;
+  const contLbl=document.getElementById('arena-continue-lbl');
+  if(contLbl) contLbl.textContent=`▶ NIV.${arenaLevel}`;
   grid.innerHTML='';
   ARENA_LEVELS.forEach((lvl,i)=>{
     const lvlNum=i+1;
