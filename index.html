@@ -1386,7 +1386,7 @@ body.touch #minimap{display:none;}
     <!-- Secondary grid -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(280px,84vw);margin-top:8px;">
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span></button>
+      <button class="btn btn-s" style="min-width:0;position:relative;" id="btn-ach" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span><span class="notif-badge" id="btn-ach-badge" style="display:none;">!</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
@@ -1477,6 +1477,7 @@ body.touch #minimap{display:none;}
 
 <div class="scr" id="s-settings">
   <div class="scr-inner">
+    <div id="settings-update-banner" style="width:min(520px,96vw);display:none;"></div>
     <div class="scr-h">⚙ PARAMÈTRES</div>
     <div class="settings-list" id="settings-list" style="width:min(520px,96vw);"></div>
     
@@ -1564,30 +1565,30 @@ body.touch #minimap{display:none;}
 
 <!-- PROFILE SCREEN -->
 <div class="scr" id="s-profile">
-  <div class="scr-inner" style="align-items:center;gap:14px;">
-    <div class="scr-h">👤 MON PROFIL</div>
+  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+    <div style="width:min(560px,97vw);display:flex;flex-direction:column;gap:0;">
 
-    <!-- Avatar + name -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:min(480px,94vw);border:1px solid var(--border);background:var(--dim2);padding:20px;">
-      <canvas id="profile-avatar" width="80" height="80" style="border-radius:50%;border:2px solid var(--c1);"></canvas>
-      <div id="profile-name" style="font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,20px);letter-spacing:.12em;color:var(--c1);"></div>
-      <div id="profile-title" style="font-size:8px;letter-spacing:.3em;color:var(--c3);"></div>
-      <div style="display:flex;gap:16px;font-size:8px;color:var(--txt2);letter-spacing:.1em;" id="profile-badges"></div>
-    </div>
+      <!-- Header profil -->
+      <div style="display:flex;align-items:center;gap:16px;padding:14px 0 12px;border-bottom:1px solid var(--border);" id="profile-header">
+        <canvas id="profile-avatar" width="72" height="72" style="border-radius:50%;border:2px solid var(--c1);flex-shrink:0;"></canvas>
+        <div style="flex:1;">
+          <div id="profile-name" style="font-family:'Orbitron',monospace;font-size:clamp(13px,3.5vw,18px);letter-spacing:.12em;color:var(--c1);"></div>
+          <div id="profile-title" style="font-size:8px;letter-spacing:.3em;color:var(--c3);margin-top:3px;"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;" id="profile-badges"></div>
+        </div>
+        <div id="profile-actions" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
 
-    <!-- Stats grid -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(480px,94vw);" id="profile-stats"></div>
+      <!-- Onglets -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-top:0;">
+        <button class="shop-tab active" id="ptab-stats" onclick="profileTab('stats',this)">📊 STATS</button>
+        <button class="shop-tab" id="ptab-scores" onclick="profileTab('scores',this)">🏆 SCORES</button>
+        <button class="shop-tab" id="ptab-skins" onclick="profileTab('skins',this)">🎨 SKINS</button>
+        <button class="shop-tab" id="ptab-friends" onclick="profileTab('friends',this)">👥 AMIS</button>
+      </div>
 
-    <!-- Best scores -->
-    <div style="width:min(480px,94vw);">
-      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.25em;color:var(--txt2);margin-bottom:8px;">🏆 MEILLEURES PARTIES</div>
-      <div id="profile-scores" style="display:flex;flex-direction:column;gap:4px;"></div>
-    </div>
-
-    <!-- Skins owned -->
-    <div style="width:min(480px,94vw);">
-      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.25em;color:var(--txt2);margin-bottom:8px;">🎨 SKINS POSSÉDÉS</div>
-      <div id="profile-skins" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      <!-- Contenu onglet -->
+      <div id="profile-tab-content" style="min-height:300px;padding-top:10px;"></div>
     </div>
   </div>
 </div>
@@ -2266,8 +2267,28 @@ async function afterLogin(isNewAccount=false){
       // Load control bindings
       if(profile.kb_bindings) { kbMap=profile.kb_bindings; saveData('pulse_kbmap_v1',kbMap); }
       if(profile.gp_bindings) { gpMap=profile.gp_bindings; saveData('pulse_gpmap_v1',gpMap); }
-      // Load battle pass
+      // Load battle pass (sync again in case)
       if(profile.battle_pass) { battlePass=Object.assign({},battlePass,profile.battle_pass); }
+      // ── CLOUD SYNC — reliques, premium pass, daily, reliques équipées ──
+      if(profile.unlocked_relics?.length){
+        const merged=[...new Set([...loadData('pulse_unlocked_relics_v1',[]),...profile.unlocked_relics])];
+        saveData('pulse_unlocked_relics_v1',merged);
+      }
+      if(profile.equipped_relics?.length){
+        saveData('pulse_eq_relics_v1',profile.equipped_relics);
+      }
+      if(profile.premium_pass){
+        hasPremiumPass=profile.premium_pass;
+        saveData('pulse_premium_v1',hasPremiumPass);
+      }
+      if(profile.daily_score){
+        const localDaily=loadData('pulse_daily_v1',{date:''});
+        // Prendre le plus récent
+        if(!localDaily.date || profile.daily_score.date > localDaily.date){
+          saveData('pulse_daily_v1',profile.daily_score);
+        }
+      }
+      if(profile.friends) saveData('pulse_friends_v1',profile.friends);
     }
   }
   updateCoinsHUD();
@@ -2288,83 +2309,200 @@ async function doLogout(){
   show('s-auth');
 }
 
-function renderProfile(){
-  // Avatar — draw player skin on canvas
+// ── Profil actuel affiché (null = soi-même, sinon {id,pseudo,stats,...}) ──
+let _viewingProfile = null;
+
+function profileTab(tab, btn){
+  document.querySelectorAll('#s-profile .shop-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProfileTab(tab, _viewingProfile);
+}
+
+function renderProfile(profileData=null){
+  _viewingProfile = profileData; // null = mon profil
+  const isMe = !profileData;
+  const pseudo = isMe
+    ? (loadData('pulse_pseudo_v3','') || currentUser?.email?.split('@')[0] || 'Invité')
+    : (profileData.pseudo || '?');
+  const stats  = isMe ? gStats : (profileData.stats||{});
+  const skins  = isMe ? ownedSkins : (profileData.owned_skins||['default']);
+  const bp     = isMe ? battlePass : (profileData.battle_pass||{level:0});
+  const premium= isMe ? hasPremiumPass.owned : (profileData.premium_pass?.owned||false);
+  const skinId = isMe ? equippedSkin : (profileData.equipped_skin||'default');
+
+  // Titre
+  document.querySelector('#s-profile .scr-h') && (document.querySelector('#s-profile .scr-h').textContent = isMe ? '👤 MON PROFIL' : `👤 ${pseudo.toUpperCase()}`);
+
+  // Avatar
   const avCvs=document.getElementById('profile-avatar');
-  if(avCvs){
-    const ctx=avCvs.getContext('2d');
-    const s=80; ctx.clearRect(0,0,s,s);
-    // Background
-    ctx.fillStyle='#0a1a12'; ctx.fillRect(0,0,s,s);
-    // Draw player skin preview
-    drawSkinPreview(avCvs, equippedSkin, s);
-  }
+  if(avCvs){ drawSkinPreview(avCvs, skinId, 72); }
 
-  // Name & title
-  const pseudo = currentUser ? (loadData('pulse_pseudo','') || currentUser.email?.split('@')[0] || 'Joueur') : 'Invité';
+  // Nom + titre
   document.getElementById('profile-name').textContent = pseudo.toUpperCase();
-
-  // Title based on stats
-  const wave=gStats.maxWave||0, kills=gStats.totalKills||0, games=gStats.gamesPlayed||0;
+  const wave=stats.maxWave||0, kills=stats.totalKills||0, games=stats.gamesPlayed||0;
   const title = wave>=30?'👑 MAÎTRE LÉGENDAIRE':wave>=20?'⚡ VÉTÉRAN':wave>=10?'🔥 GUERRIER':games>=10?'🎮 SURVIVANT':'🌱 RECRUE';
   document.getElementById('profile-title').textContent = title;
 
   // Badges
-  const achCount=Object.keys(achDone||{}).length;
-  document.getElementById('profile-badges').innerHTML = [
-    `🎖 ${achCount} succès`,
-    `💀 ${arenaLevel-1} niveaux arène`,
-    `⭐ Passe niv.${battlePass.level}`,
-    hasPremiumPass.owned?'⭐ PASSE AMÉLIORÉ':'',
-  ].filter(Boolean).map(b=>`<span style="border:1px solid var(--border);padding:3px 8px;border-radius:2px;">${b}</span>`).join('');
+  const achCount = isMe ? Object.keys(achDone||{}).length : 0;
+  const badges = [
+    premium ? '<span style="color:var(--c3);border:1px solid rgba(255,190,11,.4);padding:2px 7px;font-size:6px;letter-spacing:.12em;">⭐ PREMIUM</span>' : '',
+    `<span style="border:1px solid var(--border);padding:2px 7px;font-size:6px;">⭐ NIV.${bp.level||0}</span>`,
+    achCount>0 ? `<span style="border:1px solid var(--border);padding:2px 7px;font-size:6px;">🎖 ${achCount}</span>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('profile-badges').innerHTML = badges;
 
-  // Stats grid
-  const statsData=[
-    ['🏆','Meilleur score',(gStats.maxScore||0).toLocaleString('fr-FR')],
-    ['🌊','Meilleure vague',gStats.maxWave||0],
-    ['💀','Total kills',(gStats.totalKills||0).toLocaleString('fr-FR')],
-    ['🎮','Parties jouées',gStats.gamesPlayed||0],
-    ['🔥','Meilleur combo',gStats.maxCombo||0],
-    ['⏱','Temps total',`${Math.floor((gStats.totalTime||0)/3600)}h${String(Math.floor(((gStats.totalTime||0)%3600)/60)).padStart(2,'0')}m`],
-  ];
-  document.getElementById('profile-stats').innerHTML = statsData.map(([ico,lbl,val])=>
-    `<div style="border:1px solid var(--border);background:var(--dim2);padding:10px;text-align:center;">
-      <div style="font-size:16px;margin-bottom:4px;">${ico}</div>
-      <div style="font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vw,14px);color:var(--c1);">${val}</div>
-      <div style="font-size:7px;letter-spacing:.15em;color:var(--txt2);margin-top:3px;">${lbl}</div>
-    </div>`
-  ).join('');
-
-  // Best scores
-  const topScores=[...scores].sort((a,b)=>b.score-a.score).slice(0,5);
-  document.getElementById('profile-scores').innerHTML = topScores.length ? topScores.map((s,i)=>
-    `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);background:var(--dim2);">
-      <div style="font-family:'Orbitron',monospace;font-size:10px;color:${i===0?'var(--c3)':'var(--txt2)'};">#${i+1}</div>
-      <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--c1);flex:1;">${(s.score||0).toLocaleString('fr-FR')}</div>
-      <div style="font-size:8px;color:var(--txt2);">V.${s.wave||0} · ${s.kills||0}💀 · ${s.mode||'Classique'}</div>
-      <div style="font-size:7px;color:var(--dim);">${s.date||''}</div>
-    </div>`
-  ).join('') : '<div style="font-size:8px;color:var(--txt2);text-align:center;padding:12px;">Aucune partie enregistrée.</div>';
-
-  // Skins
-  const mySkins=SKIN_DEFS.filter(sk=>ownedSkins.includes(sk.id));
-  const skinsEl=document.getElementById('profile-skins');
-  skinsEl.innerHTML='';
-  mySkins.forEach(sk=>{
-    const wrap=document.createElement('div');
-    wrap.style.cssText=`position:relative;cursor:pointer;${equippedSkin===sk.id?'outline:2px solid var(--c1);':''}`; 
-    const cvs=document.createElement('canvas'); cvs.width=44; cvs.height=44;
-    drawSkinPreview(cvs,sk.id,44);
-    wrap.appendChild(cvs);
-    if(equippedSkin===sk.id){
-      const badge=document.createElement('div');
-      badge.style.cssText='position:absolute;bottom:0;right:0;background:var(--c1);color:#000;font-size:6px;padding:1px 3px;letter-spacing:.1em;';
-      badge.textContent='ON'; wrap.appendChild(badge);
+  // Actions (ajouter ami / envoyer cadeau / si c'est moi: rien)
+  const actEl = document.getElementById('profile-actions');
+  if(actEl){
+    if(!isMe && currentUser){
+      const friends = loadData('pulse_friends_v1',[]);
+      const isFriend = friends.some(f=>f.id===profileData.id);
+      actEl.innerHTML = `
+        ${isFriend
+          ? `<button class="btn btn-s" style="font-size:7px;padding:5px 10px;" onclick="removeFriend('${profileData.id}')"><span>✓ AMI</span></button>`
+          : `<button class="btn btn-g" style="font-size:7px;padding:5px 10px;" onclick="addFriend(${JSON.stringify({id:profileData.id,pseudo:profileData.pseudo||'?',skin:profileData.equipped_skin||'default'}).replace(/"/g,'&quot;')})"><span>+ AMI</span></button>`
+        }
+        <button class="btn btn-p" style="font-size:7px;padding:5px 10px;" onclick="show('s-gift');openGift('${profileData.pseudo||''}')"><span>🎁 CADEAU</span></button>`;
+    } else {
+      actEl.innerHTML = '';
     }
-    wrap.onclick=()=>{ equipSkin(sk.id); renderProfile(); };
-    skinsEl.appendChild(wrap);
-  });
+  }
+
+  // Afficher onglet stats par défaut
+  document.querySelectorAll('#s-profile .shop-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+  renderProfileTab('stats', profileData);
 }
+
+function renderProfileTab(tab, profileData){
+  const isMe = !profileData;
+  const stats  = isMe ? gStats : (profileData?.stats||{});
+  const skins  = isMe ? ownedSkins : (profileData?.owned_skins||['default']);
+  const scores_ = isMe ? scores : (profileData?.scores||[]);
+  const el = document.getElementById('profile-tab-content');
+  if(!el) return;
+
+  if(tab==='stats'){
+    const hh=Math.floor((stats.totalTime||0)/3600), mm=Math.floor(((stats.totalTime||0)%3600)/60);
+    const data=[
+      ['🏆','Meilleur score',(stats.maxScore||0).toLocaleString('fr-FR')],
+      ['🌊','Meilleure vague',stats.maxWave||0],
+      ['💀','Kills total',(stats.totalKills||0).toLocaleString('fr-FR')],
+      ['🎮','Parties jouées',stats.gamesPlayed||0],
+      ['🔥','Meilleur combo',stats.maxCombo||0],
+      ['☠️','Boss tués',stats.bossKills||0],
+      ['🛡','Vagues parfaites',stats.noHitWaves||0],
+      ['⏱','Temps total',`${hh}h${String(mm).padStart(2,'0')}m`],
+    ];
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+      ${data.map(([ico,lbl,val])=>`
+        <div style="border:1px solid var(--border);background:var(--dim2);padding:10px;text-align:center;">
+          <div style="font-size:16px;margin-bottom:4px;">${ico}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:clamp(10px,2.5vw,14px);color:var(--c1);">${val}</div>
+          <div style="font-size:6px;letter-spacing:.12em;color:var(--txt2);margin-top:3px;">${lbl}</div>
+        </div>`).join('')}
+    </div>`;
+
+  } else if(tab==='scores'){
+    const top=[...scores_].filter(s=>s.score).sort((a,b)=>b.score-a.score).slice(0,10);
+    el.innerHTML = top.length ? top.map((s,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);background:var(--dim2);margin-bottom:4px;">
+        <div style="font-family:'Orbitron',monospace;font-size:10px;color:${i===0?'var(--c3)':'var(--dim)'};">#${i+1}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--c1);flex:1;">${(s.score||0).toLocaleString('fr-FR')}</div>
+        <div style="font-size:7px;color:var(--txt2);">V.${s.wave||0} · ${s.kills||0}💀</div>
+        <div style="font-size:6px;color:var(--dim);">${s.mode||'Classic'}</div>
+      </div>`).join('')
+    : '<div style="font-size:8px;color:var(--txt2);text-align:center;padding:20px;">Aucune partie.</div>';
+
+  } else if(tab==='skins'){
+    const owned = SKIN_DEFS.filter(sk=>skins.includes(sk.id));
+    el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">'
+      + owned.map(sk=>{
+          const isEq = (isMe?equippedSkin:profileData?.equipped_skin) === sk.id;
+          return `<div style="position:relative;cursor:pointer;${isEq?'outline:2px solid var(--c1);':''}" onclick="${isMe?`equipSkin('${sk.id}');renderProfileTab('skins',null)`:''}">
+            <canvas width="44" height="44" data-skin="${sk.id}"></canvas>
+            ${isEq?'<div style="position:absolute;bottom:0;right:0;background:var(--c1);color:#000;font-size:5px;padding:1px 3px;">ON</div>':''}
+          </div>`;
+        }).join('')
+      + '</div>';
+    // Draw previews
+    el.querySelectorAll('canvas[data-skin]').forEach(cvs=>{
+      drawSkinPreview(cvs, cvs.dataset.skin, 44);
+    });
+
+  } else if(tab==='friends'){
+    if(!isMe){ el.innerHTML='<div style="font-size:8px;color:var(--txt2);text-align:center;padding:20px;">Amis non visibles.</div>'; return; }
+    renderFriendsTab(el);
+  }
+}
+
+// ── AMIS ─────────────────────────────────────────────────────────
+function addFriend(friendObj){
+  const friends=loadData('pulse_friends_v1',[]);
+  if(!friends.some(f=>f.id===friendObj.id)){
+    friends.push({id:friendObj.id, pseudo:friendObj.pseudo, skin:friendObj.skin, addedAt:Date.now()});
+    saveData('pulse_friends_v1',friends);
+    if(currentUser&&SB) saveCloudProfile({friends});
+    showPopup(`✓ ${friendObj.pseudo} ajouté en ami !`,'#00f5d4');
+    renderProfile(_viewingProfile);
+  }
+}
+
+function removeFriend(friendId){
+  let friends=loadData('pulse_friends_v1',[]);
+  friends=friends.filter(f=>f.id!==friendId);
+  saveData('pulse_friends_v1',friends);
+  if(currentUser&&SB) saveCloudProfile({friends});
+  renderProfile(_viewingProfile);
+}
+
+function renderFriendsTab(el){
+  const friends=loadData('pulse_friends_v1',[]);
+  if(!friends.length){
+    el.innerHTML=`<div style="text-align:center;padding:20px;">
+      <div style="font-size:8px;color:var(--txt2);margin-bottom:12px;">Aucun ami pour l'instant.</div>
+      <div style="font-size:7px;color:var(--dim);">Cherche un joueur dans le classement pour l'ajouter.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      ${friends.map(f=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">
+          <canvas width="36" height="36" data-skin="${f.skin||'default'}" style="border-radius:50%;border:1px solid var(--border);"></canvas>
+          <div style="flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:9px;color:var(--c1);">${f.pseudo||'?'}</div>
+          </div>
+          <button class="btn btn-p" style="font-size:6px;padding:4px 8px;" onclick="show('s-gift');openGift('${f.pseudo||''}')"><span>🎁</span></button>
+          <button class="btn btn-s" style="font-size:6px;padding:4px 8px;" onclick="viewFriendProfile('${f.id}')"><span>👤</span></button>
+          <button class="btn btn-d" style="font-size:6px;padding:4px 8px;" onclick="removeFriend('${f.id}');renderFriendsTab(this.closest('#profile-tab-content'))"><span>✕</span></button>
+        </div>`).join('')}
+    </div>`;
+  el.querySelectorAll('canvas[data-skin]').forEach(cvs=>drawSkinPreview(cvs,cvs.dataset.skin,36));
+}
+
+async function loadAndViewProfile(userId){
+  if(!userId||!SB) return;
+  try{
+    const {data}=await SB.from('profiles').select('id,pseudo,stats,scores,owned_skins,equipped_skin,battle_pass,premium_pass').eq('id',userId).single();
+    if(data){ renderProfile(data); show('s-profile'); }
+  }catch(e){}
+}
+
+async function viewFriendProfile(friendId){
+  if(!SB){ showPopup('Connexion requise','#ff1a6e'); return; }
+  try{
+    const {data}=await SB.from('profiles').select('id,pseudo,stats,scores,owned_skins,equipped_skin,battle_pass,premium_pass').eq('id',friendId).single();
+    if(data){ renderProfile(data); show('s-profile'); }
+    else showPopup('Profil introuvable','#ff1a6e');
+  }catch(e){ showPopup('Erreur chargement','#ff1a6e'); }
+}
+
+function openGift(pseudoPreset=''){
+  renderGiftUI(pseudoPreset);
+  show('s-gift');
+}
+
 
 function updateUserBar(){
   const bar=document.getElementById('user-top-bar');
@@ -2815,10 +2953,17 @@ function equipSkin(id){
 
 function grantSkin(id){
   if(ownedSkins.includes(id)) return;
+  // Skins premium: seulement via claimBpReward (cette stack)
+  const sk=SKIN_DEFS.find(s=>s.id===id);
+  if(sk?.premium && !_bpClaimInProgress){
+    console.warn('[grantSkin] Skin premium ignoré hors BP claim:',id);
+    return;
+  }
   ownedSkins.push(id);
   saveData('pulse_skins_v3',ownedSkins);
   if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
 }
+let _bpClaimInProgress=false;
 
 function buySkin(id){
   const sk=SKIN_DEFS.find(s=>s.id===id);
@@ -3330,6 +3475,16 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
+let achSeen    = loadData('pulse_ach_seen_v1', {}); // succès vus dans l'écran succès
+const LAST_UPDATE_VERSION = '27.0';
+const UPDATE_NOTES = [
+  '🌌 4 nouveaux skins exclusifs pass premium (VOID, SOLAIRE, GLITCH, COSMIQUE)',
+  '⭐ Pass saisonnier dual-track FREE/PREMIUM (style Brawl Stars)',
+  '🔊 Bruitages améliorés (tir, dash, bombe, menus)',
+  '🖱️ Curseur custom visible partout sur desktop',
+  '🔁 Synchronisation cloud : reliques, défi du jour, pass premium',
+  '👥 Système amis + profils publics',
+];
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
 let newAchThisRun = [];
@@ -5579,6 +5734,10 @@ function checkAch(id,val){
   if(!def) return;
   if(val>=def.goal){
     achDone[id]=true; saveAch();
+  achSeen[id]=false; saveData('pulse_ach_seen_v1',achSeen);
+  // Badge rouge sur le bouton succès
+  const achBadgeCount=Object.keys(achDone).filter(k=>!achSeen[k]).length;
+  setBadge('btn-ach-badge',achBadgeCount);
     newAchThisRun.push(def.n);
     // Track for menu badge
     const unseen=loadData('pulse_ach_unseen_v1',[]);
@@ -5777,6 +5936,27 @@ function renderStats(){
 }
 
 function renderSettings(){
+  // Bannière mise à jour
+  const lastSeenVer = loadData('pulse_last_seen_ver','0');
+  const settingsTop = document.getElementById('settings-update-banner');
+  if(settingsTop){
+    if(lastSeenVer !== LAST_UPDATE_VERSION){
+      settingsTop.style.display='block';
+      settingsTop.innerHTML=`
+        <div style="display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(0,245,212,.3);background:rgba(0,245,212,.05);padding:12px;margin-bottom:10px;border-radius:3px;">
+          <div style="font-size:18px;">🆕</div>
+          <div style="flex:1;">
+            <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c1);margin-bottom:6px;">NOUVEAUTÉS VERSION ${LAST_UPDATE_VERSION}</div>
+            ${UPDATE_NOTES.map(n=>`<div style="font-size:7px;color:var(--txt2);margin-bottom:3px;">• ${n}</div>`).join('')}
+          </div>
+          <button onclick="saveData('pulse_last_seen_ver',LAST_UPDATE_VERSION);renderSettings();" style="font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;padding:4px 8px;border:1px solid var(--border);color:var(--dim);background:none;cursor:pointer;white-space:nowrap;">✓ VU</button>
+        </div>`;
+      setBadge('btn-settings-badge','🆕');
+    } else {
+      settingsTop.style.display='none';
+      setBadge('btn-settings-badge',0);
+    }
+  }
   const list=document.getElementById('settings-list');
   const rows=[
     {lbl:'Sons & Effets',hint:'Sons de tir, kills, etc.',key:'sfx',type:'toggle'},
@@ -5937,29 +6117,40 @@ function renderGiftValueUI(){
 }
 
 function renderGiftScreen(){
+  renderGiftUI();
+}
+
+function renderGiftUI(pseudoPreset=''){
   const el = document.getElementById('s-gift-content');
   if(!el) return;
   if(!currentUser){
     el.innerHTML=`<div style="text-align:center;color:var(--txt2);font-size:8px;letter-spacing:.12em;padding:20px;">Connecte-toi pour envoyer des cadeaux.</div>`;
     return;
   }
+  // Skins possédés (non premium) qu'on peut offrir
+  const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&ownedSkins.includes(sk.id)&&sk.id!=='default');
   el.innerHTML=`
-    <div class="acc-row">
-      <input class="acc-input" id="gift-target" type="text" placeholder="Email ou pseudo du destinataire" style="flex:1;">
+    <div style="margin-bottom:6px;">
+      <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:4px;">DESTINATAIRE</div>
+      <input class="acc-input" id="gift-target" type="text" value="${pseudoPreset}" placeholder="Email ou pseudo du destinataire" style="width:100%;">
     </div>
-    <div class="acc-row" style="gap:8px;flex-wrap:wrap;">
-      <select class="acc-input" id="gift-type" style="flex:1;min-width:140px;" onchange="renderGiftValueUI()">
-        <option value="coins">🪙 Pièces</option>
-        <option value="skin">🎨 Skin</option>
-        <option value="pass">⭐ Passe Amélioré</option>
-      </select>
-      <div id="gift-value-wrap" style="flex:1;min-width:100px;">
-        <input class="acc-input" id="gift-coins-val" type="number" min="1" max="10000" value="100" placeholder="Montant" style="width:100%;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <div style="flex:1;">
+        <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:4px;">TYPE</div>
+        <select class="acc-input" id="gift-type" style="width:100%;" onchange="renderGiftValueUI()">
+          <option value="coins">🪙 Pièces</option>
+          ${gifSkins.length?'<option value="skin">🎨 Skin</option>':''}
+          <option value="pass">⭐ Passe Amélioré (${PREMIUM_PASS_COST}🪙)</option>
+        </select>
+      </div>
+      <div id="gift-value-wrap" style="flex:1;">
+        <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:4px;">VALEUR</div>
+        <input class="acc-input" id="gift-coins-val" type="number" min="1" max="${coins}" value="100" placeholder="Montant" style="width:100%;">
       </div>
     </div>
-    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;">Ton solde : <span style="color:var(--c3);">${coins} 🪙</span></div>
+    <div style="font-size:7px;color:var(--dim);margin-bottom:8px;">💰 Ton solde : <span style="color:var(--c3);">${coins.toLocaleString('fr-FR')} 🪙</span></div>
     <button class="btn btn-p" onclick="sendGift()"><span>🎁 ENVOYER</span></button>
-    <div class="acc-msg" id="gift-msg"></div>`;
+    <div class="acc-msg" id="gift-msg" style="margin-top:6px;"></div>`;
 }
 
 async function sendGift(){
@@ -6150,6 +6341,8 @@ async function renderLeaderboard(){
     entries.forEach((s,i)=>{
       const r=document.createElement('div');
       r.className='lb-row'+(i===0?' crown':'');
+      r.style.cursor='pointer'; r.title='Voir le profil';
+      if(s.userId) r.addEventListener('click',()=>loadAndViewProfile(s.userId));
       r.innerHTML=`
         <div class="lb-rk ${medals[i]||''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
         <div><div class="lb-sc">${s.score}</div>
@@ -6685,6 +6878,7 @@ function claimBpReward(level, track){
 
   battlePass.claimed[key] = true;
   saveBP();
+  _bpClaimInProgress=true;
 
   if(reward.type==='coins'){
     coins += reward.value;
@@ -6701,6 +6895,7 @@ function claimBpReward(level, track){
     if(!ul.includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); }
   }
 
+  _bpClaimInProgress=false;
   renderBP();
 
   const ov=document.getElementById('bp-claim-overlay');
@@ -8315,7 +8510,7 @@ async function loadDailyLeaderboard(dateStr){
   const lbEl=document.getElementById('daily-lb');
   if(!SB||!currentUser){ lbEl.innerHTML='<div style="color:var(--dim);font-size:8px;text-align:center;padding:10px;">Connexion requise</div>'; return; }
   try {
-    const {data}=await SB.from('profiles').select('pseudo,scores').limit(100);
+    const {data}=await SB.from('profiles').select('id,pseudo,scores,stats,owned_skins,equipped_skin,battle_pass,premium_pass').limit(100);
     if(!data){ return; }
     // Extract daily scores (scores with date=today)
     const dailyScores=[];
@@ -8330,7 +8525,7 @@ async function loadDailyLeaderboard(dateStr){
     dailyScores.slice(0,10).forEach((e,i)=>{
       const div=document.createElement('div'); div.className='daily-lb-item';
       div.innerHTML=`<div class="daily-lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
-        <div class="daily-lb-name">${(e.name||'?').substring(0,16)}</div>
+        <div class="daily-lb-name" style="cursor:pointer;text-decoration:underline;color:var(--c1);" onclick="loadAndViewProfile('${e.id||''}')">${(e.name||'?').substring(0,16)}</div>
         <div class="daily-lb-score">${e.score.toLocaleString('fr-FR')}</div>`;
       lbEl.appendChild(div);
     });
@@ -8365,14 +8560,16 @@ async function saveDailyScore(score){
   showPopup(`⚡ DÉFI JOUÉ · +${baseReward}🪙 — Classement à minuit !`, '#ffbe0b');
 
   // Sauvegarder localement
-  saveData('pulse_daily_v1', {
+  const dailyEntry = {
     date:        dateStr,
     score:       score,
     wave:        wave,
-    rewarded:    true,      // bronze déjà reçu
-    rankRewarded:false,     // rang final pas encore attribué
+    rewarded:    true,
+    rankRewarded:false,
     baseRewarded:baseReward
-  });
+  };
+  saveData('pulse_daily_v1', dailyEntry);
+  if(currentUser&&SB) saveCloudProfile({daily_score: dailyEntry});
 
   // Sauvegarder sur le cloud
   if(!SB || !currentUser) return;
