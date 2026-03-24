@@ -1668,7 +1668,7 @@ body.touch #minimap{display:none;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v26.0</div>
+<div id="watermark">PULSE v28.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -1999,7 +1999,7 @@ body.touch #minimap{display:none;}
           <div class="ob-card-ico">🛒</div>
           <div class="ob-card-txt">
             <div class="ob-card-lbl">ACHETER DES RELIQUES</div>
-            <div class="ob-card-desc">Dans <strong style="color:var(--c3)">Reliques</strong> depuis le menu, achète des reliques avec tes pièces. Elles restent d'une partie à l'autre. Équipe max 2 avant de jouer.</div>
+            <div class="ob-card-desc">Dans <strong style="color:var(--c3)">Reliques</strong> depuis le menu, achète des reliques avec tes pièces. Elles restent d'une partie à l'autre. Commence avec 1 slot — achète-en plus dans l'écran Reliques.</div>
           </div>
         </div>
         <div class="ob-card">
@@ -5400,9 +5400,10 @@ function draw(){
 
     // Bordure principale — couleur statique, pas de pulsation rapide
     const pulse=0.75; // Valeur fixe, pas d'animation par frame
-    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=settings.lowQuality?0:8;
+    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=settings.lowQuality?0:6;
     ctx.strokeStyle=`rgba(0,245,212,${pulse*.7})`; ctx.lineWidth=2;
     ctx.strokeRect(x1,y1,o.w,o.h);
+    ctx.shadowBlur=0; ctx.shadowColor='transparent';
 
     if(!settings.lowQuality){
       ctx.shadowBlur=0; ctx.strokeStyle=`rgba(0,245,212,${pulse*.3})`; ctx.lineWidth=1;
@@ -9216,13 +9217,38 @@ function renderRelicEquip(){
   const slots=document.getElementById('relic-slots-display');
   if(slots){
     slots.innerHTML='';
-    for(let i=0;i<2;i++){
+    const maxSlots=loadData('pulse_relic_slots_v1',1);
+    const SLOT_PRICES=[0,0,1000,2000]; // slot 1 gratuit, slot 2 gratuit, slot 3 = 1000, slot 4 = 2000
+    // Afficher les slots débloqués
+    for(let i=0;i<maxSlots;i++){
       const eqId=equipped[i];
       const r=eqId?RELIC_DEFS.find(x=>x.id===eqId):null;
       const sl=document.createElement('div');
       sl.style.cssText='width:52px;height:52px;border:2px '+(r?'solid rgba(255,190,11,.5)':'dashed rgba(255,190,11,.3)')+';display:flex;align-items:center;justify-content:center;font-size:22px;background:'+(r?'rgba(255,190,11,.06)':'transparent')+';position:relative;';
       sl.innerHTML='<span>'+(r?r.ico:'?')+'</span><div style="position:absolute;bottom:-14px;font-size:6px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;">SLOT '+(i+1)+'</div>';
       slots.appendChild(sl);
+    }
+    // Bouton pour acheter le slot suivant (max 3)
+    if(maxSlots<3){
+      const price=SLOT_PRICES[maxSlots];
+      const buySlot=document.createElement('div');
+      buySlot.style.cssText='width:52px;height:52px;border:2px dashed rgba(255,190,11,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px;transition:border-color .15s;';
+      buySlot.innerHTML='<span style="font-size:16px;">+</span><span style="font-size:5px;color:var(--c3);letter-spacing:.08em;">🪙'+price+'</span>';
+      buySlot.onmouseover=()=>buySlot.style.borderColor='rgba(255,190,11,.5)';
+      buySlot.onmouseout=()=>buySlot.style.borderColor='rgba(255,190,11,.2)';
+      buySlot.onclick=()=>{
+        if(coins<price){showPopup('Pas assez de pièces ! ('+price+' 🪙 requis)','#ff1a6e');return;}
+        pulseConfirm('Débloquer le slot '+(maxSlots+1)+' pour '+price+' 🪙 ?').then(ok=>{
+          if(!ok) return;
+          coins-=price; saveData('pulse_coins_v3',coins);
+          if(currentUser&&SB) saveCloudProfile({coins});
+          updateCoinsHUD();
+          saveData('pulse_relic_slots_v1',maxSlots+1);
+          showPopup('✨ Slot '+(maxSlots+1)+' débloqué !','#ffbe0b');
+          renderRelicEquip();
+        });
+      };
+      slots.appendChild(buySlot);
     }
   }
 
@@ -9284,7 +9310,7 @@ function renderRelicEquip(){
       if(eq2.includes(r.id)){
         saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
       } else {
-        if(eq2.length>=2){showPopup('Maximum 2 reliques équipées !','#ff1a6e');return;}
+        if(eq2.length>=loadData('pulse_relic_slots_v1',1)){showPopup('Achète un slot supplémentaire pour équiper plus de reliques !','#ff1a6e');return;}
         eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
       }
       renderRelicEquip();
@@ -9580,7 +9606,7 @@ const _gpInterval=setInterval(()=>{
   }
 
   _gpSnap=snap;
-}, 4);
+}, 2);
 
 // Accessors on snapshot
 function gpSnapPressed(idx){ return _gpSnap?.bt[idx]?.p??false; }
@@ -9705,6 +9731,15 @@ function renderGpMapScreen(){
       window._gpTesterRAF=requestAnimationFrame(updateTester);
     }
     window._gpTesterRAF=requestAnimationFrame(updateTester);
+  }
+  // Auto-refresh si manette pas encore détectée à l'ouverture
+  if(!gp && !window._gpMapRefreshInterval){
+    window._gpMapRefreshInterval=setInterval(()=>{
+      if(!document.getElementById('s-gpmap')?.classList.contains('on')){
+        clearInterval(window._gpMapRefreshInterval); window._gpMapRefreshInterval=null; return;
+      }
+      if(gpIndex!==null){ clearInterval(window._gpMapRefreshInterval); window._gpMapRefreshInterval=null; renderGpMapScreen(); }
+    },800);
   }
 }
 
@@ -10139,7 +10174,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     // Force update: unregister all old SWs then re-register fresh
-    const APP_VERSION = '27.0';
+    const APP_VERSION = '28.0';
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
@@ -10152,7 +10187,7 @@ if('serviceWorker' in navigator){
       console.log('[SW] Cache purgé — version', APP_VERSION);
     }
     navigator.serviceWorker.register('sw.js?v=29',{scope:'/Pulse/'})
-      .then(reg=>{ reg.update(); console.log('[SW] Enregistré v27'); })
+      .then(reg=>{ reg.update(); console.log('[SW] Enregistré v28'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
