@@ -33,7 +33,8 @@ canvas{display:block;position:absolute;top:0;left:0;}
 #cvs-bg{z-index:0;}#cvs-game{z-index:1;}
 
 /* ═══ RESPONSIVE CANVAS WRAPPER ═══ */
-#game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
+#game-wrap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+body.game-active #game-wrap{pointer-events:all;}
 
 /* CROSSHAIR */
 #xhair{position:fixed;z-index:9999;pointer-events:none;width:32px;height:32px;transform:translate(-50%,-50%);left:-100px;top:-100px;transition:opacity .1s;}
