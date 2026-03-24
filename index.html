@@ -1074,16 +1074,6 @@ body.touch #minimap{display:none;}
 .inv-card-badge.lock{color:var(--dim);background:var(--dim2);}
 .inv-card-name{font-family:'Orbitron',monospace;font-size:clamp(6px,1.5vmin,8px);letter-spacing:.06em;color:var(--txt);text-align:center;}
 .inv-card-price{font-size:7px;color:var(--c3);}
-/* Skin upgrade panel */
-.skin-upg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);margin-bottom:6px;}
-.skin-upg-row.unlocked{border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.04);}
-.skin-upg-lbl{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;color:var(--txt);flex:1;}
-.skin-upg-desc{font-size:7px;color:var(--txt2);margin-top:2px;}
-.skin-upg-btn{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.1em;padding:5px 10px;border:1px solid var(--c3);color:var(--c3);background:none;cursor:pointer;white-space:nowrap;transition:all .12s;}
-.skin-upg-btn:hover{background:var(--c3);color:var(--bg);}
-.skin-upg-btn.owned{border-color:var(--c1);color:var(--c1);cursor:default;}
-.skin-upg-btn.owned:hover{background:none;color:var(--c1);}
-.skin-upg-check{font-size:14px;color:var(--c1);}
 
 </style>
 </head>
@@ -1411,7 +1401,16 @@ body.touch #minimap{display:none;}
       <button class="btn btn-p" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
     </div>
 
-    <!-- Secondary grid -->\n    <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(280px,84vw);margin-top:8px;\">\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"show('s-lb')\"><span>🏆 SCORES</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;position:relative;\" id=\"btn-ach\" onclick=\"show('s-ach');renderAch()\"><span>🎖 SUCCÈS</span><span class=\"notif-badge\" id=\"btn-ach-badge\" style=\"display:none;\">!</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"show('s-relics');renderRelicEquip()\"><span>✨ RELIQUES</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"openShop()\"><span>🛒 BOUTIQUE</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"openInventory()\"><span>🎨 SKINS</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"show('s-settings');renderSettings()\"><span>⚙ OPTIONS</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;\" onclick=\"show('s-profile');renderProfile()\"><span>👤 PROFIL</span></button>\n      <button class=\"btn btn-s\" style=\"min-width:0;position:relative;\" id=\"btn-notif\" onclick=\"openNotifPanel()\"><span>🔔 NOTIFS</span><span class=\"notif-badge\" id=\"btn-notif-badge\" style=\"display:none;\">0</span></button>\n    </div>
+    <!-- Secondary grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(280px,84vw);margin-top:8px;">
+      <button class="btn btn-s" style="min-width:0;" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
+      <button class="btn btn-s" style="min-width:0;position:relative;" id="btn-ach" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span><span class="notif-badge" id="btn-ach-badge" style="display:none;">!</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
+      <button class="btn btn-s" style="min-width:0;" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
+    </div>
 
     <div class="ctrl-hint" id="ctrl-hint">
       WASD / FLÈCHES = bouger &nbsp;|&nbsp; SOURIS = viser (tir automatique)<br>
@@ -1704,7 +1703,7 @@ body.touch #minimap{display:none;}
     <div class="auth-switch" style="margin-top:2px;"><span onclick="show('s-reset')" style="color:var(--txt2);cursor:pointer;">Mot de passe oublié ?</span></div>
     <div class="auth-guest" onclick="playAsGuest()">Jouer sans compte (progression locale)</div>
     <div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px;text-align:center;">
-      <button onclick="hardReload()" style="background:transparent;border:1px solid rgba(0,245,212,.25);color:var(--txt2);font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;padding:6px 14px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--c1)';this.style.color='var(--c1)'" onmouseout="this.style.borderColor='rgba(0,245,212,.25)';this.style.color='var(--txt2)'">🔄 MISE À JOUR / PROBLÈME DE CACHE</button>
+      <button onclick="hardReload()" style="background:transparent;border:1px solid rgba(0,245,212,.25);color:var(--txt2);font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;padding:6px 14px;cursor:pointer;">🔄 MISE À JOUR / PROBLÈME DE CACHE</button>
     </div>
   </div>
 </div>
@@ -1717,20 +1716,6 @@ body.touch #minimap{display:none;}
     <div class="scr-h">🎁 CADEAUX</div>
     <div style="font-size:8px;letter-spacing:.14em;color:var(--txt2);text-align:center;">Envoie des pièces, un skin ou le Passe Amélioré à un autre joueur.</div>
     <div id="s-gift-content" style="width:100%;display:flex;flex-direction:column;gap:10px;"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- NOTIFICATION PANEL                                 -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div class="scr" id="s-notif">
-  <div class="scr-inner" style="align-items:center;gap:10px;max-width:500px;width:100%;">
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-      <div class="scr-h" style="margin:0;">🔔 NOTIFICATIONS</div>
-      <button class="admin-btn warn" style="font-size:7px;padding:4px 10px;" onclick="clearAllNotifs()">🗑 TOUT EFFACER</button>
-    </div>
-    <div id="notif-list" style="width:100%;display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow-y:auto;"></div>
-    <button class="btn btn-s" onclick="show('s-title')"><span>← RETOUR</span></button>
   </div>
 </div>
 
@@ -2039,35 +2024,35 @@ body.touch #minimap{display:none;}
 
     <!-- ══ SLIDE 7 — Modes & Fonctions ══ -->
     <div class="ob-slide" id="ob-slide-7">
-      <div class="ob-icon">🚀</div>
-      <div class="ob-title">NOUVEAUTÉS v28</div>
-      <div class="ob-sub">CE QUI A CHANGÉ</div>
+      <div class="ob-icon">🌐</div>
+      <div class="ob-title">MODES &amp; FONCTIONS</div>
+      <div class="ob-sub">TOUT CE QUE TU PEUX FAIRE</div>
       <div class="ob-hdiv"></div>
       <div class="ob-body">
         <div class="ob-2col">
-          <div class="ob-card highlight">
-            <div class="ob-card-ico">🔔</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">NOTIFICATIONS</div><div class="ob-card-desc">Succès, cadeaux, amis, BP, messages admin — tout dans 🔔 NOTIFS.</div></div>
+          <div class="ob-card">
+            <div class="ob-card-ico">💀</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">ARÈNE</div><div class="ob-card-desc">12 niveaux progressifs avec des récompenses à chaque victoire. Ta progression est sauvegardée.</div></div>
           </div>
           <div class="ob-card">
-            <div class="ob-card-ico">🎮</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">MANETTE BT</div><div class="ob-card-desc">Polling 250Hz, joysticks visuels dans le test en direct.</div></div>
+            <div class="ob-card-ico">⚡</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">DÉFI DU JOUR</div><div class="ob-card-desc">Une partie par jour avec des modificateurs spéciaux. Gagne jusqu'à 800🪙 selon ton score.</div></div>
           </div>
-          <div class="ob-card gold">
-            <div class="ob-card-ico">🎨</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">SKINS +</div><div class="ob-card-desc">Chaque skin a 3 améliorations achetables. Clique ⬆ AMÉLIOR. dans Mes Skins.</div></div>
-          </div>
-          <div class="ob-card red">
-            <div class="ob-card-ico">💥</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">NOVA DE BALLES</div><div class="ob-card-desc">Relique corrigée : se déclenche à 15% PV avec cooldown 20s.</div></div>
+          <div class="ob-card">
+            <div class="ob-card-ico">👥</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">DUO LOCAL</div><div class="ob-card-desc">2 joueurs sur le même écran. P1 : WASD, P2 : IJKL (configurable). Bombe P2 : touche U.</div></div>
           </div>
           <div class="ob-card purple">
-            <div class="ob-card-ico">👑</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">ADMIN+</div><div class="ob-card-desc">Gestion reliques, envoi cadeau/relique, messages broadcast.</div></div>
+            <div class="ob-card-ico">🌐</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">EN LIGNE</div><div class="ob-card-desc">Co-op jusqu'à 4 joueurs. Crée une room ou rejoins par code. Plusieurs modes disponibles.</div></div>
           </div>
           <div class="ob-card">
-            <div class="ob-card-ico">🧱</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">BUG FIXÉ</div><div class="ob-card-desc">Clignotement d'écran avec les murs corrigé.</div></div>
+            <div class="ob-card-ico">🎁</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">CADEAUX</div><div class="ob-card-desc">Depuis Cadeaux dans le menu, envoie des pièces, skins ou le Passe Amélioré à un autre joueur.</div></div>
+          </div>
+          <div class="ob-card">
+            <div class="ob-card-ico">⭐</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">PASSE DE COMBAT</div><div class="ob-card-desc">Gagne de l'XP après chaque partie. Monte de niveau pour débloquer des skins, pièces et améliorations.</div></div>
           </div>
         </div>
       </div>
@@ -2104,7 +2089,7 @@ body.touch #minimap{display:none;}
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '28.0';
+const VERSION = '27.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -2197,7 +2182,7 @@ function toggleAuthMode(){
 
 async function hardReload(){
   const btn = event.currentTarget;
-  btn.textContent = '⏳ Nettoyage en cours…';
+  btn.textContent = '⏳ Nettoyage…';
   btn.style.pointerEvents = 'none';
   try {
     if('serviceWorker' in navigator){
@@ -2209,7 +2194,7 @@ async function hardReload(){
       await Promise.all(keys.map(k => caches.delete(k)));
     }
     localStorage.removeItem('pulse_sw_version');
-  } catch(e){ console.warn('hardReload err:',e); }
+  } catch(e){}
   location.reload(true);
 }
 
@@ -2224,10 +2209,6 @@ async function doAuth(){
   if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caractères.'; return; }
   const btn=document.getElementById('auth-submit-btn');
   btn.style.opacity='.5'; btn.style.pointerEvents='none';
-  const _authTimeout=setTimeout(()=>{
-    btn.style.opacity=''; btn.style.pointerEvents='';
-    errEl.textContent='Serveur inaccessible. Joue en invité ou réessaie plus tard.';
-  }, 8000);
   try {
     let res;
     if(authMode==='login'){
@@ -2291,7 +2272,6 @@ async function doAuth(){
     else if(e.message&&e.message.includes('Invalid API key')) errEl.textContent='Clé API invalide — contacte l\'admin.';
     else errEl.textContent='Erreur : '+e.message+'. Essaie le mode invité.';
   } finally {
-    clearTimeout(_authTimeout);
     btn.style.opacity=''; btn.style.pointerEvents='';
   }
 }
@@ -2308,13 +2288,8 @@ function translateAuthErr(msg){
 }
 
 async function playAsGuest(){
-  try {
-    currentUser=null; isGuest=true;
-    await afterLogin(false);
-  } catch(e){
-    console.warn('playAsGuest error',e);
-    try { show('s-title'); renderTitleBest(); } catch(e2){}
-  }
+  currentUser=null; isGuest=true;
+  await afterLogin(false); // maybeShowOnboard will check localStorage
 }
 
 async function afterLogin(isNewAccount=false){
@@ -2361,34 +2336,11 @@ async function afterLogin(isNewAccount=false){
       }
       if(profile.friends) saveData('pulse_friends_v1',profile.friends);
       if(profile.skin_perks){ skinPerkLevels=Object.assign({},skinPerkLevels,profile.skin_perks); saveData('pulse_skin_perks_v1',skinPerkLevels); }
-      // Load perma relics from admin
-      if(profile.perma_relics?.length){
-        const unlocked=loadData('pulse_unlocked_relics_v1',[]);
-        let changed=false;
-        for(const rid of profile.perma_relics){
-          if(!unlocked.includes(rid)){ unlocked.push(rid); changed=true; }
-        }
-        if(changed){
-          saveData('pulse_unlocked_relics_v1',unlocked);
-          pushNotif('relic','Relique reçue !','Un admin t\'a offert une relique. Elle est maintenant disponible !','VOIR →',null);
-        }
-      }
-      // Load admin messages — push as notifications
-      if(profile.admin_msgs?.length){
-        const lastSeenAdminMsg = loadData('pulse_last_admin_msg','0');
-        const newMsgs = profile.admin_msgs.filter(m=>String(m.ts)>lastSeenAdminMsg);
-        for(const m of newMsgs){
-          pushNotif('admin', m.broadcast?'Message de l\'admin':'Message privé de l\'admin', m.txt, null, null);
-        }
-        if(newMsgs.length){
-          saveData('pulse_last_admin_msg', String(profile.admin_msgs[0].ts));
-        }
-      }
     }
   }
-  try { updateCoinsHUD(); } catch(e){}
-  try { updateUserBar(); } catch(e){}
-  try { maybeShowOnboard(isNewAccount); } catch(e){ console.warn(e); show("s-title"); }
+  updateCoinsHUD();
+  updateUserBar();
+  maybeShowOnboard(isNewAccount);
 }
 
 async function doLogout(){
@@ -2823,118 +2775,7 @@ function updateMenuBadges(){
   // Achievement badge — newly unlocked (not yet seen)
   const achNew=(loadData('pulse_ach_unseen_v1',[])||[]).length;
   setBadge('btn-ach-badge', achNew);
-  // Notif badge
-  const unread = (loadData('pulse_notifs_v1',[]) || []).filter(n=>!n.read).length;
-  setBadge('btn-notif-badge', unread);
 }
-
-// ═══════════════════════════════════════════════════════
-//  SYSTÈME DE NOTIFICATIONS
-// ═══════════════════════════════════════════════════════
-const NOTIF_TYPES = {
-  achievement : { ico:'🎖', col:'#ffbe0b' },
-  coins       : { ico:'🪙', col:'#ffbe0b' },
-  gift        : { ico:'🎁', col:'#00f5d4' },
-  update      : { ico:'🆕', col:'#00f5d4' },
-  friend      : { ico:'👥', col:'#b44fff' },
-  battlepass  : { ico:'⭐', col:'#b44fff' },
-  admin       : { ico:'📢', col:'#ff1a6e' },
-  relic       : { ico:'✨', col:'#ffbe0b' },
-};
-
-function pushNotif(type, title, body, actionLabel, actionFn){
-  const notifs = loadData('pulse_notifs_v1', []);
-  const n = {
-    id: Date.now() + '_' + Math.random().toString(36).slice(2,6),
-    type, title, body,
-    actionLabel: actionLabel||null,
-    actionFn: actionFn||null,
-    read: false,
-    ts: Date.now()
-  };
-  notifs.unshift(n);
-  // Max 40 notifs
-  if(notifs.length>40) notifs.length=40;
-  saveData('pulse_notifs_v1', notifs);
-  updateMenuBadges();
-  // Toast visuel rapide
-  const t=NOTIF_TYPES[type]||NOTIF_TYPES.admin;
-  showPopup(t.ico+' '+title, t.col, 2200);
-}
-
-function openNotifPanel(){
-  renderNotifPanel();
-  show('s-notif');
-}
-
-function renderNotifPanel(){
-  const list = document.getElementById('notif-list');
-  if(!list) return;
-  const notifs = loadData('pulse_notifs_v1', []);
-  // Mark all as read
-  notifs.forEach(n=>n.read=true);
-  saveData('pulse_notifs_v1', notifs);
-  updateMenuBadges();
-
-  if(!notifs.length){
-    list.innerHTML='<div style="color:var(--dim);font-size:9px;letter-spacing:.2em;text-align:center;padding:30px 0;">Aucune notification</div>';
-    return;
-  }
-  list.innerHTML = notifs.map(n=>{
-    const t = NOTIF_TYPES[n.type]||NOTIF_TYPES.admin;
-    const ago = _notifAgo(n.ts);
-    const actionHtml = n.actionLabel
-      ? `<button onclick="notifAction('${n.id}')" style="font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;padding:3px 9px;border:1px solid ${t.col};color:${t.col};background:none;cursor:pointer;white-space:nowrap;margin-top:4px;">${n.actionLabel}</button>`
-      : '';
-    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">
-      <div style="font-size:18px;flex-shrink:0;">${t.ico}</div>
-      <div style="flex:1;">
-        <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.12em;color:${t.col};margin-bottom:3px;">${n.title}</div>
-        <div style="font-size:7px;color:var(--txt2);line-height:1.6;">${n.body}</div>
-        ${actionHtml}
-      </div>
-      <div style="font-size:6px;color:var(--dim);white-space:nowrap;flex-shrink:0;">${ago}</div>
-    </div>`;
-  }).join('');
-}
-
-function _notifAgo(ts){
-  const s=Math.floor((Date.now()-ts)/1000);
-  if(s<60) return 'À l\'instant';
-  if(s<3600) return Math.floor(s/60)+'min';
-  if(s<86400) return Math.floor(s/3600)+'h';
-  return Math.floor(s/86400)+'j';
-}
-
-function notifAction(id){
-  const notifs = loadData('pulse_notifs_v1',[]);
-  const n = notifs.find(x=>x.id===id);
-  if(!n) return;
-  // Route par type
-  if(n.type==='battlepass') openBP();
-  else if(n.type==='gift'){ show('s-gift'); openGift(); }
-  else if(n.type==='achievement'){ show('s-ach'); renderAch(); }
-  else if(n.type==='update'){ show('s-settings'); renderSettings(); }
-  else if(n.type==='friend'){ show('s-profile'); renderProfile(); }
-  show('s-notif'); // keep notif panel open after
-}
-
-function clearAllNotifs(){
-  saveData('pulse_notifs_v1',[]);
-  renderNotifPanel();
-  updateMenuBadges();
-}
-
-// Push notif auto au démarrage si nouvelle version
-(function checkVersionNotif(){
-  const seen = loadData('pulse_notif_ver_seen','0');
-  if(seen !== LAST_UPDATE_VERSION){
-    saveData('pulse_notif_ver_seen', LAST_UPDATE_VERSION);
-    setTimeout(()=>{
-      pushNotif('update','Mise à jour v'+LAST_UPDATE_VERSION,'Nouvelles fonctions disponibles ! Voir les détails dans Réglages.','VOIR →', null);
-    }, 1200);
-  }
-})();
 
 function setBadge(id, count){
   let el=document.getElementById(id);
@@ -3088,139 +2929,29 @@ document.addEventListener('click',e=>{
 },{passive:true});
 
 const SKIN_DEFS = [
-  {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4',
-    upgrades:[
-      {lbl:'Traîne lumineuse',    desc:'Traîne de dash 50% plus longue',          bonus:'dashTrailLen',  val:1.5, cost:200},
-      {lbl:'Cadence de tir +10%', desc:'Tire légèrement plus vite',                bonus:'fireCdMult',    val:0.9, cost:300},
-      {lbl:'Bouclier de départ',  desc:'Commence chaque partie avec 1 bouclier',  bonus:'startShield',   val:1,   cost:500},
-    ]},
-  {id:'crimson',  name:'CRIMSON',       price:80,  color:'#ff1a6e', shape:'hex',      sides:6, trail:'#ff1a6e', glow:'#ff1a6e',
-    upgrades:[
-      {lbl:'Dégâts +8%',          desc:'Dégâts de base augmentés',                bonus:'dmgMult',       val:1.08, cost:250},
-      {lbl:'Dash agressif',       desc:'Le dash inflige 10 dégâts aux ennemis',   bonus:'dashDmg',       val:10,   cost:350},
-      {lbl:'Balle de sang',       desc:'20% des tirs sont des balles perçantes',  bonus:'bloodPiercing', val:0.2,  cost:600},
-    ]},
-  {id:'gold',     name:'OR PUR',        price:120, color:'#ffbe0b', shape:'hex',      sides:6, trail:'#ffbe0b', glow:'#ffbe0b',
-    upgrades:[
-      {lbl:'Pièces +15%',         desc:'Gagne plus de pièces à chaque partie',    bonus:'coinMult',      val:1.15, cost:300},
-      {lbl:'Magnétisme',          desc:'Ramasse les bonus à plus longue portée',  bonus:'pickupRange',   val:1.5,  cost:400},
-      {lbl:'Fortune critique',    desc:'Kills à combo×10+ donnent 2 pièces',     bonus:'critCoins',     val:2,    cost:550},
-    ]},
-  {id:'violet',   name:'SPECTRE',       price:150, color:'#b44fff', shape:'hex',      sides:6, trail:'#b44fff', glow:'#b44fff',
-    upgrades:[
-      {lbl:'Vitesse +6%',         desc:'Déplacement légèrement plus rapide',      bonus:'speedMult',     val:1.06, cost:280},
-      {lbl:'Portée du dash +20%', desc:'Dash couvre plus de distance',            bonus:'dashRange',     val:1.2,  cost:380},
-      {lbl:'Aura spectrale',      desc:'Ralentit les ennemis à moins de 80px',   bonus:'spectralAura',  val:80,   cost:600},
-    ]},
-  {id:'ice',      name:'GLACE',         price:100, color:'#88ddff', shape:'hex',      sides:6, trail:'#88ddff', glow:'#88ddff',
-    upgrades:[
-      {lbl:'Ralentissement',      desc:'Tes balles ralentissent les ennemis',     bonus:'frostBullets',  val:1,    cost:350},
-      {lbl:'Armure de givre',     desc:'Réduit les dégâts reçus de 8%',          bonus:'iceArmor',      val:0.08, cost:450},
-      {lbl:'Explosion de givre',  desc:'Kills en dessous de 50% PV gèlent zone', bonus:'frostExplosion',val:1,    cost:700},
-    ]},
-  {id:'fire',     name:'FLAMME',        price:200, color:'#ff6b1a', shape:'hex',      sides:6, trail:'#ff9f1c', glow:'#ff6b1a',
-    upgrades:[
-      {lbl:'Brûlure',             desc:'Les ennemis touchés perdent 2 PV/s',     bonus:'burnEffect',    val:2,    cost:400},
-      {lbl:'Dégâts +12%',         desc:'Dégâts de base augmentés',               bonus:'dmgMult',       val:1.12, cost:450},
-      {lbl:'Explosion au kill',   desc:'20% des kills causent une mini-explosion',bonus:'killExplosion', val:0.2,  cost:700},
-    ]},
-  {id:'triangle', name:'TRI-FORCE',     price:130, color:'#00f5d4', shape:'tri',      sides:3, trail:'#00f5d4', glow:'#00f5d4',
-    upgrades:[
-      {lbl:'Tir triple',          desc:'Chaque 5ème tir envoie 3 balles',        bonus:'triShot5',      val:5,    cost:350},
-      {lbl:'Vitesse de balle +15%',desc:'Balles plus rapides',                   bonus:'bulletSpd',     val:1.15, cost:300},
-      {lbl:'Combo rapide',        desc:'Le combo diminue 20% moins vite',        bonus:'comboDecay',    val:0.8,  cost:500},
-    ]},
-  {id:'square',   name:'CUBE',          price:90,  color:'#00bbf9', shape:'square',   sides:4, trail:'#00bbf9', glow:'#00bbf9',
-    upgrades:[
-      {lbl:'Blindage',            desc:'PV max +10',                              bonus:'hpBonus',       val:10,   cost:250},
-      {lbl:'Régén lente',         desc:'Régénère 1 PV toutes les 8s',            bonus:'slowRegen',     val:8,    cost:350},
-      {lbl:'Forteresse',          desc:'Réduit le recul de 40%',                 bonus:'knockback',     val:0.6,  cost:450},
-    ]},
-  {id:'octagon',  name:'OCTA',          price:160, color:'#fee440', shape:'poly',     sides:8, trail:'#fee440', glow:'#fee440',
-    upgrades:[
-      {lbl:'Multitir +1',         desc:'Tire dans +1 direction supplémentaire',  bonus:'extraDir',      val:1,    cost:500},
-      {lbl:'Zone de contrôle',    desc:'Spawn avec 2 tourelles fixes (2s)',      bonus:'spawnTurrets',  val:2,    cost:600},
-      {lbl:'Réaction en chaîne',  desc:'Kills proches déclenchent 1 balle bonus',bonus:'chainKill',    val:1,    cost:700},
-    ]},
-  {id:'star',     name:'ÉTOILE',        price:220, color:'#ff1a6e', shape:'star',     sides:5, trail:'#ff9f1c', glow:'#ff1a6e',
-    upgrades:[
-      {lbl:'Nova au niveau up',   desc:'Level up déclenche 6 balles nova',       bonus:'starNova',      val:6,    cost:400},
-      {lbl:'Éclat doré',          desc:'Kills critiques (×5 combo) +5🪙',        bonus:'starGold',      val:5,    cost:350},
-      {lbl:'Pluie d\'étoiles',    desc:'Bombe lance 8 étoiles supplémentaires',  bonus:'starBomb',      val:8,    cost:600},
-    ]},
-  {id:'ghost',    name:'FANTÔME',       price:280, color:'rgba(180,79,255,0.7)', shape:'hex', sides:6, trail:'#b44fff', glow:'#b44fff', ghost:true,
-    upgrades:[
-      {lbl:'Invisibilité courte', desc:'3s d\'invisibilité après chaque dash',   bonus:'dashInvis',     val:3,    cost:500},
-      {lbl:'Traversée des murs',  desc:'Le joueur traverse les obstacles 2s',    bonus:'wallPhase',     val:2,    cost:700},
-      {lbl:'Téléportation',       desc:'Dash téléporte à la position visée',     bonus:'teleportDash',  val:1,    cost:900},
-    ]},
-  {id:'rainbow',  name:'ARC-EN-CIEL',  price:400, color:'rainbow', shape:'hex',      sides:6, trail:'rainbow', glow:'#00f5d4', rainbow:true,
-    upgrades:[
-      {lbl:'Balle arc-en-ciel',   desc:'Balles changent de type aléatoirement',  bonus:'rainbowBullets',val:1,   cost:600},
-      {lbl:'Chance +10%',         desc:'+10% de chance de reliques rares',       bonus:'rarityBonus',   val:0.1, cost:700},
-      {lbl:'Explosion chromatique',desc:'La bombe spéciale dure 50% plus longtemps',bonus:'specDur',   val:1.5, cost:900},
-    ]},
-  {id:'wire',     name:'WIRE',          price:160, color:'#00f5d4', shape:'wire',     sides:6, trail:'#00f5d4', glow:'#00f5d4', lineOnly:true,
-    upgrades:[
-      {lbl:'Signal amplifié',     desc:'Portée de tir +15%',                     bonus:'bulletRange',   val:1.15, cost:280},
-      {lbl:'Fréquence haute',     desc:'Cadence de tir +12%',                    bonus:'fireCdMult',    val:0.88, cost:350},
-      {lbl:'Boucle de feedback',  desc:'Chaque 3ème kill restaure la bombe',     bonus:'killSpecRegen', val:3,    cost:550},
-    ]},
-  {id:'neon',     name:'NÉON ROUGE',    price:180, color:'#ff1a6e', shape:'wire',     sides:6, trail:'#ff1a6e', glow:'#ff1a6e', lineOnly:true,
-    upgrades:[
-      {lbl:'Surtension',          desc:'Dégâts +10% sous 30% de PV',            bonus:'lowHpDmg',      val:1.1,  cost:300},
-      {lbl:'Overheat',            desc:'5 tirs rapides → 1 balle explosive',     bonus:'overheatBomb',  val:5,    cost:450},
-      {lbl:'Néon critique',       desc:'10% de chance de dégâts ×3',            bonus:'critChance',    val:0.1,  cost:650},
-    ]},
-  {id:'circuit',  name:'CIRCUIT',       price:240, color:'#00f5d4', shape:'circuit',  sides:6, trail:'#00bbf9', glow:'#00f5d4', lineOnly:true,
-    upgrades:[
-      {lbl:'Processeur rapide',   desc:'Cooldown de bombe -15%',                 bonus:'specCdMult',    val:0.85, cost:350},
-      {lbl:'Overclock',           desc:'Cadence ×1.2 pendant 3s après le dash', bonus:'overclockDash', val:1,    cost:500},
-      {lbl:'Système auto',        desc:'Tire automatiquement quand immobile',    bonus:'autoFire',      val:1,    cost:700},
-    ]},
-  {id:'pulsering',name:'PULSE RING',    price:200, color:'#ffbe0b', shape:'pulseRing',sides:6, trail:'#ffbe0b', glow:'#ffbe0b', lineOnly:true,
-    upgrades:[
-      {lbl:'Résonance',           desc:'Kills en musique donnent +3🪙',          bonus:'resonance',     val:3,    cost:300},
-      {lbl:'Onde de choc',        desc:'Chaque 10 kills : onde qui repousse',    bonus:'shockwave',     val:10,   cost:450},
-      {lbl:'Amplitude max',       desc:'Screen shake inflige 5 dmg aux ennemis',bonus:'shakeAttack',   val:5,    cost:600},
-    ]},
-  {id:'cross',    name:'CROIX',         price:170, color:'#b44fff', shape:'cross',    sides:4, trail:'#b44fff', glow:'#b44fff', lineOnly:true,
-    upgrades:[
-      {lbl:'Tir en croix',        desc:'Tire dans 4 directions simultanément',   bonus:'crossFire',     val:1,    cost:500},
-      {lbl:'Bénédiction',         desc:'+20 PV max en permanence',               bonus:'hpBonus',       val:20,   cost:400},
-      {lbl:'Absolution',          desc:'1 fois par partie : survie à 1 PV',     bonus:'lastStand',     val:1,    cost:800},
-    ]},
-  {id:'arrow',    name:'FLÈCHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9',
-    upgrades:[
-      {lbl:'Vitesse +10%',        desc:'Déplacement plus rapide',                bonus:'speedMult',     val:1.1,  cost:250},
-      {lbl:'Balles rapides +20%', desc:'Vitesse des projectiles augmentée',      bonus:'bulletSpd',     val:1.2,  cost:300},
-      {lbl:'Percée',              desc:'Les balles traversent 1 ennemi de plus', bonus:'piercing',      val:1,    cost:550},
-    ]},
+  {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4'},
+  {id:'crimson',  name:'CRIMSON',       price:80,  color:'#ff1a6e', shape:'hex',      sides:6, trail:'#ff1a6e', glow:'#ff1a6e'},
+  {id:'gold',     name:'OR PUR',        price:120, color:'#ffbe0b', shape:'hex',      sides:6, trail:'#ffbe0b', glow:'#ffbe0b'},
+  {id:'violet',   name:'SPECTRE',       price:150, color:'#b44fff', shape:'hex',      sides:6, trail:'#b44fff', glow:'#b44fff'},
+  {id:'ice',      name:'GLACE',         price:100, color:'#88ddff', shape:'hex',      sides:6, trail:'#88ddff', glow:'#88ddff'},
+  {id:'fire',     name:'FLAMME',        price:200, color:'#ff6b1a', shape:'hex',      sides:6, trail:'#ff9f1c', glow:'#ff6b1a'},
+  {id:'triangle', name:'TRI-FORCE',     price:130, color:'#00f5d4', shape:'tri',      sides:3, trail:'#00f5d4', glow:'#00f5d4'},
+  {id:'square',   name:'CUBE',          price:90,  color:'#00bbf9', shape:'square',   sides:4, trail:'#00bbf9', glow:'#00bbf9'},
+  {id:'octagon',  name:'OCTA',          price:160, color:'#fee440', shape:'poly',     sides:8, trail:'#fee440', glow:'#fee440'},
+  {id:'star',     name:'ÉTOILE',        price:220, color:'#ff1a6e', shape:'star',     sides:5, trail:'#ff9f1c', glow:'#ff1a6e'},
+  {id:'ghost',    name:'FANTÔME',       price:280, color:'rgba(180,79,255,0.7)', shape:'hex', sides:6, trail:'#b44fff', glow:'#b44fff', ghost:true},
+  {id:'rainbow',  name:'ARC-EN-CIEL',  price:400, color:'rainbow', shape:'hex',      sides:6, trail:'rainbow', glow:'#00f5d4', rainbow:true},
+  {id:'wire',     name:'WIRE',          price:160, color:'#00f5d4', shape:'wire',     sides:6, trail:'#00f5d4', glow:'#00f5d4', lineOnly:true},
+  {id:'neon',     name:'NÉON ROUGE',    price:180, color:'#ff1a6e', shape:'wire',     sides:6, trail:'#ff1a6e', glow:'#ff1a6e', lineOnly:true},
+  {id:'circuit',  name:'CIRCUIT',       price:240, color:'#00f5d4', shape:'circuit',  sides:6, trail:'#00bbf9', glow:'#00f5d4', lineOnly:true},
+  {id:'pulsering',name:'PULSE RING',    price:200, color:'#ffbe0b', shape:'pulseRing',sides:6, trail:'#ffbe0b', glow:'#ffbe0b', lineOnly:true},
+  {id:'cross',    name:'CROIX',         price:170, color:'#b44fff', shape:'cross',    sides:4, trail:'#b44fff', glow:'#b44fff', lineOnly:true},
+  {id:'arrow',    name:'FLÈCHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9'},
   // ── SKINS EXCLUSIFS PASS PREMIUM ──
-  {id:'void',     name:'VOID',          price:0,   color:'#1a0a2e', shape:'void',     sides:6, trail:'#6600ff', glow:'#6600ff', premium:true, lineOnly:true,
-    upgrades:[
-      {lbl:'Absorption du vide',  desc:'Kills régénèrent 3 PV',                 bonus:'voidRegen',     val:3,    cost:400},
-      {lbl:'Distorsion',          desc:'Ennemis proches sont ralentis de 20%',  bonus:'voidSlow',      val:0.2,  cost:600},
-      {lbl:'Singularité',         desc:'Bombe attire les ennemis avant explosion',bonus:'singularity', val:1,    cost:800},
-    ]},
-  {id:'solar',    name:'SOLAIRE',       price:0,   color:'#ff9f1c', shape:'solar',    sides:8, trail:'#ffbe0b', glow:'#ff6b1a', premium:true,
-    upgrades:[
-      {lbl:'Énergie solaire',     desc:'Régénère 2 PV toutes les 5s',           bonus:'solarRegen',    val:5,    cost:350},
-      {lbl:'Brûlure solaire',     desc:'Balles infligent brûlure 2s',           bonus:'burnEffect',    val:2,    cost:500},
-      {lbl:'Flare',               desc:'Tous les 15 kills : flash qui aveugle', bonus:'solarFlare',    val:15,   cost:700},
-    ]},
-  {id:'glitch',   name:'GLITCH',        price:0,   color:'#00ff88', shape:'glitch',   sides:6, trail:'#ff1a6e', glow:'#00ff88', premium:true, lineOnly:true,
-    upgrades:[
-      {lbl:'Erreur critique',     desc:'10% de chance de dégâts triplés',       bonus:'critChance',    val:0.1,  cost:400},
-      {lbl:'Bug de vitesse',      desc:'Vitesse aléatoire ±20% chaque vague',   bonus:'glitchSpeed',   val:0.2,  cost:300},
-      {lbl:'Corruption',          desc:'Les balles ont 15% de chance de dupliquer',bonus:'bulletDupe',  val:0.15, cost:650},
-    ]},
-  {id:'cosmic',   name:'COSMIQUE',      price:0,   color:'#b44fff', shape:'cosmic',   sides:5, trail:'#00f5d4', glow:'#b44fff', premium:true,
-    upgrades:[
-      {lbl:'Gravité cosmique',    desc:'Les kills attirent les power-ups',      bonus:'cosmicMagnet',  val:1,    cost:500},
-      {lbl:'Expansion',           desc:'Rayon du joueur +20% (plus grande hitbox balle)',bonus:'sizeBonus',val:1.2,cost:400},
-      {lbl:'Supernova',           desc:'Bombe spéciale : explosion cosmique ×2 taille',bonus:'supernovaBomb',val:2,cost:900},
-    ]},
+  {id:'void',     name:'VOID',          price:0,   color:'#1a0a2e', shape:'void',     sides:6, trail:'#6600ff', glow:'#6600ff', premium:true, lineOnly:true},
+  {id:'solar',    name:'SOLAIRE',       price:0,   color:'#ff9f1c', shape:'solar',    sides:8, trail:'#ffbe0b', glow:'#ff6b1a', premium:true},
+  {id:'glitch',   name:'GLITCH',        price:0,   color:'#00ff88', shape:'glitch',   sides:6, trail:'#ff1a6e', glow:'#00ff88', premium:true, lineOnly:true},
+  {id:'cosmic',   name:'COSMIQUE',      price:0,   color:'#b44fff', shape:'cosmic',   sides:5, trail:'#00f5d4', glow:'#b44fff', premium:true},
 ];
 
 function getSkin(){ return SKIN_DEFS.find(s=>s.id===equippedSkin)||SKIN_DEFS[0]; }
@@ -3579,113 +3310,15 @@ function renderInventory(){
       card.className='inv-card'+(eq?' equipped':isLocked?' locked':'');
       if(eq){const b=document.createElement('div');b.className='inv-card-badge eq';b.textContent='ÉQUIPÉ';card.appendChild(b);}
       if(isLocked){const b=document.createElement('div');b.className='inv-card-badge lock';b.textContent='🔒 '+sk.price+'🪙';card.appendChild(b);}
-      // Upgrade indicator
-      if(!isLocked && sk.upgrades){
-        const skinUpgs = loadData('pulse_skin_upgrades_v1',{});
-        const owned = skinUpgs[sk.id]||[];
-        const total = sk.upgrades.length;
-        const badge=document.createElement('div');
-        badge.style.cssText='position:absolute;top:4px;left:4px;font-size:6px;color:var(--c3);background:rgba(255,190,11,.12);padding:1px 4px;letter-spacing:.05em;';
-        badge.textContent=owned.length+'/'+total+' ⬆';
-        card.appendChild(badge);
-      }
       const cvs=document.createElement('canvas');card.appendChild(cvs);
       setTimeout(()=>{try{drawSkinPreview(cvs,sk.id,54);}catch(e){}},0);
       const nm=document.createElement('div');nm.className='inv-card-name';nm.textContent=sk.name;card.appendChild(nm);
-      // Click: equip; long-press / right-click: show upgrades
-      if(!isLocked){
-        const detBtn=document.createElement('button');
-        detBtn.style.cssText='font-size:6px;letter-spacing:.1em;padding:2px 6px;border:1px solid var(--border);color:var(--txt2);background:none;cursor:pointer;margin-top:2px;font-family:Orbitron,monospace;';
-        detBtn.textContent='⬆ AMÉLIOR.';
-        detBtn.onclick=(e)=>{e.stopPropagation();openSkinDetail(sk.id);};
-        card.onclick=()=>{if(!eq){equipSkin(sk.id);renderInventory();}};
-        card.appendChild(detBtn);
-      } else {
-        card.onclick=()=>openShop();
-      }
+      card.onclick=isLocked?()=>openShop():()=>{if(!eq){equipSkin(sk.id);renderInventory();}};
       grid.appendChild(card);
     });
   };
   addSec('✓ MES SKINS ('+mine.length+')',mine,false);
   addSec('🔒 À DÉBLOQUER',locked,true);
-}
-
-let _skdCurrent = null;
-function openSkinDetail(skinId){
-  _skdCurrent = skinId;
-  const sk = SKIN_DEFS.find(s=>s.id===skinId);
-  if(!sk) return;
-  // Preview
-  const cvs = document.getElementById('skd-preview');
-  if(cvs) setTimeout(()=>{ try{drawSkinPreview(cvs,skinId,72);}catch(e){} },0);
-  // Header
-  const nameEl=document.getElementById('skd-name'); if(nameEl) nameEl.textContent=sk.name;
-  const tagEl=document.getElementById('skd-tag');
-  if(tagEl) tagEl.textContent=sk.premium?'⭐ EXCLUSIF PASSE PREMIUM':sk.price===0?'GRATUIT':'🪙 '+sk.price;
-  const coinsEl=document.getElementById('skd-coins'); if(coinsEl) coinsEl.textContent='🪙 Budget actuel : '+coins;
-  // Equip btn
-  const equipBtn=document.getElementById('skd-equip-btn');
-  if(equipBtn){ if(equippedSkin===skinId){equipBtn.querySelector('span').textContent='✓ ÉQUIPÉ';}else{equipBtn.querySelector('span').textContent='ÉQUIPER';} }
-  // Upgrades
-  renderSkinUpgrades(skinId);
-  show('s-skin-detail');
-}
-
-function skdEquip(){
-  if(!_skdCurrent) return;
-  equipSkin(_skdCurrent);
-  const btn=document.getElementById('skd-equip-btn'); if(btn) btn.querySelector('span').textContent='✓ ÉQUIPÉ';
-}
-
-function renderSkinUpgrades(skinId){
-  const sk=SKIN_DEFS.find(s=>s.id===skinId);
-  const container=document.getElementById('skd-upgrades');
-  if(!sk||!container) return;
-  if(!sk.upgrades||!sk.upgrades.length){
-    container.innerHTML='<div style="font-size:8px;color:var(--dim);text-align:center;padding:20px 0;">Aucune amélioration disponible</div>';
-    return;
-  }
-  const skinUpgs = loadData('pulse_skin_upgrades_v1',{});
-  const owned = skinUpgs[skinId]||[];
-  container.innerHTML = sk.upgrades.map((upg,i)=>{
-    const isOwned = owned.includes(i);
-    return `<div class="skin-upg-row${isOwned?' unlocked':''}">
-      <div style="flex:1;">
-        <div class="skin-upg-lbl">${isOwned?'<span class="skin-upg-check">✓</span> ':''} ${upg.lbl}</div>
-        <div class="skin-upg-desc">${upg.desc}</div>
-      </div>
-      ${isOwned
-        ? '<div style="font-size:7px;letter-spacing:.1em;color:var(--c1);white-space:nowrap;">DÉBLOQUÉ</div>'
-        : `<button class="skin-upg-btn" onclick="buySkinUpgrade('${skinId}',${i})">🪙 ${upg.cost}</button>`
-      }
-    </div>`;
-  }).join('');
-}
-
-function buySkinUpgrade(skinId, upgradeIdx){
-  const sk = SKIN_DEFS.find(s=>s.id===skinId);
-  if(!sk||!sk.upgrades) return;
-  const upg = sk.upgrades[upgradeIdx];
-  if(!upg) return;
-  if(coins < upg.cost){ showPopup('🪙 Pas assez de pièces !','#ff1a6e'); return; }
-  const skinUpgs = loadData('pulse_skin_upgrades_v1',{});
-  const owned = skinUpgs[skinId]||[];
-  if(owned.includes(upgradeIdx)){ showPopup('Déjà débloqué !','#00f5d4'); return; }
-  owned.push(upgradeIdx);
-  skinUpgs[skinId]=owned;
-  saveData('pulse_skin_upgrades_v1', skinUpgs);
-  coins -= upg.cost;
-  saveData('pulse_coins_v3', coins);
-  updateCoinsHUD();
-  if(currentUser&&SB) saveCloudProfile({coins});
-  showPopup('⬆ '+upg.lbl+' débloqué !','#ffbe0b');
-  renderSkinUpgrades(skinId);
-  const coinsEl=document.getElementById('skd-coins'); if(coinsEl) coinsEl.textContent='🪙 Budget actuel : '+coins;
-}
-
-function getSkinUpgrades(skinId){
-  const skinUpgs = loadData('pulse_skin_upgrades_v1',{});
-  return skinUpgs[skinId]||[];
 }
 function openShop(){
   updateCoinsHUD();
@@ -4086,14 +3719,14 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
 let achSeen    = loadData('pulse_ach_seen_v1', {}); // succès vus dans l'écran succès
-const LAST_UPDATE_VERSION = '28.0';
+const LAST_UPDATE_VERSION = '27.0';
 const UPDATE_NOTES = [
-  '🔔 Système de notifications : succès, cadeaux, amis, Battle Pass, messages admin',
-  '⚡ Manette Bluetooth : latence réduite + détection dans le test en direct',
-  '🧱 Correction bug clignotement d\'écran avec les murs/obstacles',
-  '🎨 Améliorations de skins : chaque skin a des bonus passifs à débloquer',
-  '👑 Panel Admin : gestion des reliques et envoi de cadeaux/reliques aux joueurs',
-  '💀 Relique "Nova de Balles" améliorée — déclenche la nova avant de mourir',
+  '🌌 4 nouveaux skins exclusifs pass premium (VOID, SOLAIRE, GLITCH, COSMIQUE)',
+  '⭐ Pass saisonnier dual-track FREE/PREMIUM (style Brawl Stars)',
+  '🔊 Bruitages améliorés (tir, dash, bombe, menus)',
+  '🖱️ Curseur custom visible partout sur desktop',
+  '🔁 Synchronisation cloud : reliques, défi du jour, pass premium',
+  '👥 Système amis + profils publics',
 ];
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
@@ -5671,20 +5304,7 @@ function dmgPlayer(raw){
     for(const e of G.enemies){ if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<180){ e.hp-=thornsDmg; e.flash=6; spawnFx(e.x,e.y,'#00f5d4',2); if(e.hp<=0&&!e.dead){e.dead=true;onKill(e);spawnDeathFx(e.x,e.y,e.col);dropPowerup(e.x,e.y);} } }
   }
   if(p.hp<=0) gameOver();
-  // Relic: bullet_nova — déclenche une nova à 15% PV ou moins (cooldown 20s)
-  if(p.bulletNova && p.hp>0 && p.hp/p.maxHp<=0.15){
-    const now=Date.now();
-    if(!p._bulletNovaCd || now>p._bulletNovaCd){
-      p._bulletNovaCd=now+20000; // cooldown 20s
-      for(let i=0;i<16;i++){
-        const a=i/16*Math.PI*2;
-        G.bullets.push({x:p.x,y:p.y,vx:Math.cos(a)*11,vy:Math.sin(a)*11,
-          dmg:p.bulletDmg*2.5,r:6,life:90,dead:false,enemy:false,piercing:3,pierced:0,trail:[],big:true});
-      }
-      showPopup('💥 NOVA DE BALLES !','#ff6b1a');
-      if(settings.screenshake) G.shk=Math.max(G.shk,14);
-    }
-  }
+}
 
 function updateHPBar(){
   const p=G.player, pct=p.hp/p.maxHp*100;
@@ -5742,14 +5362,11 @@ function draw(){
   ctx.translate(G.sx,G.sy);
 
   // Obstacles — murs bien visibles
-  // Reset shadow AVANT la boucle pour éviter tout clignotement/pollution
-  ctx.shadowBlur=0; ctx.shadowColor='transparent';
   for(const o of G.obstacles){
     const x1=o.x-o.w/2, y1=o.y-o.h/2, x2=o.x+o.w/2, y2=o.y+o.h/2;
     // Viewport cull
     if(x2<0||x1>W||y2<0||y1>H) continue;
     ctx.save();
-    ctx.shadowBlur=0; ctx.shadowColor='transparent'; // isolation par obstacle
     ctx.fillStyle='rgba(4,14,10,.97)';
     ctx.fillRect(x1,y1,o.w,o.h);
 
@@ -5790,8 +5407,8 @@ function draw(){
     }
     ctx.restore();
   }
-  // Garantir shadow=0 après tous les murs (évite pollution sur particles/bullets)
-  ctx.shadowBlur=0; ctx.shadowColor='transparent';
+
+  // Particles — batched by color for performance, no shadow
   ctx.save(); ctx.shadowBlur=0;
   // Group particles by color to minimize fillStyle changes
   const pByCol={};
@@ -6308,7 +5925,14 @@ function togglePause(){
 //  GAME OVER
 // ═══════════════════════════════════════════════════════
 function gameOver(){
-  // Relic: bullet nova (moved to low-HP check in game loop — not on death)
+  // Relic: bullet nova on death
+  if(G&&G.player&&G.player.bulletNova){
+    for(let i=0;i<12;i++){
+      const a=i/12*Math.PI*2;
+      G.bullets.push({x:G.player.x,y:G.player.y,vx:Math.cos(a)*10,vy:Math.sin(a)*10,
+        dmg:G.player.bulletDmg*2,r:6,life:80,dead:false,enemy:false,piercing:2,pierced:0,trail:[],big:false});
+    }
+  }
   // Arena: reset progression on death
   if(currentMode==='arena'){
     arenaLevel=1;
@@ -6449,8 +6073,6 @@ function checkAch(id,val){
       awardCoins(def.reward);
       addKF(`🏆 +${def.reward}🪙 ${def.n}`,'g');
     }
-    // Push notification
-    pushNotif('achievement', 'Succès débloqué !', '🎖 '+def.n+(def.reward>0?' · +'+def.reward+'🪙':''), 'VOIR →', null);
     showAchToast(def);
     sfxAch();
   }
@@ -6899,7 +6521,6 @@ async function sendGift(){
     updateCoinsHUD();
     await SB.from('profiles').update({coins:(tgt.coins||0)+amount}).eq('id',tgt.id);
     if(msg){msg.textContent=`✓ ${amount} pièces envoyées à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
-    pushNotif('coins','Cadeau envoyé !',`Tu as envoyé ${amount} 🪙 à ${tgt.pseudo||target}.`, null, null);
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
 
   } else if(type==='skin'){
@@ -7088,7 +6709,7 @@ const BACK_MAP = {
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
-  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title','s-skin-detail':'s-inventory','s-notif':'s-title',
+  's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
   's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth',
 };
 let _backBtn=null;
@@ -8842,22 +8463,12 @@ function adminPlayerCard(p){
   const ownedSkins = p.owned_skins || ['default'];
   const perma = p.perma_upgrades || {};
   const stats = p.stats || {};
-  const ownedRelics = p.perma_relics || []; // reliques permanentes du joueur
 
   // Skin pills
   const skinPills = SKIN_DEFS.map(sk=>
     `<div class="admin-skin-pill${ownedSkins.includes(sk.id)?' owned':''}"
       onclick="adminToggleSkin('${p.id}','${sk.id}',this)">${sk.name}</div>`
   ).join('');
-
-  // Relic pills
-  const relicPills = RELIC_DEFS.filter(r=>!r.premium).map(r=>
-    `<div class="admin-skin-pill${ownedRelics.includes(r.id)?' owned':''}" style="${ownedRelics.includes(r.id)?'border-color:var(--c3);color:var(--c3);background:rgba(255,190,11,.08);':''}"
-      onclick="adminToggleRelic('${p.id}','${r.id}',this)">${r.ico} ${r.name}</div>`
-  ).join('');
-
-  // Gift relic select options
-  const relicOptions = RELIC_DEFS.filter(r=>!r.premium).map(r=>`<option value="${r.id}">${r.ico} ${r.name}</option>`).join('');
 
   div.innerHTML = `
     <div class="admin-player-name">
@@ -8887,18 +8498,6 @@ function adminPlayerCard(p){
     </div>
     <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-bottom:6px;">SKINS (clic pour toggle)</div>
     <div class="admin-skins-grid" id="adm-skins-${p.id}">${skinPills}</div>
-    <div style="font-size:7px;letter-spacing:.2em;color:var(--c3);margin:10px 0 6px;">✨ RELIQUES PERMANENTES (clic pour toggle)</div>
-    <div class="admin-skins-grid" id="adm-relics-${p.id}">${relicPills}</div>
-    <div style="display:flex;gap:8px;align-items:center;margin:8px 0 6px;flex-wrap:wrap;">
-      <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);">🎁 ENVOYER UNE RELIQUE :</div>
-      <select id="adm-gift-relic-${p.id}" class="admin-field-input" style="flex:1;min-width:120px;">${relicOptions}</select>
-      <button class="admin-btn warn" onclick="adminSendRelic('${p.id}')">📤 ENVOYER</button>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-      <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);">📢 MESSAGE :</div>
-      <input id="adm-msg-${p.id}" class="admin-field-input" placeholder="Message admin au joueur…" style="flex:1;">
-      <button class="admin-btn warn" onclick="adminSendMessage('${p.id}')">📨 ENVOYER</button>
-    </div>
     <div class="admin-actions">
       <button class="admin-btn save" onclick="adminSave('${p.id}')">💾 SAUVEGARDER</button>
       <button class="admin-btn warn" onclick="adminGiveAllSkins('${p.id}')">🎨 TOUS LES SKINS</button>
@@ -8912,55 +8511,6 @@ function adminPlayerCard(p){
 
 function adminToggleSkin(playerId, skinId, el){
   el.classList.toggle('owned');
-}
-
-function adminToggleRelic(playerId, relicId, el){
-  el.classList.toggle('owned');
-  const isOwned = el.classList.contains('owned');
-  el.style.borderColor = isOwned ? 'var(--c3)' : '';
-  el.style.color = isOwned ? 'var(--c3)' : '';
-  el.style.background = isOwned ? 'rgba(255,190,11,.08)' : '';
-}
-
-async function adminSendRelic(playerId){
-  if(!isAdmin()) return;
-  const select = document.getElementById('adm-gift-relic-'+playerId);
-  const relicId = select?.value;
-  if(!relicId){ adminStatus('Sélectionne une relique.','err'); return; }
-  const relicDef = RELIC_DEFS.find(r=>r.id===relicId);
-  const statusEl = document.getElementById('adm-status-'+playerId);
-  statusEl.textContent='Envoi…'; statusEl.className='admin-status wait';
-  try {
-    const {data:cur} = await SB.from('profiles').select('perma_relics').eq('id',playerId).single();
-    const existing = cur?.perma_relics||[];
-    if(!existing.includes(relicId)) existing.push(relicId);
-    const {error} = await SB.from('profiles').update({perma_relics:existing}).eq('id',playerId);
-    if(error){ statusEl.textContent='Erreur: '+error.message; statusEl.className='admin-status err'; return; }
-    statusEl.textContent='✓ Relique '+relicDef.ico+' '+relicDef.name+' envoyée !'; statusEl.className='admin-status ok';
-    // Refresh the relic pill
-    const pill = document.querySelector(`#adm-relics-${playerId} [onclick*="${relicId}"]`);
-    if(pill){ pill.classList.add('owned'); pill.style.borderColor='var(--c3)'; pill.style.color='var(--c3)'; pill.style.background='rgba(255,190,11,.08)'; }
-  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
-}
-
-async function adminSendMessage(playerId){
-  if(!isAdmin()) return;
-  const msgInput = document.getElementById('adm-msg-'+playerId);
-  const txt = msgInput?.value?.trim();
-  if(!txt){ adminStatus('Écris un message d\'abord.','err'); return; }
-  const statusEl = document.getElementById('adm-status-'+playerId);
-  statusEl.textContent='Envoi…'; statusEl.className='admin-status wait';
-  try {
-    // Store message in a notifications column or use gifts table
-    const {data:cur} = await SB.from('profiles').select('admin_msgs').eq('id',playerId).single();
-    const msgs = cur?.admin_msgs||[];
-    msgs.unshift({txt, ts:Date.now(), from:'Admin'});
-    if(msgs.length>10) msgs.length=10;
-    const {error} = await SB.from('profiles').update({admin_msgs:msgs}).eq('id',playerId);
-    if(error){ statusEl.textContent='Erreur (colonne admin_msgs manquante?): '+error.message; statusEl.className='admin-status err'; return; }
-    statusEl.textContent='✓ Message envoyé !'; statusEl.className='admin-status ok';
-    if(msgInput) msgInput.value='';
-  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
 }
 
 async function adminSave(playerId){
@@ -8981,13 +8531,6 @@ async function adminSave(playerId){
   }).filter(Boolean);
   if(!ownedSkins.includes('default')) ownedSkins.unshift('default');
 
-  // Collect relics from pills
-  const relicPills = document.querySelectorAll('#adm-relics-'+playerId+' .admin-skin-pill');
-  const ownedRelics = Array.from(relicPills).filter(p=>p.classList.contains('owned')).map(p=>{
-    const text = p.textContent.trim();
-    return RELIC_DEFS.find(r=>(r.ico+' '+r.name)===text)?.id;
-  }).filter(Boolean);
-
   // Get current profile for merge
   const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades').eq('id',playerId).single();
   const bp = Object.assign({level:0,xp:0,season:1,claimed:{}}, cur?.battle_pass||{}, {level:bpLevel, xp:0});
@@ -8996,7 +8539,7 @@ async function adminSave(playerId){
   try {
     // Sauvegarder en deux passes pour éviter l'erreur de cache Supabase sur battle_pass
     const {error:e1} = await SB.from('profiles').update({
-      coins, owned_skins:ownedSkins, perma_upgrades:perma, perma_relics:ownedRelics
+      coins, owned_skins:ownedSkins, perma_upgrades:perma
     }).eq('id', playerId);
 
     if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
@@ -9031,30 +8574,7 @@ function adminMaxPerma(playerId){
   statusEl.textContent='Améliorations max — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
 }
 
-async function adminBroadcast(){
-  if(!isAdmin()) return;
-  const txt = document.getElementById('admin-broadcast-input')?.value?.trim();
-  if(!txt){ document.getElementById('admin-broadcast-status').textContent='Écris un message.'; return; }
-  const ok = await pulseConfirm(`Envoyer ce message à TOUS les joueurs ?\n"${txt}"`);
-  if(!ok) return;
-  const s = document.getElementById('admin-broadcast-status');
-  s.textContent='Envoi en cours…'; s.className='admin-status wait';
-  try {
-    const {data:all, error} = await SB.from('profiles').select('id,admin_msgs');
-    if(error){ s.textContent='Erreur: '+error.message; s.className='admin-status err'; return; }
-    // Batch updates (Supabase doesn't support bulk upsert with different values easily — iterate)
-    let count=0;
-    for(const p of all){
-      const msgs = p.admin_msgs||[];
-      msgs.unshift({txt, ts:Date.now(), from:'Admin', broadcast:true});
-      if(msgs.length>10) msgs.length=10;
-      await SB.from('profiles').update({admin_msgs:msgs}).eq('id',p.id);
-      count++;
-    }
-    s.textContent=`✓ Message envoyé à ${count} joueurs !`; s.className='admin-status ok';
-    document.getElementById('admin-broadcast-input').value='';
-  } catch(e){ s.textContent='Erreur réseau.'; s.className='admin-status err'; }
-}
+async function adminReset(playerId){
   if(!isAdmin()) return;
   const _confirmed = await pulseConfirm('RESET COMPLET de ce joueur ? Irréversible !');
   if(!_confirmed) return;
@@ -9119,7 +8639,7 @@ const RELIC_DEFS = [
     apply:(p)=>{ p.overloadCoreRelic=true; }},
 
   // ── ÉPIQUE ──
-  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Sous 15% de PV : déclenche une explosion de 16 balles (cooldown 20s). Actif — pas besoin de mourir !', tag:'ULTIME',    rarity:'epic',    price:1800,
+  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:1800,
     apply:(p)=>{ p.bulletNova=true; }},
   {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s.', tag:'STRATÉGIQUE',rarity:'epic',   price:1700,
     apply:(p)=>{ p.timeThiefRelic=true; }},
@@ -9643,43 +9163,6 @@ function applySkinPerk(player, skinId){
   if(!perk) return;
   const lvl = getSkinPerkLvl(skinId);
   if(lvl > 0) perk.apply(player, lvl);
-  // Also apply new per-skin upgrades from SKIN_DEFS
-  const sk = SKIN_DEFS.find(s=>s.id===skinId);
-  if(!sk||!sk.upgrades) return;
-  const skinUpgs = loadData('pulse_skin_upgrades_v1',{});
-  const owned = skinUpgs[skinId]||[];
-  for(const idx of owned){
-    const upg = sk.upgrades[idx];
-    if(!upg) continue;
-    // Apply bonus by type
-    const b=upg.bonus, v=upg.val;
-    if(b==='dmgMult')      player.bulletDmg *= v;
-    else if(b==='speedMult')    player.speed *= v;
-    else if(b==='fireCdMult')   player.fireCd = Math.round((player.fireCd||8)*v);
-    else if(b==='hpBonus')      { player.maxHp += v; player.hp = Math.min(player.hp+v, player.maxHp); }
-    else if(b==='dashRange')    player.dashDist = Math.round((player.dashDist||220)*v);
-    else if(b==='piercing')     player.perma_piercing = (player.perma_piercing||0)+v;
-    else if(b==='coinMult')     player.coinMult = (player.coinMult||1)*v;
-    else if(b==='startShield')  { player.tempShield=true; player.tempShieldHp=(player.tempShieldHp||0)+v; }
-    else if(b==='dashDmg')      player.dashDmg = (player.dashDmg||0)+v;
-    else if(b==='bulletSpd')    player.bulletSpeedMult = (player.bulletSpeedMult||1)*v;
-    else if(b==='frostBullets') player.frostBullets = true;
-    else if(b==='iceArmor')     player.armor = Math.min(0.6,(player.armor||0)+v);
-    else if(b==='burnEffect')   player.burnOnHit = (player.burnOnHit||0)+v;
-    else if(b==='killExplosion')player.killExplosionChance = (player.killExplosionChance||0)+v;
-    else if(b==='voidRegen')    player.onKillRegen = (player.onKillRegen||0)+v;
-    else if(b==='solarRegen')   player.regenInterval = v;
-    else if(b==='critChance')   player.critChance = (player.critChance||0)+v;
-    else if(b==='lastStand')    player.lastStand = true;
-    else if(b==='dashInvis')    player.dashInvisDur = v;
-    else if(b==='slowRegen')    player.slowRegenInterval = v;
-    else if(b==='spectralAura') player.spectralAuraRange = v;
-    else if(b==='triShot5')     player.triShot5 = v;
-    else if(b==='bloodPiercing')player.bloodPiercingChance = v;
-    else if(b==='crossFire')    player.crossFire = true;
-    // (others: cosmetic or complex — stored for gameloop checks)
-    else player['skinBonus_'+b] = v;
-  }
 }
 
 function upgradeSkinPerk(skinId){
@@ -10189,46 +9672,18 @@ function renderGpMapScreen(){
     tester.id='gp-tester';
     tester.style.cssText='margin-top:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);';
     tester.innerHTML='<div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.22em;color:var(--txt2);margin-bottom:6px;">TEST EN DIRECT</div>'
-      +'<div id="gp-test-sticks" style="display:flex;gap:16px;margin-bottom:8px;justify-content:center;"></div>'
       +'<div id="gp-test-axes" style="font-size:8px;color:var(--c1);letter-spacing:.06em;margin-bottom:4px;">Axes: —</div>'
-      +'<div id="gp-test-btns" style="font-size:8px;color:var(--c3);letter-spacing:.06em;word-break:break-all;">Boutons: —</div>'
-      +(isBT2?'<div style="font-size:7px;color:var(--c3);margin-top:6px;letter-spacing:.1em;">📶 BT : polling 250Hz actif — latence minimisée</div>':'');
+      +'<div id="gp-test-btns" style="font-size:8px;color:var(--c3);letter-spacing:.06em;word-break:break-all;">Boutons: —</div>';
     container.appendChild(tester);
     // Start live update
     if(window._gpTesterRAF) cancelAnimationFrame(window._gpTesterRAF);
     function updateTester(){
       if(!document.getElementById('s-gpmap')?.classList.contains('on')){ window._gpTesterRAF=null; return; }
-      // Use live getGamepads() for most accurate reading in the tester
-      const liveGps=safeGetGamepads(); const liveGp=liveGps[gpIndex];
-      const snap=liveGp ? {
-        ax:Array.from(liveGp.axes),
-        bt:liveGp.buttons.map(b=>typeof b==='object'?{v:b.value,p:b.pressed}:{v:b,p:!!b})
-      } : _gpSnap;
-      if(!snap){ window._gpTesterRAF=requestAnimationFrame(updateTester); return; }
+      if(!_gpSnap){ window._gpTesterRAF=requestAnimationFrame(updateTester); return; }
       const axEl=document.getElementById('gp-test-axes');
       const btEl=document.getElementById('gp-test-btns');
-      const stEl=document.getElementById('gp-test-sticks');
-      // Visual sticks
-      if(stEl){
-        const lx=snap.ax[0]||0, ly=snap.ax[1]||0;
-        const rx=snap.ax[2]||0, ry=snap.ax[3]||0;
-        const mkStick=(label,x,y)=>{
-          const sz=44, cx=sz/2, cy=sz/2, r=16;
-          const dx=x*r, dy=y*r;
-          const active=Math.abs(x)>GP_DEADZONE||Math.abs(y)>GP_DEADZONE;
-          return `<div style="text-align:center;">
-            <svg width="${sz}" height="${sz}" style="display:block;margin:0 auto;">
-              <circle cx="${cx}" cy="${cy}" r="${r+2}" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-              <circle cx="${cx+dx}" cy="${cy+dy}" r="5" fill="${active?'#00f5d4':'rgba(255,255,255,.3)'}"/>
-            </svg>
-            <div style="font-size:6px;color:var(--dim);letter-spacing:.1em;margin-top:2px;">${label}</div>
-            <div style="font-size:7px;color:${active?'var(--c1)':'var(--dim)'};letter-spacing:.05em;">${x.toFixed(2)},${y.toFixed(2)}</div>
-          </div>`;
-        };
-        stEl.innerHTML=mkStick('L',lx,ly)+mkStick('R',rx,ry);
-      }
-      if(axEl){ const axVals=snap.ax.map((v,i)=>Math.abs(v)>0.05?`A${i}:${v>0?'+':''}${v.toFixed(2)}`:'').filter(Boolean); axEl.textContent='Axes: '+(axVals.join('  ')||'—'); }
-      if(btEl){ const pressed=snap.bt.map((b,i)=>b.p?`[${gpBtnName(i)}]`:'').filter(Boolean); btEl.textContent='Boutons: '+(pressed.join(' ')||'—'); }
+      if(axEl){ const axVals=_gpSnap.ax.map((v,i)=>Math.abs(v)>0.05?`A${i}:${v>0?'+':''}${v.toFixed(2)}`:'').filter(Boolean); axEl.textContent='Axes: '+(axVals.join('  ')||'—'); }
+      if(btEl){ const pressed=_gpSnap.bt.map((b,i)=>b.p?`[${gpBtnName(i)}]`:'').filter(Boolean); btEl.textContent='Boutons: '+(pressed.join(' ')||'—'); }
       window._gpTesterRAF=requestAnimationFrame(updateTester);
     }
     window._gpTesterRAF=requestAnimationFrame(updateTester);
@@ -10381,19 +9836,13 @@ function obFinish(){
 
 // Show onboarding for new players (first registration, or never seen tutorial)
 function maybeShowOnboard(isNewAccount=false){
-  try {
-    const done = loadData('pulse_onboard_done', false);
-    if(isNewAccount || !done){
-      try { obInit(); } catch(e){ console.warn('obInit failed',e); }
-      show('s-onboard');
-    } else {
-      show('s-title');
-      renderTitleBest();
-    }
-  } catch(e){
-    console.warn('maybeShowOnboard failed',e);
+  const done = loadData('pulse_onboard_done', false);
+  if(isNewAccount || !done){
+    obInit();
+    show('s-onboard');
+  } else {
     show('s-title');
-    try { renderTitleBest(); } catch(e2){}
+    renderTitleBest();
   }
 }
 
@@ -10491,12 +9940,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     updateUserBar();
     renderTitleBest();
   } else if(SB){
-    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 1500);
-    const _sessionRace = Promise.race([
-      SB.auth.getSession(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),2000))
-    ]);
-    _sessionRace.then(({data})=>{
+    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
+    SB.auth.getSession().then(({data})=>{
       clearTimeout(sbTimeout);
       if(data?.session?.user){
         currentUser=data.session.user;
@@ -10645,16 +10090,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       </div>
       <div class="admin-status" id="admin-search-status"></div>
 
-      <!-- Broadcast message to all -->
-      <div style="margin:10px 0;padding:10px 12px;border:1px solid rgba(255,26,110,.3);background:rgba(255,26,110,.04);">
-        <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:var(--c2);margin-bottom:8px;">📢 MESSAGE À TOUS LES JOUEURS</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input id="admin-broadcast-input" class="admin-input" style="flex:1;min-width:180px;" placeholder="Message diffusé à tous…">
-          <button class="admin-btn danger" onclick="adminBroadcast()">📡 DIFFUSER</button>
-        </div>
-        <div class="admin-status" id="admin-broadcast-status"></div>
-      </div>
-
       <!-- Results -->
       <div id="admin-results"></div>
     </div>
@@ -10677,28 +10112,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="scr" id="s-inventory">
   <div class="scr-inner" style="align-items:center;">
     <div class="scr-h">🎨 MES SKINS</div>
-    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-bottom:8px;">Clique pour équiper · 🔍 pour voir les améliorations</div>
+    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;margin-bottom:8px;">Clique pour équiper</div>
     <div id="inv-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(90px,20vw,130px),1fr));gap:8px;width:min(720px,96vw);overflow-y:auto;max-height:70vh;"></div>
-  </div>
-</div>
-
-<!-- Skin detail / upgrade screen -->
-<div class="scr" id="s-skin-detail">
-  <div class="scr-inner" style="align-items:center;max-width:480px;width:100%;gap:12px;">
-    <div id="skd-header" style="display:flex;align-items:center;gap:14px;width:100%;padding-bottom:10px;border-bottom:1px solid var(--border);">
-      <canvas id="skd-preview" width="72" height="72" style="border:1px solid var(--border);flex-shrink:0;"></canvas>
-      <div>
-        <div id="skd-name" style="font-family:'Orbitron',monospace;font-size:clamp(13px,3.5vmin,18px);letter-spacing:.12em;color:var(--c1);"></div>
-        <div id="skd-tag" style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-top:3px;"></div>
-        <div id="skd-coins" style="font-size:8px;color:var(--c3);margin-top:4px;"></div>
-      </div>
-    </div>
-    <div style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.28em;color:var(--txt2);align-self:flex-start;">⬆ AMÉLIORATIONS</div>
-    <div id="skd-upgrades" style="width:100%;"></div>
-    <div style="display:flex;gap:8px;width:100%;margin-top:4px;">
-      <button class="btn btn-p" id="skd-equip-btn" style="flex:1;" onclick="skdEquip()"><span>ÉQUIPER</span></button>
-      <button class="btn btn-s" onclick="show('s-inventory');renderInventory()"><span>← RETOUR</span></button>
-    </div>
   </div>
 </div>
 
@@ -10706,7 +10121,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     // Force update: unregister all old SWs then re-register fresh
-    const APP_VERSION = '28.0';
+    const APP_VERSION = '27.0';
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
@@ -10718,7 +10133,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purgé — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=29',{scope:'/Pulse/'})
+    navigator.serviceWorker.register('sw.js?v=27',{scope:'/Pulse/'})
       .then(reg=>{ reg.update(); console.log('[SW] Enregistré v27'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });

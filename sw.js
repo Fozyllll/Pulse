@@ -1,7 +1,6 @@
-// PULSE — Service Worker v29 — RESET COMPLET
+// PULSE — Service Worker v29 — réseau prioritaire
 const CACHE_NAME = 'pulse-v29';
 
-// À l'installation : vider TOUS les anciens caches sans exception
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
@@ -13,7 +12,6 @@ self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 
-// Stratégie : TOUJOURS le réseau, jamais le cache
 self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
