@@ -6561,6 +6561,9 @@ function renderGiftValueUI(){
     }).join('');
     wrap.innerHTML=opts ? `<select class="acc-input" id="gift-skin-val" style="width:100%;">${opts}</select>`
       : `<div style="font-size:7px;color:var(--c2);">Aucun skin a offrir</div>`;
+  } else if(type==='relic'){
+    const opts = RELIC_DEFS.map(r=>`<option value="${r.id}">${r.ico} ${r.name}</option>`).join('');
+    wrap.innerHTML=`<select class="acc-input" id="gift-relic-val" style="width:100%;">${opts}</select>`;
   } else {
     wrap.innerHTML=`<div style="font-size:7px;color:var(--txt2);letter-spacing:.08em;">Cout : ${PREMIUM_PASS_COST} 🪙</div>`;
   }
@@ -6590,6 +6593,7 @@ function renderGiftUI(pseudoPreset=''){
         <select class="acc-input" id="gift-type" style="width:100%;" onchange="renderGiftValueUI()">
           <option value="coins">🪙 Pieces</option>
           ${gifSkins.length?'<option value="skin">🎨 Skin</option>':''}
+          <option value="relic">✨ Relique</option>
           <option value="pass">⭐ Passe Ameliore (${PREMIUM_PASS_COST}🪙)</option>
         </select>
       </div>
@@ -6650,6 +6654,20 @@ async function sendGift(){
     if(!tgtSkins.includes(skinId)) tgtSkins.push(skinId);
     await SB.from('profiles').update({owned_skins:tgtSkins}).eq('id',tgt.id);
     if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
+    setTimeout(()=>{if(msg)msg.textContent='';},4000);
+
+  } else if(type==='relic'){
+    const relicId = document.getElementById('gift-relic-val')?.value;
+    if(!relicId){ if(msg){msg.textContent='Choisis une relique.';msg.className='acc-msg err';} return; }
+    const relicDef = RELIC_DEFS.find(r=>r.id===relicId);
+    const {data:tgtR} = await SB.from('profiles').select('id,pseudo,unlocked_relics').eq('id',tgt.id).maybeSingle();
+    const curRelics = tgtR?.unlocked_relics || [];
+    if(curRelics.includes(relicId)){ if(msg){msg.textContent='Ce joueur possede deja cette relique.';msg.className='acc-msg err';} return; }
+    const ok = await pulseConfirm(`Offrir ${relicDef?.ico||''} ${relicDef?.name||relicId} a ${tgt.pseudo||target} ?`);
+    if(!ok) return;
+    curRelics.push(relicId);
+    await SB.from('profiles').update({unlocked_relics:curRelics}).eq('id',tgt.id);
+    if(msg){msg.textContent=`✓ Relique ${relicDef?.ico||''} ${relicDef?.name||relicId} offerte a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
 
   } else if(type==='pass'){
@@ -8586,6 +8604,13 @@ function adminPlayerCard(p){
     `<div class="admin-skin-pill${ownedSkins.includes(sk.id)?' owned':''}"
       onclick="adminToggleSkin('${p.id}','${sk.id}',this)">${sk.name}</div>`
   ).join('');
+  // Relic pills
+  const ownedRelics = p.unlocked_relics || [];
+  const relicPills = RELIC_DEFS.map(r=>
+    `<div class="admin-skin-pill${ownedRelics.includes(r.id)?' owned':''}"
+      style="color:${ownedRelics.includes(r.id)?'var(--c3)':'var(--dim)'}"
+      onclick="adminToggleRelic('${p.id}','${r.id}',this)">${r.ico} ${r.name}</div>`
+  ).join('');
 
   div.innerHTML = `
     <div class="admin-player-name">
@@ -8615,11 +8640,14 @@ function adminPlayerCard(p){
     </div>
     <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-bottom:6px;">SKINS (clic pour toggle)</div>
     <div class="admin-skins-grid" id="adm-skins-${p.id}">${skinPills}</div>
-    <div class="admin-actions">
+    <div style="font-size:7px;letter-spacing:.2em;color:var(--c3);margin:10px 0 6px;">✨ RELIQUES (clic pour toggle)</div>
+    <div class="admin-skins-grid" id="adm-relics-${p.id}">${relicPills}</div>
+    <div class="admin-actions" style="margin-top:10px;">
       <button class="admin-btn save" onclick="adminSave('${p.id}')">💾 SAUVEGARDER</button>
-      <button class="admin-btn warn" onclick="adminGiveAllSkins('${p.id}')">🎨 TOUS LES SKINS</button>
+      <button class="admin-btn warn" onclick="adminGiveAllSkins('${p.id}')">🎨 TOUS SKINS</button>
       <button class="admin-btn warn" onclick="adminMaxPerma('${p.id}')">⬆ MAX PERMA</button>
-      <button class="admin-btn danger" onclick="adminReset('${p.id}')">🗑 RESET JOUEUR</button>
+      <button class="admin-btn warn" onclick="adminGiveAllRelics('${p.id}')">✨ TOUTES RELIQUES</button>
+      <button class="admin-btn danger" onclick="adminReset('${p.id}')">🗑 RESET</button>
     </div>
     <div class="admin-status" id="adm-status-${p.id}"></div>
   `;
@@ -8628,6 +8656,20 @@ function adminPlayerCard(p){
 
 function adminToggleSkin(playerId, skinId, el){
   el.classList.toggle('owned');
+}
+
+function adminToggleRelic(playerId, relicId, el){
+  el.classList.toggle('owned');
+  el.style.color = el.classList.contains('owned') ? 'var(--c3)' : 'var(--dim)';
+}
+
+function adminGiveAllRelics(playerId){
+  document.querySelectorAll('#adm-relics-'+playerId+' .admin-skin-pill').forEach(p=>{
+    p.classList.add('owned');
+    p.style.color='var(--c3)';
+  });
+  const statusEl = document.getElementById('adm-status-'+playerId);
+  statusEl.textContent='Toutes les reliques selectionnees — clique Sauvegarder.'; statusEl.className='admin-status wait';
 }
 
 async function adminSave(playerId){
@@ -8647,6 +8689,12 @@ async function adminSave(playerId){
     return SKIN_DEFS.find(s=>s.name===name)?.id;
   }).filter(Boolean);
   if(!ownedSkins.includes('default')) ownedSkins.unshift('default');
+  // Collect relics from pills
+  const relicPillsEl = document.querySelectorAll('#adm-relics-'+playerId+' .admin-skin-pill');
+  const unlockedRelics = Array.from(relicPillsEl).filter(p=>p.classList.contains('owned')).map(p=>{
+    const text = p.textContent.trim();
+    return RELIC_DEFS.find(r=> text.includes(r.name))?.id;
+  }).filter(Boolean);
 
   // Get current profile for merge
   const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades').eq('id',playerId).single();
@@ -8656,7 +8704,7 @@ async function adminSave(playerId){
   try {
     // Sauvegarder en deux passes pour eviter lerreur de cache Supabase sur battle_pass
     const {error:e1} = await SB.from('profiles').update({
-      coins, owned_skins:ownedSkins, perma_upgrades:perma
+      coins, owned_skins:ownedSkins, perma_upgrades:perma, unlocked_relics:unlockedRelics
     }).eq('id', playerId);
 
     if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
