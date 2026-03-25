@@ -2000,7 +2000,7 @@ body.touch #minimap{display:none;}
             <div class="ob-card-ico">🎨</div>
             <div class="ob-card-txt">
               <div class="ob-card-lbl">SKINS</div>
-              <div class="ob-card-desc">12 formes disponibles : hexagone, étoile, triangle, cube, fantôme, arc-en-ciel… Purement cosmétiques.</div>
+              <div class="ob-card-desc">22 skins disponibles. Chaque skin a un <strong style="color:var(--c3)">passif unique</strong> ameliorable jusqu&#39;au niveau 3 (ex: Crimson → frenesie au combat, Gold → bonus pieces). Clique ⬆ dans Mes Skins pour ameliorer.</div>
             </div>
           </div>
           <div class="ob-card purple">
@@ -2077,7 +2077,11 @@ body.touch #minimap{display:none;}
           </div>
           <div class="ob-card purple">
             <div class="ob-card-ico">🌐</div>
-            <div class="ob-card-txt"><div class="ob-card-lbl">EN LIGNE</div><div class="ob-card-desc">Co-op jusqu'à 4 joueurs. Crée une room ou rejoins par code. Plusieurs modes disponibles.</div></div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">EN LIGNE</div><div class="ob-card-desc">Co-op jusqu&#39;a 4 joueurs ou <strong style="color:var(--c2)">DUEL PvP 1v1</strong>. Cree une room ou rejoins par code.</div></div>
+          </div>
+          <div class="ob-card red">
+            <div class="ob-card-ico">⚔</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">DUEL PvP</div><div class="ob-card-desc">Affronte un adversaire en ligne. 90 secondes, tes balles blessent ladversaire. Dernier en vie gagne !</div></div>
           </div>
           <div class="ob-card">
             <div class="ob-card-ico">🎁</div>
@@ -2091,9 +2095,45 @@ body.touch #minimap{display:none;}
       </div>
     </div>
 
+    <!-- ══ SLIDE 8 — Nouveautes v28 ══ -->
+    <div class="ob-slide" id="ob-slide-8">
+      <div class="ob-icon">🆕</div>
+      <div class="ob-title">NOUVEAUTÉS v28</div>
+      <div class="ob-sub">CE QUI A CHANGÉ</div>
+      <div class="ob-hdiv"></div>
+      <div class="ob-body">
+        <div class="ob-2col">
+          <div class="ob-card highlight">
+            <div class="ob-card-ico">🎰</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">SLOTS RELIQUES</div><div class="ob-card-desc">Commence avec 1 slot. Achete-en jusqu&#39;a 3 dans l&#39;ecran Reliques.</div></div>
+          </div>
+          <div class="ob-card highlight">
+            <div class="ob-card-ico">🔔</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">NOTIFICATIONS</div><div class="ob-card-desc">Succes, cadeaux, mises a jour — tout dans le bouton NOTIFS du menu.</div></div>
+          </div>
+          <div class="ob-card red">
+            <div class="ob-card-ico">⚔</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">MODE DUEL PvP</div><div class="ob-card-desc">Affronte un adversaire en ligne. Tes balles le blessent en temps reel.</div></div>
+          </div>
+          <div class="ob-card purple">
+            <div class="ob-card-ico">✨</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">PASSIFS SKINS</div><div class="ob-card-desc">Chaque skin a un passif unique. Ameliore-le jusqu&#39;au niveau 3 depuis Mes Skins.</div></div>
+          </div>
+          <div class="ob-card">
+            <div class="ob-card-ico">🎮</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">MANETTE BT</div><div class="ob-card-desc">Latence reduite. Le test en direct se rafraichit automatiquement.</div></div>
+          </div>
+          <div class="ob-card">
+            <div class="ob-card-ico">🧱</div>
+            <div class="ob-card-txt"><div class="ob-card-lbl">BUGS CORRIGES</div><div class="ob-card-desc">Clignotement ecran avec les murs et blocage des boutons corriges.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Navigation — always at bottom -->
     <div class="ob-nav" id="ob-nav">
-      <div class="ob-progress" id="ob-prog">1 / 8</div>
+      <div class="ob-progress" id="ob-prog">1 / 9</div>
       <button class="ob-btn ob-btn-back" id="ob-back" onclick="obNav(-1)" style="display:none">← RETOUR</button>
       <button class="ob-btn ob-btn-next" id="ob-next" onclick="obNav(1)">SUIVANT →</button>
       <div class="ob-skip" onclick="obFinish()">Passer</div>
@@ -3371,7 +3411,20 @@ function renderInventory(){
       const cvs=document.createElement('canvas');card.appendChild(cvs);
       setTimeout(()=>{try{drawSkinPreview(cvs,sk.id,54);}catch(e){}},0);
       const nm=document.createElement('div');nm.className='inv-card-name';nm.textContent=sk.name;card.appendChild(nm);
-      card.onclick=isLocked?()=>openShop():()=>{if(!eq){equipSkin(sk.id);renderInventory();}};
+      // Bouton ameliorations si skin possede
+      if(!isLocked){
+        const perk = SKIN_PERKS[sk.id];
+        if(perk){
+          const lvl = getSkinPerkLvl(sk.id);
+          const maxLvl = getSkinPerkMaxLvl();
+          const upgBtn = document.createElement('div');
+          upgBtn.style.cssText='font-size:6px;letter-spacing:.1em;text-align:center;padding:2px 4px;margin-top:3px;border:1px solid '+(lvl>=maxLvl?'rgba(0,245,212,.4)':'rgba(255,190,11,.4)')+';color:'+(lvl>=maxLvl?'var(--c1)':'var(--c3)')+';cursor:pointer;';
+          upgBtn.textContent = lvl>=maxLvl ? '✨ MAX NIV.'+lvl : '⬆ NIV.'+lvl+'/'+maxLvl;
+          upgBtn.onclick = (e)=>{ e.stopPropagation(); openSkinDetail(sk.id); };
+          card.appendChild(upgBtn);
+        }
+      }
+      card.onclick=isLocked?()=>openShop():()=>{if(eq){openSkinDetail(sk.id);}else{equipSkin(sk.id);renderInventory();}};
       grid.appendChild(card);
     });
   };
@@ -10236,7 +10289,7 @@ function gpNavigateCards(wasConfirm,nowConfirm){
 // ═══════════════════════════════════════════════════════
 //  ONBOARDING TUTORIAL
 // ═══════════════════════════════════════════════════════
-const OB_TOTAL = 8;
+const OB_TOTAL = 9;
 let obCurrent = 0;
 
 function obInit(){
