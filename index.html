@@ -2902,7 +2902,7 @@ let coins = loadData('pulse_coins_v3', 0);
 
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
-  const base = Math.floor(score/180) + Math.floor(wave*1.8) + Math.floor(kills/6);
+  const base = Math.floor(score/160) + Math.floor(wave*2.1) + Math.floor(kills/5);
   return Math.max(2, Math.min(base, 150));
 }
 
@@ -4496,9 +4496,9 @@ function spawnEnemy(def){
   else if(side===2){x=Math.random()*W;y=H+pad;}
   else{x=-pad;y=Math.random()*H;}
   const w = G.wave;
-  const hpScale  = w<=10 ? 1+w*0.12 : (1+10*0.12) * Math.pow(1.10, w-10);
-  const dmgScale = w<=10 ? 1+w*0.08 : (1+10*0.08) * Math.pow(1.08, w-10);
-  const spdScale = 1 + w*0.028 + Math.max(0,(w-10)*0.015);
+  const hpScale  = w<=10 ? 1+w*0.15 : (1+10*0.15) * Math.pow(1.12, w-10);
+  const dmgScale = w<=10 ? 1+w*0.10 : (1+10*0.10) * Math.pow(1.09, w-10);
+  const spdScale = 1 + w*0.032 + Math.max(0,(w-10)*0.018);
   if(G.enemies.length>=120) return;
 
   // Elite system: starts at wave 5, grows to max 1/8 by wave 20
@@ -4508,7 +4508,7 @@ function spawnEnemy(def){
     {id:'swift',   lbl:'💨RAPIDE',   col:'#ffee00', hpMult:0.8, spdMult:2.2, dmgMult:0.9, pts:2.0},
     {id:'giant',   lbl:'💀GEANT',    col:'#ff44aa', hpMult:3.5, spdMult:0.7, dmgMult:2.0, pts:4.0},
   ];
-  const eliteChance = w>=5 ? Math.min(0.125, (w-4)/120) : 0;
+  const eliteChance = w>=4 ? Math.min(0.20, (w-3)/80) : 0;
   const isElite = !def.boss && !def.mini && Math.random()<eliteChance;
   const elite = isElite ? ELITE_TYPES[Math.floor(Math.random()*ELITE_TYPES.length)] : null;
 
@@ -4805,7 +4805,7 @@ function update(now){
   // Relic: ghost step — next shot piercing after dash ends
   if(p._dashJustEnded){ p._ghostStepReady = p.ghostStepRelic; p._dashJustEnded=false; }
   // Regen: fixed 2s interval, regen scales with p.regen value
-  if(p.regen>0){
+  if(p.regen>0 && currentMode!=='hardcore'){
     p.regenTimer++;
     if(p.regenTimer>=120){ p.regenTimer=0; p.hp=Math.min(p.maxHp,p.hp+p.regen); updateHPBar(); }
   }
@@ -4814,7 +4814,7 @@ function update(now){
   if(p._furyActive){
     const lowHP = p.hp/p.maxHp < 0.30;
     p._furyOn = lowHP;
-    if(lowHP && p._furyRegen){ p.regenTimer2=(p.regenTimer2||0)+1; if(p.regenTimer2>=60){ p.regenTimer2=0; p.hp=Math.min(p.maxHp,p.hp+p._furyRegen); updateHPBar(); } }
+    if(lowHP && p._furyRegen && currentMode!=='hardcore'){ p.regenTimer2=(p.regenTimer2||0)+1; if(p.regenTimer2>=60){ p.regenTimer2=0; p.hp=Math.min(p.maxHp,p.hp+p._furyRegen); updateHPBar(); } }
   }
   // Ice aura: ralentir ennemis proches
   if(p._iceRange && G.enemies){
@@ -5424,13 +5424,20 @@ function onKill(e){
   
   // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
-  if(p.chainKill && G._chainKillCount>=5 && !e._fromNuke){ 
-    G._chainKillCount=0; 
+  G._chainCooldown=(G._chainCooldown||0);
+  if(G._chainCooldown>0) G._chainCooldown--;
+  if(p.chainKill && G._chainKillCount>=8 && G._chainCooldown<=0 && !e._fromNuke){ 
+    G._chainKillCount=0;
+    G._chainCooldown=900; // 15s cooldown (60fps x 15)
     const nukeKills=G.enemies.filter(en=>!en.dead);
     nukeKills.forEach(en=>en._fromNuke=true);
-    doNuke(G,18+(p.berserkerRelic?10:0)); 
+    // Nuke bridee : degats reduits, pas de soin via vampirisme
+    const _vampSave=p.vampireRelic; p.vampireRelic=false;
+    const _lifeSave=p.lifesteal; p.lifesteal=0;
+    doNuke(G,12+(p.berserkerRelic?6:0)); 
+    p.vampireRelic=_vampSave; p.lifesteal=_lifeSave;
     setTimeout(()=>{ if(G) G.enemies.forEach(en=>en._fromNuke=false); },100);
-    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ REACTION !','#ffbe0b'); 
+    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ REACTION ! (x'+Math.min(8,G._chainKillCount+8)+')','#ffbe0b'); 
   }
   // ✅ NEW: Foudre Chain (p.chain) — arc electrique vers lennemi le plus proche
   if(p.chain && !e._fromNuke){
@@ -5571,10 +5578,9 @@ function draw(){
 
     // Bordure principale — couleur statique, pas de pulsation rapide
     const pulse=0.75; // Valeur fixe, pas danimation par frame
-    ctx.shadowColor='#00f5d4'; ctx.shadowBlur=settings.lowQuality?0:6;
-    ctx.strokeStyle=`rgba(0,245,212,${pulse*.7})`; ctx.lineWidth=2;
-    ctx.strokeRect(x1,y1,o.w,o.h);
     ctx.shadowBlur=0; ctx.shadowColor='transparent';
+    ctx.strokeStyle='rgba(0,245,212,0.55)'; ctx.lineWidth=2;
+    ctx.strokeRect(x1,y1,o.w,o.h);
 
     if(!settings.lowQuality){
       ctx.shadowBlur=0; ctx.strokeStyle=`rgba(0,245,212,${pulse*.3})`; ctx.lineWidth=1;
