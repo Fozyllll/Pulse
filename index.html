@@ -2115,8 +2115,8 @@ let currentUser = null;
 let isGuest = false;
 
 try {
-  // Tente l'initialisation — la lib supabase-js@2 accepte les clés sb_publishable
-  // mais si elle échoue on reste en mode invité
+  // Tente linitialisation — la lib supabase-js@2 accepte les cles sb_publishable
+  // mais si elle echoue on reste en mode invite
   if(typeof supabase !== 'undefined' && supabase.createClient) {
     SB = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
@@ -2125,11 +2125,11 @@ try {
         detectSessionInUrl: true
       }
     });
-    // Test rapide pour vérifier que le client répond
+    // Test rapide pour verifier que le client repond
     SB.auth.getSession().catch(e => {
       console.warn('Supabase session check failed:', e);
     });
-    console.log('✅ Supabase client initialisé');
+    console.log('✅ Supabase client initialise');
   } else {
     console.warn('Supabase lib non disponible');
   }
@@ -2147,10 +2147,10 @@ async function loadCloudProfile(){
     const {data,error}=await SB.from('profiles').select('*').eq('id',currentUser.id).single();
     if(error){
       if(error.code==='PGRST116'||error.message?.includes('0 rows')){
-        // Nouveau joueur — créer profil
+        // Nouveau joueur — creer profil
         const fresh={id:currentUser.id,email:currentUser.email||'',pseudo:'',coins:0,owned_skins:['default'],equipped_skin:'default',perma_upgrades:{},scores:[],stats:{totalKills:0,gamesPlayed:0,totalScore:0,totalTime:0,maxWave:0,maxScore:0,maxCombo:0,maxLevel:0,bossKills:0,noHitWaves:0,uniqueUpgrades:0},ach:{},kb_bindings:null,gp_bindings:null,battle_pass:{level:0,xp:0,season:1,claimed:{}}};
         const {error:insertErr}=await SB.from('profiles').insert(fresh);
-        if(insertErr) console.warn('Erreur création profil:',insertErr.message);
+        if(insertErr) console.warn('Erreur creation profil:',insertErr.message);
         return fresh;
       }
       console.warn('Erreur chargement profil:',error.message);
@@ -2162,7 +2162,7 @@ async function loadCloudProfile(){
       data.email = currentUser.email;
     }
     return data;
-  } catch(e){ console.warn('Erreur réseau profil:',e); return null; }
+  } catch(e){ console.warn('Erreur reseau profil:',e); return null; }
 }
 
 async function saveCloudProfile(partial){
@@ -2178,10 +2178,10 @@ let authMode = 'login'; // 'login' | 'register'
 function toggleAuthMode(){
   authMode = authMode==='login' ? 'register' : 'login';
   document.getElementById('auth-mode-lbl').textContent = authMode==='login'?'CONNEXION':'INSCRIPTION';
-  document.getElementById('auth-submit-lbl').textContent = authMode==='login'?'SE CONNECTER':'CRÉER LE COMPTE';
+  document.getElementById('auth-submit-lbl').textContent = authMode==='login'?'SE CONNECTER':'CREER LE COMPTE';
   document.getElementById('auth-switch-lbl').innerHTML = authMode==='login'
     ? 'Pas de compte ? <span onclick="toggleAuthMode()">S\'INSCRIRE</span>'
-    : 'Déjà un compte ? <span onclick="toggleAuthMode()">SE CONNECTER</span>';
+    : 'Deja un compte ? <span onclick="toggleAuthMode()">SE CONNECTER</span>';
   // Show pseudo field only on register
   const pseudoEl = document.getElementById('auth-pseudo-reg');
   if(pseudoEl) pseudoEl.style.display = authMode==='register' ? 'block' : 'none';
@@ -2236,7 +2236,7 @@ async function doAuth(){
   const okEl=document.getElementById('auth-ok');
   errEl.textContent=''; okEl.textContent='';
   if(!input||!pass){ errEl.textContent='Remplis tous les champs.'; return; }
-  if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caractères.'; return; }
+  if(pass.length<6){ errEl.textContent='Mot de passe minimum 6 caracteres.'; return; }
   const btn=document.getElementById('auth-submit-btn');
   btn.style.opacity='.5'; btn.style.pointerEvents='none';
   try {
@@ -2251,12 +2251,12 @@ async function doAuth(){
           if(rows&&rows.length>0&&rows[0].email){
             emailToUse = rows[0].email;
           } else if(rows&&rows.length>0){
-            // Profile found but no email — try to get email from auth via a sign-in attempt won't work
+            // Profile found but no email — try to get email from auth via a sign-in attempt wont work
             // Ask user to use their email instead
-            errEl.textContent='Pseudo trouvé, mais email non synchronisé. Connecte-toi avec ton email cette fois.';
+            errEl.textContent='Pseudo trouve, mais email non synchronise. Connecte-toi avec ton email cette fois.';
             btn.style.opacity=''; btn.style.pointerEvents=''; return;
           } else {
-            errEl.textContent='Pseudo introuvable. Vérifie l\'orthographe ou utilise ton email.';
+            errEl.textContent='Pseudo introuvable. Verifie l\'orthographe ou utilise ton email.';
             btn.style.opacity=''; btn.style.pointerEvents=''; return;
           }
         } catch(lookupErr){
@@ -2276,10 +2276,10 @@ async function doAuth(){
       // Registration — require valid email
       if(!input.includes('@')){ errEl.textContent='Utilise ton email pour t\'inscrire.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
       const pseudo=(document.getElementById('auth-pseudo-reg')?.value||'').trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-      if(!pseudo||pseudo.length<3){ errEl.textContent='Pseudo requis (3-16 caractères, lettres/chiffres/-/_).'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
+      if(!pseudo||pseudo.length<3){ errEl.textContent='Pseudo requis (3-16 caracteres, lettres/chiffres/-/_).'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
       // Check pseudo uniqueness
       const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).limit(1);
-      if(existing&&existing.length>0){ errEl.textContent='Ce pseudo est déjà pris. Choisis-en un autre.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
+      if(existing&&existing.length>0){ errEl.textContent='Ce pseudo est deja pris. Choisis-en un autre.'; btn.style.opacity=''; btn.style.pointerEvents=''; return; }
       res=await SB.auth.signUp({email:input, password:pass});
       if(res.error){
         errEl.textContent=translateAuthErr(res.error.message);
@@ -2291,16 +2291,16 @@ async function doAuth(){
           userPseudo=pseudo; saveData('pulse_pseudo_v3',pseudo);
           await afterLogin(true);
         } else {
-          okEl.textContent='✉️ Vérifie ton email pour confirmer, puis connecte-toi avec ton pseudo ou email !';
+          okEl.textContent='✉️ Verifie ton email pour confirmer, puis connecte-toi avec ton pseudo ou email !';
           setTimeout(()=>{ authMode='login'; toggleAuthMode(); },4000);
         }
       }
     }
   } catch(e){
     console.error('Auth error:',e);
-    if(e.message&&e.message.includes('fetch')) errEl.textContent='Impossible de rejoindre le serveur. Vérifie ta connexion ou joue en invité.';
-    else if(e.message&&e.message.includes('Invalid API key')) errEl.textContent='Clé API invalide — contacte l\'admin.';
-    else errEl.textContent='Erreur : '+e.message+'. Essaie le mode invité.';
+    if(e.message&&e.message.includes('fetch')) errEl.textContent='Impossible de rejoindre le serveur. Verifie ta connexion ou joue en invite.';
+    else if(e.message&&e.message.includes('Invalid API key')) errEl.textContent='Cle API invalide — contacte l\'admin.';
+    else errEl.textContent='Erreur : '+e.message+'. Essaie le mode invite.';
   } finally {
     btn.style.opacity=''; btn.style.pointerEvents='';
   }
@@ -2308,12 +2308,12 @@ async function doAuth(){
 
 function translateAuthErr(msg){
   if(msg.includes('Invalid login')) return 'Email/pseudo ou mot de passe incorrect.';
-  if(msg.includes('already registered')||msg.includes('already been registered')) return 'Cet email est déjà utilisé.';
-  if(msg.includes('Password should')) return 'Mot de passe trop court (min 6 caractères).';
+  if(msg.includes('already registered')||msg.includes('already been registered')) return 'Cet email est deja utilise.';
+  if(msg.includes('Password should')) return 'Mot de passe trop court (min 6 caracteres).';
   if(msg.includes('valid email')) return 'Email invalide.';
-  if(msg.includes('User not found')) return 'Aucun compte trouvé avec cet email ou pseudo.';
-  if(msg.includes('Email not confirmed')) return 'Email non confirmé — vérifie ta boîte mail.';
-  if(msg.includes('rate limit')) return 'Trop de tentatives, réessaie dans quelques minutes.';
+  if(msg.includes('User not found')) return 'Aucun compte trouve avec cet email ou pseudo.';
+  if(msg.includes('Email not confirmed')) return 'Email non confirme — verifie ta boite mail.';
+  if(msg.includes('rate limit')) return 'Trop de tentatives, reessaie dans quelques minutes.';
   return msg;
 }
 
@@ -2345,7 +2345,7 @@ async function afterLogin(isNewAccount=false){
       if(profile.gp_bindings) { gpMap=profile.gp_bindings; saveData('pulse_gpmap_v1',gpMap); }
       // Load battle pass (sync again in case)
       if(profile.battle_pass) { battlePass=Object.assign({},battlePass,profile.battle_pass); }
-      // ── CLOUD SYNC — reliques, premium pass, daily, reliques équipées ──
+      // ── CLOUD SYNC — reliques, premium pass, daily, reliques equipees ──
       if(profile.unlocked_relics?.length){
         const merged=[...new Set([...loadData('pulse_unlocked_relics_v1',[]),...profile.unlocked_relics])];
         saveData('pulse_unlocked_relics_v1',merged);
@@ -2359,7 +2359,7 @@ async function afterLogin(isNewAccount=false){
       }
       if(profile.daily_score){
         const localDaily=loadData('pulse_daily_v1',{date:''});
-        // Prendre le plus récent
+        // Prendre le plus recent
         if(!localDaily.date || profile.daily_score.date > localDaily.date){
           saveData('pulse_daily_v1',profile.daily_score);
         }
@@ -2371,7 +2371,7 @@ async function afterLogin(isNewAccount=false){
   updateCoinsHUD();
   updateUserBar();
   updateNotifBadge();
-  // Notif mise à jour si nouvelle version
+  // Notif mise a jour si nouvelle version
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   if(lastSeenVer !== LAST_UPDATE_VERSION){
     pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', UPDATE_NOTES.slice(0,3).join(' · '), 'VOIR', null);
@@ -2393,7 +2393,7 @@ async function doLogout(){
   show('s-auth');
 }
 
-// ── Profil actuel affiché (null = soi-même, sinon {id,pseudo,stats,...}) ──
+// ── Profil actuel affiche (null = soi-meme, sinon {id,pseudo,stats,...}) ──
 let _viewingProfile = null;
 
 function profileTab(tab, btn){
@@ -2406,7 +2406,7 @@ function renderProfile(profileData=null){
   _viewingProfile = profileData; // null = mon profil
   const isMe = !profileData;
   const pseudo = isMe
-    ? (loadData('pulse_pseudo_v3','') || currentUser?.email?.split('@')[0] || 'Invité')
+    ? (loadData('pulse_pseudo_v3','') || currentUser?.email?.split('@')[0] || 'Invite')
     : (profileData.pseudo || '?');
   const stats  = isMe ? gStats : (profileData.stats||{});
   const skins  = isMe ? ownedSkins : (profileData.owned_skins||['default']);
@@ -2424,7 +2424,7 @@ function renderProfile(profileData=null){
   // Nom + titre
   document.getElementById('profile-name').textContent = pseudo.toUpperCase();
   const wave=stats.maxWave||0, kills=stats.totalKills||0, games=stats.gamesPlayed||0;
-  const title = wave>=30?'👑 MAÎTRE LÉGENDAIRE':wave>=20?'⚡ VÉTÉRAN':wave>=10?'🔥 GUERRIER':games>=10?'🎮 SURVIVANT':'🌱 RECRUE';
+  const title = wave>=30?'👑 MAITRE LEGENDAIRE':wave>=20?'⚡ VETERAN':wave>=10?'🔥 GUERRIER':games>=10?'🎮 SURVIVANT':'🌱 RECRUE';
   document.getElementById('profile-title').textContent = title;
 
   // Badges
@@ -2436,7 +2436,7 @@ function renderProfile(profileData=null){
   ].filter(Boolean).join('');
   document.getElementById('profile-badges').innerHTML = badges;
 
-  // Actions (ajouter ami / envoyer cadeau / si c'est moi: rien)
+  // Actions (ajouter ami / envoyer cadeau / si cest moi: rien)
   const actEl = document.getElementById('profile-actions');
   if(actEl){
     if(!isMe && currentUser){
@@ -2453,7 +2453,7 @@ function renderProfile(profileData=null){
     }
   }
 
-  // Afficher onglet stats par défaut
+  // Afficher onglet stats par defaut
   document.querySelectorAll('#s-profile .shop-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   renderProfileTab('stats', profileData);
 }
@@ -2472,9 +2472,9 @@ function renderProfileTab(tab, profileData){
       ['🏆','Meilleur score',(stats.maxScore||0).toLocaleString('fr-FR')],
       ['🌊','Meilleure vague',stats.maxWave||0],
       ['💀','Kills total',(stats.totalKills||0).toLocaleString('fr-FR')],
-      ['🎮','Parties jouées',stats.gamesPlayed||0],
+      ['🎮','Parties jouees',stats.gamesPlayed||0],
       ['🔥','Meilleur combo',stats.maxCombo||0],
-      ['☠️','Boss tués',stats.bossKills||0],
+      ['☠️','Boss tues',stats.bossKills||0],
       ['🛡','Vagues parfaites',stats.noHitWaves||0],
       ['⏱','Temps total',`${hh}h${String(mm).padStart(2,'0')}m`],
     ];
@@ -2565,8 +2565,8 @@ function openSkinDetail(skinId){
   const cvs = document.getElementById('sdm-canvas');
   drawSkinPreview(cvs, skinId, 72);
   document.getElementById('sdm-name').textContent = sk.name;
-  const rarityTxt = isPrem ? 'PREMIUM' : sk.id==='rainbow'||sk.id==='cosmic' ? 'LÉGENDAIRE' : sk.rarity==='epic'||['fire','star','octagon','circuit'].includes(sk.id) ? 'ÉPIQUE' : 'RARE';
-  const rarityCol = rarityTxt==='LÉGENDAIRE'?'var(--c3)':rarityTxt==='PREMIUM'?'#b44fff':rarityTxt==='ÉPIQUE'?'var(--c4)':'#00bbf9';
+  const rarityTxt = isPrem ? 'PREMIUM' : sk.id==='rainbow'||sk.id==='cosmic' ? 'LEGENDAIRE' : sk.rarity==='epic'||['fire','star','octagon','circuit'].includes(sk.id) ? 'EPIQUE' : 'RARE';
+  const rarityCol = rarityTxt==='LEGENDAIRE'?'var(--c3)':rarityTxt==='PREMIUM'?'#b44fff':rarityTxt==='EPIQUE'?'var(--c4)':'#00bbf9';
   document.getElementById('sdm-tag-wrap').innerHTML = '<div style="display:inline-block;font-size:6px;letter-spacing:.2em;padding:2px 8px;border:1px solid '+rarityCol+';color:'+rarityCol+';">'+rarityTxt+'</div>';
   document.getElementById('sdm-flavor').textContent = isEquipped ? 'EQUIPE ACTUELLEMENT' : 'Cliquer pour equiper dans l inventaire';
 
@@ -2599,7 +2599,7 @@ function openSkinDetail(skinId){
   if(perk && lvl < maxLvl){
     upgradeSection.style.display = 'flex';
     const cost = SKIN_PERK_COSTS[lvl];
-    document.getElementById('sdm-upgrade-label').textContent = 'Améliorer vers NIV.' + (lvl+1);
+    document.getElementById('sdm-upgrade-label').textContent = 'Ameliorer vers NIV.' + (lvl+1);
     document.getElementById('sdm-upgrade-cost').textContent = cost + ' 🪙  (solde : ' + coins.toLocaleString('fr-FR') + ')';
     document.getElementById('sdm-upgrade-btn').style.opacity = coins >= cost ? '1' : '.5';
     equipSection.style.display = 'none';
@@ -2618,7 +2618,7 @@ function addFriend(friendObj){
     friends.push({id:friendObj.id, pseudo:friendObj.pseudo, skin:friendObj.skin, addedAt:Date.now()});
     saveData('pulse_friends_v1',friends);
     if(currentUser&&SB) saveCloudProfile({friends});
-    showPopup(`✓ ${friendObj.pseudo} ajouté en ami !`,'#00f5d4');
+    showPopup(`✓ ${friendObj.pseudo} ajoute en ami !`,'#00f5d4');
     renderProfile(_viewingProfile);
   }
 }
@@ -2730,7 +2730,7 @@ async function searchAndAddFriend(){
       .neq('id', currentUser.id)
       .limit(5);
     if(error||!data||!data.length){
-      resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Aucun joueur trouvé.</div>';
+      resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Aucun joueur trouve.</div>';
       return;
     }
     const friends=loadData('pulse_friends_v1',[]);
@@ -2754,7 +2754,7 @@ async function searchAndAddFriend(){
 
 function addFriendFromSearch(friendObj){
   addFriend(friendObj);
-  // Re-render friends tab pour mettre à jour l'état
+  // Re-render friends tab pour mettre a jour letat
   const el=document.getElementById('profile-tab-content');
   if(el) renderFriendsTab(el);
 }
@@ -2791,10 +2791,10 @@ function updateUserBar(){
     const email=currentUser.email||'';
     const name=email.split('@')[0].toUpperCase();
     nm.textContent=name;
-    if(pill) pill.textContent='👤 '+name+' · 🪙 '+(coins||0)+' pièces';
+    if(pill) pill.textContent='👤 '+name+' · 🪙 '+(coins||0)+' pieces';
   } else {
     bar.style.display='none';
-    if(pill) pill.textContent=isGuest?'🎮 Mode invité · 🪙 '+(coins||0)+' pièces':'';
+    if(pill) pill.textContent=isGuest?'🎮 Mode invite · 🪙 '+(coins||0)+' pieces':'';
   }
 }
 
@@ -2819,7 +2819,7 @@ function setBadge(id, count){
   if(count>0){
     if(!el){
       // Find the button to attach to — match by contained text
-      const label=id==='btn-bp-badge'?'PASSE DE COMBAT':id==='btn-ach-badge'?'SUCCÈS':null;
+      const label=id==='btn-bp-badge'?'PASSE DE COMBAT':id==='btn-ach-badge'?'SUCCES':null;
       if(label){
         const allBtns=document.querySelectorAll('.btn');
         for(const btn of allBtns){
@@ -2911,7 +2911,7 @@ const CURSOR_DEFS = [
       ctx.lineTo(s/2+Math.cos(a)*(r+len),s/2+Math.sin(a)*(r+len)); ctx.stroke();
     }
   }},
-  {id:'arrow',     name:'FLÈCHE',      price:150,  draw:(ctx,s,col)=>{
+  {id:'arrow',     name:'FLECHE',      price:150,  draw:(ctx,s,col)=>{
     ctx.fillStyle=col; ctx.strokeStyle=col; ctx.lineWidth=1;
     ctx.beginPath();
     ctx.moveTo(2,2); ctx.lineTo(2,s*.7); ctx.lineTo(s*.22,s*.5);
@@ -2975,15 +2975,15 @@ const SKIN_DEFS = [
   {id:'triangle', name:'TRI-FORCE',     price:130, color:'#00f5d4', shape:'tri',      sides:3, trail:'#00f5d4', glow:'#00f5d4'},
   {id:'square',   name:'CUBE',          price:90,  color:'#00bbf9', shape:'square',   sides:4, trail:'#00bbf9', glow:'#00bbf9'},
   {id:'octagon',  name:'OCTA',          price:160, color:'#fee440', shape:'poly',     sides:8, trail:'#fee440', glow:'#fee440'},
-  {id:'star',     name:'ÉTOILE',        price:220, color:'#ff1a6e', shape:'star',     sides:5, trail:'#ff9f1c', glow:'#ff1a6e'},
-  {id:'ghost',    name:'FANTÔME',       price:280, color:'rgba(180,79,255,0.7)', shape:'hex', sides:6, trail:'#b44fff', glow:'#b44fff', ghost:true},
+  {id:'star',     name:'ETOILE',        price:220, color:'#ff1a6e', shape:'star',     sides:5, trail:'#ff9f1c', glow:'#ff1a6e'},
+  {id:'ghost',    name:'FANTOME',       price:280, color:'rgba(180,79,255,0.7)', shape:'hex', sides:6, trail:'#b44fff', glow:'#b44fff', ghost:true},
   {id:'rainbow',  name:'ARC-EN-CIEL',  price:400, color:'rainbow', shape:'hex',      sides:6, trail:'rainbow', glow:'#00f5d4', rainbow:true},
   {id:'wire',     name:'WIRE',          price:160, color:'#00f5d4', shape:'wire',     sides:6, trail:'#00f5d4', glow:'#00f5d4', lineOnly:true},
-  {id:'neon',     name:'NÉON ROUGE',    price:180, color:'#ff1a6e', shape:'wire',     sides:6, trail:'#ff1a6e', glow:'#ff1a6e', lineOnly:true},
+  {id:'neon',     name:'NEON ROUGE',    price:180, color:'#ff1a6e', shape:'wire',     sides:6, trail:'#ff1a6e', glow:'#ff1a6e', lineOnly:true},
   {id:'circuit',  name:'CIRCUIT',       price:240, color:'#00f5d4', shape:'circuit',  sides:6, trail:'#00bbf9', glow:'#00f5d4', lineOnly:true},
   {id:'pulsering',name:'PULSE RING',    price:200, color:'#ffbe0b', shape:'pulseRing',sides:6, trail:'#ffbe0b', glow:'#ffbe0b', lineOnly:true},
   {id:'cross',    name:'CROIX',         price:170, color:'#b44fff', shape:'cross',    sides:4, trail:'#b44fff', glow:'#b44fff', lineOnly:true},
-  {id:'arrow',    name:'FLÈCHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9'},
+  {id:'arrow',    name:'FLECHE',        price:140, color:'#00bbf9', shape:'arrow',    sides:3, trail:'#00bbf9', glow:'#00bbf9'},
   // ── SKINS EXCLUSIFS PASS PREMIUM ──
   {id:'void',     name:'VOID',          price:0,   color:'#1a0a2e', shape:'void',     sides:6, trail:'#6600ff', glow:'#6600ff', premium:true, lineOnly:true},
   {id:'solar',    name:'SOLAIRE',       price:0,   color:'#ff9f1c', shape:'solar',    sides:8, trail:'#ffbe0b', glow:'#ff6b1a', premium:true},
@@ -3028,7 +3028,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.globalAlpha=1;
 
   } else if(sk.shape==='circuit'||sk.id==='circuit'){
-    // CIRCUIT : hex + rayons internes + nœuds
+    // CIRCUIT : hex + rayons internes + noeuds
     ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.shadowColor=col; ctx.shadowBlur=12;
     poly(6,r); ctx.stroke();
     ctx.lineWidth=.9; ctx.globalAlpha=.55;
@@ -3057,7 +3057,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.beginPath(); ctx.arc(0,0,r*.2,0,Math.PI*2); ctx.fill();
 
   } else if(sk.shape==='cross'||sk.id==='cross'){
-    // CROIX : épaisse avec coins nets
+    // CROIX : epaisse avec coins nets
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
     const t=r*.32, arm=r*.75;
     ctx.beginPath();
@@ -3068,7 +3068,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.closePath(); ctx.fill();
 
   } else if(sk.shape==='arrow'||sk.id==='arrow'){
-    // FLÈCHE : forme aérodynamique
+    // FLECHE : forme aerodynamique
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=10;
     ctx.beginPath();
     ctx.moveTo(r*.9,0); ctx.lineTo(-r*.45,r*.72); ctx.lineTo(-r*.2,0); ctx.lineTo(-r*.45,-r*.72);
@@ -3078,7 +3078,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.beginPath(); ctx.moveTo(r*.55,0); ctx.lineTo(-r*.1,0); ctx.stroke();
 
   } else if(sk.shape==='star'||sk.id==='star'){
-    // ÉTOILE : 5 branches avec inner glow
+    // ETOILE : 5 branches avec inner glow
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=16+pulse*8;
     star(5,r*.88,r*.38); ctx.fill();
     // Centre brillant
@@ -3086,7 +3086,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.beginPath(); ctx.arc(0,0,r*.22,0,Math.PI*2); ctx.fill();
 
   } else if(sk.shape==='square'||sk.id==='square'){
-    // CUBE : carré avec coins biseautés et highlight
+    // CUBE : carre avec coins biseautes et highlight
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
     const s=r*.8;
     const ch=s*.22; // chanfrein
@@ -3101,14 +3101,14 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.beginPath(); ctx.rect(-s*.55,-s*.55,s*.5,s*.5); ctx.fill();
 
   } else if(sk.shape==='tri'||sk.id==='triangle'){
-    // TRIANGLE : effilé avec brillance
+    // TRIANGLE : effile avec brillance
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=12;
     poly(3,r); ctx.fill();
     ctx.fillStyle='rgba(255,255,255,.2)';
     poly(3,r*.38); ctx.fill();
 
   } else if(sk.id==='ghost'){
-    // FANTÔME : hex semi-transparent avec pulsation
+    // FANTOME : hex semi-transparent avec pulsation
     ctx.globalAlpha=0.55+0.2*pulse;
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=20*pulse;
     poly(6,r); ctx.fill();
@@ -3133,7 +3133,7 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.beginPath(); ctx.arc(0,0,r*.2,0,Math.PI*2); ctx.fill();
 
   } else if(sk.id==='void'){
-    // VOID : hex sombre avec anneau énergie violet
+    // VOID : hex sombre avec anneau energie violet
     const vp=0.6+0.4*Math.sin(fr*.05);
     ctx.strokeStyle='#6600ff'; ctx.lineWidth=1.5; ctx.shadowColor='#6600ff'; ctx.shadowBlur=16*vp;
     poly(6,r); ctx.stroke();
@@ -3166,11 +3166,11 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     poly(8,r*.38); ctx.fill();
 
   } else if(sk.id==='glitch'){
-    // GLITCH : hex décalé avec artefacts
+    // GLITCH : hex decale avec artefacts
     const gp=Math.sin(fr*.15);
     ctx.strokeStyle='#00ff88'; ctx.lineWidth=2; ctx.shadowColor='#00ff88'; ctx.shadowBlur=12;
     poly(6,r); ctx.stroke();
-    // Lignes glitch décalées
+    // Lignes glitch decalees
     ctx.globalAlpha=0.6;
     ctx.strokeStyle='#ff1a6e'; ctx.lineWidth=1.5;
     ctx.save(); ctx.translate(r*.04*gp, 0);
@@ -3186,10 +3186,10 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.fillRect(-r*.1,-r*.1,r*.2,r*.2);
 
   } else if(sk.id==='cosmic'){
-    // COSMIQUE : étoile à 5 branches avec orbites
+    // COSMIQUE : etoile a 5 branches avec orbites
     const cp=0.8+0.2*Math.sin(fr*.04);
     ctx.fillStyle=col; ctx.shadowColor='#b44fff'; ctx.shadowBlur=18*cp;
-    // Corps étoile
+    // Corps etoile
     ctx.beginPath();
     for(let i=0;i<10;i++){
       const a=i/10*Math.PI*2-Math.PI/2;
@@ -3203,12 +3203,12 @@ function drawSkinShape(ctx, sk, cx, cy, r, angle, col, fr){
     ctx.globalAlpha=0.25*cp;
     ctx.beginPath(); ctx.arc(0,0,r*1.3,0,Math.PI*2); ctx.stroke();
     ctx.globalAlpha=1;
-    // Noyau étoile
+    // Noyau etoile
     ctx.fillStyle='rgba(255,255,255,.5)';
     ctx.beginPath(); ctx.arc(0,0,r*.18,0,Math.PI*2); ctx.fill();
 
   } else {
-    // DÉFAUT (hex, crimson, gold, violet, ice, fire, octagon…) : polygone soigné
+    // DEFAUT (hex, crimson, gold, violet, ice, fire, octagon…) : polygone soigne
     const sides = sk.sides||6;
     ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=14+pulse*6;
     poly(sides,r); ctx.fill();
@@ -3234,7 +3234,7 @@ function grantSkin(id){
   // Skins premium: seulement via claimBpReward (cette stack)
   const sk=SKIN_DEFS.find(s=>s.id===id);
   if(sk?.premium && !_bpClaimInProgress){
-    console.warn('[grantSkin] Skin premium ignoré hors BP claim:',id);
+    console.warn('[grantSkin] Skin premium ignore hors BP claim:',id);
     return;
   }
   ownedSkins.push(id);
@@ -3279,18 +3279,18 @@ function drawSkinPreview(canvas, skinId, size=54){
 let permaUpgrades = loadData('pulse_perma_v3', {});
 
 const PERMA_DEFS = [
-  {id:'p_hp',    ico:'❤️', name:'VITALITÉ+',      desc:'+8 PV max de départ par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
-  {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% dégâts de départ par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
-  {id:'p_spd',   ico:'💨', name:'AGILITÉ+',       desc:'+3% vitesse de départ par niveau.',   maxLvl:5, costs:[40,70,100,140,190], apply:(p,lvl)=>{ p.speed*=(1+.03*lvl); }},
-  {id:'p_coins', ico:'🪙', name:'FORTUNE',        desc:'+15% pièces gagnées par niveau.',     maxLvl:5, costs:[60,100,150,210,280], apply:()=>{}},
-  {id:'p_spec',  ico:'💜', name:'BOMBE+',         desc:'Bombe démarre chargée à 20% par lvl.',maxLvl:3, costs:[80,140,220],         apply:(p,lvl)=>{ p.specCharge+=20*lvl; }},
+  {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
+  {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
+  {id:'p_spd',   ico:'💨', name:'AGILITE+',       desc:'+3% vitesse de depart par niveau.',   maxLvl:5, costs:[40,70,100,140,190], apply:(p,lvl)=>{ p.speed*=(1+.03*lvl); }},
+  {id:'p_coins', ico:'🪙', name:'FORTUNE',        desc:'+15% pieces gagnees par niveau.',     maxLvl:5, costs:[60,100,150,210,280], apply:()=>{}},
+  {id:'p_spec',  ico:'💜', name:'BOMBE+',         desc:'Bombe demarre chargee a 20% par lvl.',maxLvl:3, costs:[80,140,220],         apply:(p,lvl)=>{ p.specCharge+=20*lvl; }},
   {id:'p_dash',  ico:'⚡', name:'DASH+',          desc:'-10% recharge dash par niveau.',      maxLvl:3, costs:[70,120,180],         apply:(p,lvl)=>{ p.dashCd=Math.max(400,p.dashCd*(1-.10*lvl)); }},
-  {id:'p_regen', ico:'💚', name:'RÉGÉNÉ+',        desc:'+0.5 regen/s de départ par niveau.',  maxLvl:3, costs:[90,150,230],         apply:(p,lvl)=>{ p.regen+=0.5*lvl; }},
-  {id:'p_magnet',ico:'🧲', name:'MAGNÉTISME',     desc:'Commence avec aimant actif 3s.',      maxLvl:1, costs:[100],                apply:(_,__,g)=>{ g.magnet=180; }},
+  {id:'p_regen', ico:'💚', name:'REGENE+',        desc:'+0.5 regen/s de depart par niveau.',  maxLvl:3, costs:[90,150,230],         apply:(p,lvl)=>{ p.regen+=0.5*lvl; }},
+  {id:'p_magnet',ico:'🧲', name:'MAGNETISME',     desc:'Commence avec aimant actif 3s.',      maxLvl:1, costs:[100],                apply:(_,__,g)=>{ g.magnet=180; }},
   // ── BONUS DE SOL ──
-  {id:'p_pu_heal',ico:'💊',name:'SOIN+',          desc:'Soins au sol donnent +15 PV supplémentaires par niveau.',maxLvl:3,costs:[80,130,200], apply:()=>{}},
-  {id:'p_pu_dur', ico:'⏱', name:'DURÉE BONUS+',   desc:'Vitesse/Tir rapide durent 30% plus longtemps par niveau.',maxLvl:3,costs:[70,120,180],apply:()=>{}},
-  {id:'p_pu_rate',ico:'🎲', name:'BONUS FRÉQUENCE+',desc:'+15% de chance de drop de bonus au sol par niveau.',maxLvl:3,costs:[90,160,250],apply:()=>{}},
+  {id:'p_pu_heal',ico:'💊',name:'SOIN+',          desc:'Soins au sol donnent +15 PV supplementaires par niveau.',maxLvl:3,costs:[80,130,200], apply:()=>{}},
+  {id:'p_pu_dur', ico:'⏱', name:'DUREE BONUS+',   desc:'Vitesse/Tir rapide durent 30% plus longtemps par niveau.',maxLvl:3,costs:[70,120,180],apply:()=>{}},
+  {id:'p_pu_rate',ico:'🎲', name:'BONUS FREQUENCE+',desc:'+15% de chance de drop de bonus au sol par niveau.',maxLvl:3,costs:[90,160,250],apply:()=>{}},
 ];
 
 function getPermaLvl(id){ return permaUpgrades[id]||0; }
@@ -3345,7 +3345,7 @@ function renderInventory(){
       const card=document.createElement('div');
       const eq=equippedSkin===sk.id;
       card.className='inv-card'+(eq?' equipped':isLocked?' locked':'');
-      if(eq){const b=document.createElement('div');b.className='inv-card-badge eq';b.textContent='ÉQUIPÉ';card.appendChild(b);}
+      if(eq){const b=document.createElement('div');b.className='inv-card-badge eq';b.textContent='EQUIPE';card.appendChild(b);}
       if(isLocked){const b=document.createElement('div');b.className='inv-card-badge lock';b.textContent='🔒 '+sk.price+'🪙';card.appendChild(b);}
       const cvs=document.createElement('canvas');card.appendChild(cvs);
       setTimeout(()=>{try{drawSkinPreview(cvs,sk.id,54);}catch(e){}},0);
@@ -3355,7 +3355,7 @@ function renderInventory(){
     });
   };
   addSec('✓ MES SKINS ('+mine.length+')',mine,false);
-  addSec('🔒 À DÉBLOQUER',locked,true);
+  addSec('🔒 A DEBLOQUER',locked,true);
 }
 function openShop(){
   updateCoinsHUD();
@@ -3394,8 +3394,8 @@ function renderShop(tab){
       nm.className='skin-name'; nm.textContent=sk.name;
       card.appendChild(nm);
       const pr=document.createElement('div');
-      if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='ÉQUIPÉ'; }
-      else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSÉDÉ'; }
+      if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='EQUIPE'; }
+      else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSEDE'; }
       else if(sk.price===0){ pr.className='skin-price free-lbl'; pr.textContent='GRATUIT'; }
       else { pr.className='skin-price'; pr.innerHTML=`🪙 ${sk.price}`; }
       card.appendChild(pr);
@@ -3404,7 +3404,7 @@ function renderShop(tab){
         if(owned){ equipSkin(sk.id); renderShop('skins'); return; }
         if(sk.price===0){ buySkin(sk.id); equipSkin(sk.id); renderShop('skins'); return; }
         if(coins>=sk.price){ buySkin(sk.id); equipSkin(sk.id); renderShop('skins'); }
-        else { const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pièces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
+        else { const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pieces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
       });
       grid.appendChild(card);
     }
@@ -3426,8 +3426,8 @@ function renderShop(tab){
       const nm=document.createElement('div'); nm.className='skin-name'; nm.textContent=def.name;
       card.appendChild(nm);
       const pr=document.createElement('div');
-      if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='ÉQUIPÉ'; }
-      else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSÉDÉ'; }
+      if(equipped){ pr.className='skin-price owned-lbl'; pr.textContent='EQUIPE'; }
+      else if(owned){ pr.className='skin-price owned-lbl'; pr.textContent='POSSEDE'; }
       else if(def.price===0){ pr.className='skin-price free-lbl'; pr.textContent='GRATUIT'; }
       else{ pr.className='skin-price'; pr.innerHTML=`🪙 ${def.price}`; }
       card.appendChild(pr);
@@ -3436,7 +3436,7 @@ function renderShop(tab){
         if(owned){ equipCursor(def.id); renderShop('cursors'); return; }
         if(def.price===0){ buyCursor(def.id); renderShop('cursors'); return; }
         if(coins>=def.price){ buyCursor(def.id); renderShop('cursors'); }
-        else{ const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pièces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
+        else{ const e=document.getElementById('coins-earned'); e.textContent='🪙 Pas assez de pieces !'; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
       });
       grid.appendChild(card);
     }
@@ -3446,12 +3446,12 @@ function renderShop(tab){
     // Perma upgrades — split into two sections
     const puSection=document.createElement('div');
     puSection.style.cssText='width:100%;';
-    puSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">⬆ AMÉLIORATIONS PERMANENTES</div>';
+    puSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">⬆ AMELIORATIONS PERMANENTES</div>';
     const puGrid=document.createElement('div');
     puGrid.className='pup-grid';
     const bonusSection=document.createElement('div');
     bonusSection.style.cssText='width:100%;margin-top:16px;';
-    bonusSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">🎁 AMÉLIORATIONS DES BONUS AU SOL</div>';
+    bonusSection.innerHTML='<div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px;">🎁 AMELIORATIONS DES BONUS AU SOL</div>';
     const bonusGrid=document.createElement('div');
     bonusGrid.className='pup-grid';
     for(const def of PERMA_DEFS){
@@ -3481,26 +3481,26 @@ function renderShop(tab){
 }
 
 // ─── LOTTERY ───
-const LOTTERY_COST=75; // Coûte 75, espérance négative = réaliste
+const LOTTERY_COST=75; // Coute 75, esperance negative = realiste
 const LOTTERY_PRIZES=[
   // Pertes (~55%) — tu perds ta mise
-  {w:30, ico:'💸', lbl:'PERDU — +0 pièces',       loss:true, fn:()=>{}},
-  {w:15, ico:'💸', lbl:'PERDU — +0 pièces',        loss:true, fn:()=>{}},
-  {w:10, ico:'💸', lbl:'PRESQUE… +10 pièces',      loss:true, fn:()=>{ awardCoins(10); }},
+  {w:30, ico:'💸', lbl:'PERDU — +0 pieces',       loss:true, fn:()=>{}},
+  {w:15, ico:'💸', lbl:'PERDU — +0 pieces',        loss:true, fn:()=>{}},
+  {w:10, ico:'💸', lbl:'PRESQUE… +10 pieces',      loss:true, fn:()=>{ awardCoins(10); }},
   // Petits gains (~28%) — moins que la mise
-  {w:18, ico:'🪙', lbl:'+40 pièces',               fn:()=>{ awardCoins(40); }},
-  {w:10, ico:'🪙', lbl:'+75 pièces (remboursé)',   fn:()=>{ awardCoins(75); }},
+  {w:18, ico:'🪙', lbl:'+40 pieces',               fn:()=>{ awardCoins(40); }},
+  {w:10, ico:'🪙', lbl:'+75 pieces (rembourse)',   fn:()=>{ awardCoins(75); }},
   // Bons gains (~8%)
-  {w:7,  ico:'🪙', lbl:'+200 pièces',              fn:()=>{ awardCoins(200); }},
-  {w:4,  ico:'🪙', lbl:'+500 pièces',              fn:()=>{ awardCoins(500); }},
+  {w:7,  ico:'🪙', lbl:'+200 pieces',              fn:()=>{ awardCoins(200); }},
+  {w:4,  ico:'🪙', lbl:'+500 pieces',              fn:()=>{ awardCoins(500); }},
   // Rares (~4%)
-  {w:3,  ico:'✨', lbl:'Relique aléatoire',        fn:()=>{
+  {w:3,  ico:'✨', lbl:'Relique aleatoire',        fn:()=>{
     const ul=loadData('pulse_unlocked_relics_v1',[]);
     const avail=RELIC_DEFS.filter(r=>!r.premium&&!ul.includes(r.id));
-    if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); showPopup('✨ '+r.name+' débloquée !','#ffbe0b'); }
+    if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); showPopup('✨ '+r.name+' debloquee !','#ffbe0b'); }
     else awardCoins(400);
   }},
-  {w:2,  ico:'🎨', lbl:'Skin aléatoire',           fn:()=>{
+  {w:2,  ico:'🎨', lbl:'Skin aleatoire',           fn:()=>{
     const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
     if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; grantSkin(sk.id); showPopup('🎨 '+sk.name+' !','#b44fff'); }
     else awardCoins(600);
@@ -3532,12 +3532,12 @@ function renderLotteryTab(grid){
       <div style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.2em;color:var(--c3);">LOTERIE PULSE</div>
 
       <div style="font-size:7px;color:var(--c2);letter-spacing:.15em;background:rgba(255,26,110,.08);border:1px solid rgba(255,26,110,.25);padding:5px 14px;text-align:center;">
-        ⚠ JEU D'ARGENT FICTIF — PROBABILITÉ DE GAIN &lt; 45%
+        ⚠ JEU DARGENT FICTIF — PROBABILITE DE GAIN &lt; 45%
       </div>
 
       ${totalSpent>0?`<div style="display:flex;gap:16px;font-size:8px;color:var(--txt2);letter-spacing:.08em;">
-        <span>Dépensé : <b style="color:var(--c2)">${totalSpent}🪙</b></span>
-        <span>Gagné : <b style="color:var(--c3)">${totalWon}🪙</b></span>
+        <span>Depense : <b style="color:var(--c2)">${totalSpent}🪙</b></span>
+        <span>Gagne : <b style="color:var(--c3)">${totalWon}🪙</b></span>
         <span>Rendement : <b style="color:${roi>=100?'var(--c1)':'#ff6688'}">${roi}%</b></span>
       </div>`:''}
 
@@ -3548,7 +3548,7 @@ function renderLotteryTab(grid){
         <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,26,110,.06);border-bottom:1px solid rgba(255,26,110,.2);">
           <div style="font-size:18px;">💸</div>
           <div style="flex:1;">
-            <div style="font-size:9px;color:#ff8899;letter-spacing:.1em;">PERDU — Rien gagné</div>
+            <div style="font-size:9px;color:#ff8899;letter-spacing:.1em;">PERDU — Rien gagne</div>
             <div style="font-size:7px;color:var(--txt2);margin-top:2px;">Tu perds ta mise de ${LOTTERY_COST}🪙</div>
           </div>
           <div style="text-align:right;">
@@ -3587,7 +3587,7 @@ function renderLotteryTab(grid){
 }
 
 function spinLottery(){
-  if(coins<LOTTERY_COST){ showPopup('Pas assez de pièces !','#ff1a6e'); return; }
+  if(coins<LOTTERY_COST){ showPopup('Pas assez de pieces !','#ff1a6e'); return; }
   const btn=document.getElementById('lottery-btn');
   if(btn){ btn.style.opacity='.5'; btn.style.pointerEvents='none'; }
   spendCoins(LOTTERY_COST);
@@ -3632,7 +3632,7 @@ const ENEMY_DEFS = [
   {id:'miniboss', col:'#ff6600', r:22, hp:40,  spd:1.1,  pts:130, dmg:26, lbl:'MINI-BOSS',shape:'hex',   mini:true},
   {id:'boss',     col:'#fee440', r:30, hp:80,  spd:0.88, pts:320, dmg:36, lbl:'BOSS',     shape:'boss',  boss:true},
   // ── NEW v5 ENEMIES ──
-  {id:'ghost',    col:'rgba(180,79,255,0.55)', r:10, hp:3, spd:1.9, pts:22, dmg:10, lbl:'FANTÔME', shape:'circle', ghostEnemy:true},
+  {id:'ghost',    col:'rgba(180,79,255,0.55)', r:10, hp:3, spd:1.9, pts:22, dmg:10, lbl:'FANTOME', shape:'circle', ghostEnemy:true},
   {id:'drone',    col:'#00f5d4', r:8,  hp:3,   spd:0.3,  pts:25,  dmg:16, lbl:'DRONE',    shape:'diamond', ranged:true, turret:true},
   {id:'leech',    col:'#ff88aa', r:9,  hp:5,   spd:1.6,  pts:35,  dmg:12, lbl:'SANGSUE',  shape:'circle', leech:true},
   {id:'titan',    col:'#cc44ff', r:26, hp:60,  spd:0.65, pts:200, dmg:40, lbl:'TITAN',    shape:'hex',   mini:true, armored:true},
@@ -3660,43 +3660,43 @@ const POWERUP_DEFS = [
 
 // ─── UPGRADES ───
 const UPGRADE_DEFS = [
-  {id:'dmg',      ico:'🔴', n:'Balle Rouge',    d:'+40% dégâts.',                   tier:'common',     stacks:true,  apply:s=>{ s.bulletDmg=+(s.bulletDmg*1.4).toFixed(2); }},
-  {id:'fire',     ico:'⚡', n:'Cadence+',       d:'-22% délai entre tirs.',         tier:'common',     stacks:true,  apply:s=>{ s.fireRate=Math.max(38,Math.round(s.fireRate*.78)); }},
+  {id:'dmg',      ico:'🔴', n:'Balle Rouge',    d:'+40% degats.',                   tier:'common',     stacks:true,  apply:s=>{ s.bulletDmg=+(s.bulletDmg*1.4).toFixed(2); }},
+  {id:'fire',     ico:'⚡', n:'Cadence+',       d:'-22% delai entre tirs.',         tier:'common',     stacks:true,  apply:s=>{ s.fireRate=Math.max(38,Math.round(s.fireRate*.78)); }},
   {id:'spd',      ico:'💨', n:'Overdrive',      d:'+28% vitesse.',                  tier:'common',     stacks:true,  apply:s=>{ s.speed*=1.28; }},
-  {id:'hp',       ico:'❤️', n:'Vitalité',       d:'+35 PV max+15.',                 tier:'common',     stacks:true,  apply:s=>{ s.maxHp+=15; s.hp=Math.min(s.maxHp,s.hp+35); }},
+  {id:'hp',       ico:'❤️', n:'Vitalite',       d:'+35 PV max+15.',                 tier:'common',     stacks:true,  apply:s=>{ s.maxHp+=15; s.hp=Math.min(s.maxHp,s.hp+35); }},
   {id:'bspd',     ico:'🌀', n:'Sillage',        d:'+28% vitesse des balles.',       tier:'common',     stacks:true,  apply:s=>{ s.bulletSpeed*=1.28; }},
-  {id:'pierce',   ico:'➡️', n:'Percée',         d:'Balles traversent +1.',          tier:'common',     stacks:true,  apply:s=>{ s.piercing=Math.min(s.piercing+1,5); }},
-  {id:'range',    ico:'📡', n:'Longue Portée',  d:'+38% durée des balles.',         tier:'common',     stacks:true,  apply:s=>{ s.bulletLife=Math.round(s.bulletLife*1.38); }},
-  {id:'armor',    ico:'🛡', n:'Armure',         d:'Dégâts reçus -14% (max 55%).',  tier:'common',     stacks:true,  apply:s=>{ s.armor=Math.min(.55,s.armor+.14); }},
+  {id:'pierce',   ico:'➡️', n:'Percee',         d:'Balles traversent +1.',          tier:'common',     stacks:true,  apply:s=>{ s.piercing=Math.min(s.piercing+1,5); }},
+  {id:'range',    ico:'📡', n:'Longue Portee',  d:'+38% duree des balles.',         tier:'common',     stacks:true,  apply:s=>{ s.bulletLife=Math.round(s.bulletLife*1.38); }},
+  {id:'armor',    ico:'🛡', n:'Armure',         d:'Degats recus -14% (max 55%).',  tier:'common',     stacks:true,  apply:s=>{ s.armor=Math.min(.55,s.armor+.14); }},
   {id:'dashcd',   ico:'🏃', n:'Dash Express',   d:'Recharge dash -35%.',            tier:'common',     stacks:true,  apply:s=>{ s.dashCd=Math.max(280,Math.round(s.dashCd*.65)); }},
   {id:'xpboost',  ico:'⭐', n:'Boost XP',       d:'Gain XP ×1.6.',                  tier:'common',     stacks:true,  apply:s=>{ s.xpMult*=1.6; }},
-  {id:'regen',    ico:'💚', n:'Régénération',   d:'+1 PV/3s.',                      tier:'common',     stacks:true,  apply:s=>{ s.regen+=1; }},
+  {id:'regen',    ico:'💚', n:'Regeneration',   d:'+1 PV/3s.',                      tier:'common',     stacks:true,  apply:s=>{ s.regen+=1; }},
   {id:'specrate', ico:'💜', n:'Surcharge',      d:'Bombe se charge +50%.',          tier:'rare',       stacks:true,  apply:s=>{ s.specRate*=1.5; }},
   {id:'multi',    ico:'✳️', n:'Tri-Shot',       d:'+1 balle par tir (max 2 fois).',              tier:'rare',       stacks:true,  apply:s=>{ if(s.multishot<2) s.multishot++; }},
   {id:'steal',    ico:'🩸', n:'Vampirisme',     d:'Kill soigne +3 PV (max +18).',   tier:'rare',       stacks:true,  apply:s=>{ s.lifesteal=Math.min(18,s.lifesteal+3); }},
-  {id:'aoe',      ico:'💥', n:'Explosion',      d:'Balles explosent à l\'impact.', tier:'rare',       stacks:false, apply:s=>{ s.aoe=true; }},
+  {id:'aoe',      ico:'💥', n:'Explosion',      d:'Balles explosent a l\'impact.', tier:'rare',       stacks:false, apply:s=>{ s.aoe=true; }},
   {id:'homing',   ico:'🎯', n:'Tracking',       d:'Balles suivent les ennemis.',    tier:'rare',       stacks:false, apply:s=>{ s.homing=true; }},
   {id:'ricochet', ico:'🔄', n:'Ricochet',       d:'Balles rebondissent 1 fois.',    tier:'rare',       stacks:false, apply:s=>{ s.ricochet=true; }},
   {id:'dashx2',   ico:'⚡', n:'Double Dash',    d:'+1 charge de dash.',             tier:'rare',       stacks:true,  apply:s=>{ s.dashCharges=Math.min(3,s.dashCharges+1); }},
   {id:'omnibullet',ico:'🌟',n:'Omni-Shot',      d:'Tir dans 4 directions.',         tier:'legendary',  stacks:false, apply:s=>{ s.omni=true; }},
-  {id:'reflect',  ico:'🪞', n:'Réflexion',      d:'Balles ennemies réfléchies.',    tier:'legendary',  stacks:false, apply:s=>{ s.reflect=true; }},
-  {id:'chain',    ico:'⚡', n:'Foudre Chain',   d:'Kill → éclair sur l\'ennemi le plus proche.', tier:'legendary', stacks:false, apply:s=>{ s.chain=true; }},
-  {id:'overcharge',ico:'🔋',n:'Suralimentation',d:'Tirs chargés : ×2.5 dégâts ttes 8 balles.', tier:'rare',     stacks:true,  apply:s=>{ s.overcharge=(s.overcharge||0)+1; }},
+  {id:'reflect',  ico:'🪞', n:'Reflexion',      d:'Balles ennemies reflechies.',    tier:'legendary',  stacks:false, apply:s=>{ s.reflect=true; }},
+  {id:'chain',    ico:'⚡', n:'Foudre Chain',   d:'Kill → eclair sur l\'ennemi le plus proche.', tier:'legendary', stacks:false, apply:s=>{ s.chain=true; }},
+  {id:'overcharge',ico:'🔋',n:'Suralimentation',d:'Tirs charges : ×2.5 degats ttes 8 balles.', tier:'rare',     stacks:true,  apply:s=>{ s.overcharge=(s.overcharge||0)+1; }},
   // ── NEW v5 UPGRADES ──
   {id:'laser',    ico:'🔆', n:'Laser',          d:'1 tir sur 5 est un laser qui traverse tout.', tier:'rare', stacks:false, apply:s=>{ s.laser=true; }},
-  {id:'gravity',  ico:'🌀', n:'Puits de Gravité',d:'Les balles attirent les ennemis proches.', tier:'rare', stacks:false, apply:s=>{ s.gravity=true; }},
-  {id:'afterburn',ico:'🔥', n:'Brûlure',        d:'Balles infligent 3 dégâts/s pendant 3s.', tier:'rare', stacks:true,  apply:s=>{ s.afterburn=(s.afterburn||0)+1; }},
-  {id:'shockwave',ico:'💫', n:'Onde de Choc',   d:'Le dash inflige des dégâts aux ennemis proches.', tier:'legendary', stacks:false, apply:s=>{ s.shockwave=true; }},
-  {id:'phantom',  ico:'👻', n:'Phase',          d:'Le dash traverse les obstacles, portée ×2.', tier:'legendary', stacks:false, apply:s=>{ s.phantom=true; }},
+  {id:'gravity',  ico:'🌀', n:'Puits de Gravite',d:'Les balles attirent les ennemis proches.', tier:'rare', stacks:false, apply:s=>{ s.gravity=true; }},
+  {id:'afterburn',ico:'🔥', n:'Brulure',        d:'Balles infligent 3 degats/s pendant 3s.', tier:'rare', stacks:true,  apply:s=>{ s.afterburn=(s.afterburn||0)+1; }},
+  {id:'shockwave',ico:'💫', n:'Onde de Choc',   d:'Le dash inflige des degats aux ennemis proches.', tier:'legendary', stacks:false, apply:s=>{ s.shockwave=true; }},
+  {id:'phantom',  ico:'👻', n:'Phase',          d:'Le dash traverse les obstacles, portee ×2.', tier:'legendary', stacks:false, apply:s=>{ s.phantom=true; }},
 ];
 
 // ─── CURSE DEFINITIONS ───
 const CURSE_DEFS = [
-  {id:'c_speed',    ico:'🐌', n:'LENTEUR',         d:'Ta vitesse est réduite de 35%.',            reward:'🔴 Dégâts ×1.5',    apply:(p)=>{ p.speed*=0.65; }, rewardApply:(p)=>{ p.bulletDmg*=1.5; }, weight:3},
-  {id:'c_armor',    ico:'💔', n:'FRAGILE',          d:'Tu reçois 30% de dégâts en plus.',          reward:'❤️ PV max +50',      apply:(p)=>{ p.cursedArmor=true; }, rewardApply:(p)=>{ p.maxHp+=50; p.hp+=50; }, weight:3},
-  {id:'c_fire',     ico:'🔥', n:'SURCHAUFFE',       d:'Ton arme surchauffe (arrêt 1s/5s).',        reward:'⚡ Cadence ×1.4',   apply:(p)=>{ p.overheatCurse=true; }, rewardApply:(p)=>{ p.fireRate=Math.max(28,Math.round(p.fireRate*.72)); }, weight:2},
-  {id:'c_dash',     ico:'⚡', n:'NO DASH',          d:'Dash désactivé.',                           reward:'💜 Bombe gratuite', apply:(p)=>{ p.noDash=true; }, rewardApply:(p)=>{ p.specCharge=p.specMax; }, weight:2},
-  {id:'c_vision',   ico:'🌑', n:'BROUILLARD',       d:'Ennemis invisibles à >200px.',              reward:'🌀 Vitesse balles ×1.5', apply:(p)=>{ p.fogCurse=true; }, rewardApply:(p)=>{ p.bulletSpeed*=1.5; }, weight:2},
+  {id:'c_speed',    ico:'🐌', n:'LENTEUR',         d:'Ta vitesse est reduite de 35%.',            reward:'🔴 Degats ×1.5',    apply:(p)=>{ p.speed*=0.65; }, rewardApply:(p)=>{ p.bulletDmg*=1.5; }, weight:3},
+  {id:'c_armor',    ico:'💔', n:'FRAGILE',          d:'Tu recois 30% de degats en plus.',          reward:'❤️ PV max +50',      apply:(p)=>{ p.cursedArmor=true; }, rewardApply:(p)=>{ p.maxHp+=50; p.hp+=50; }, weight:3},
+  {id:'c_fire',     ico:'🔥', n:'SURCHAUFFE',       d:'Ton arme surchauffe (arret 1s/5s).',        reward:'⚡ Cadence ×1.4',   apply:(p)=>{ p.overheatCurse=true; }, rewardApply:(p)=>{ p.fireRate=Math.max(28,Math.round(p.fireRate*.72)); }, weight:2},
+  {id:'c_dash',     ico:'⚡', n:'NO DASH',          d:'Dash desactive.',                           reward:'💜 Bombe gratuite', apply:(p)=>{ p.noDash=true; }, rewardApply:(p)=>{ p.specCharge=p.specMax; }, weight:2},
+  {id:'c_vision',   ico:'🌑', n:'BROUILLARD',       d:'Ennemis invisibles a >200px.',              reward:'🌀 Vitesse balles ×1.5', apply:(p)=>{ p.fogCurse=true; }, rewardApply:(p)=>{ p.bulletSpeed*=1.5; }, weight:2},
   {id:'c_spawn',    ico:'💀', n:'HORDE',            d:'+50% d\'ennemis cette vague.',              reward:'⭐ XP ×2 cette vague', apply:(p,g)=>{ g.curseSpawn=true; }, rewardApply:(p)=>{ p.xpMult*=2; }, weight:3},
 ];
 
@@ -3707,7 +3707,7 @@ const ACH_DEFS = [
   {id:'kills_500',    ico:'🔥',  n:'Exterminateur',      d:'Tuer 500 ennemis en une partie.',    goal:500,   stat:'sessionKills',    reward:150},
   {id:'wave_10',      ico:'🌊',  n:'Surfeur',             d:'Atteindre la vague 10.',             goal:10,    stat:'maxWave',         reward:75},
   {id:'wave_20',      ico:'🏄',  n:'Pro de la vague',    d:'Atteindre la vague 20.',             goal:20,    stat:'maxWave',         reward:150},
-  {id:'wave_30',      ico:'👑',  n:'Maître des vagues',  d:'Atteindre la vague 30.',             goal:30,    stat:'maxWave',         reward:300},
+  {id:'wave_30',      ico:'👑',  n:'Maitre des vagues',  d:'Atteindre la vague 30.',             goal:30,    stat:'maxWave',         reward:300},
   {id:'score_10k',    ico:'💎',  n:'10 000 pts',          d:'Atteindre 10 000 points.',           goal:10000, stat:'maxScore',        reward:50},
   {id:'score_50k',    ico:'💠',  n:'50 000 pts',          d:'Atteindre 50 000 points.',           goal:50000, stat:'maxScore',        reward:100},
   {id:'score_100k',   ico:'💜',  n:'100 000 pts',         d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore',        reward:250},
@@ -3718,33 +3718,33 @@ const ACH_DEFS = [
   {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',       d:'Vaincre un boss.',                   goal:1,     stat:'bossKills',       reward:75},
   {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',         d:'Vaincre 5 boss.',                    goal:5,     stat:'bossKills',       reward:200},
   {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',         d:'Finir une vague sans prendre de dmg.',goal:1,   stat:'noHitWaves',      reward:50},
-  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades différents.',    goal:10,    stat:'uniqueUpgrades',  reward:80},
+  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades differents.',    goal:10,    stat:'uniqueUpgrades',  reward:80},
   {id:'games_10',     ico:'🎮',  n:'Accro',               d:'Jouer 10 parties.',                  goal:10,    stat:'gamesPlayed',     reward:100},
-  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malédiction.',          goal:1,     stat:'cursesAccepted',  reward:30},
-  {id:'curse_5',      ico:'🔥',  n:'Masochiste',          d:'Accepter 5 malédictions.',           goal:5,     stat:'cursesAccepted',  reward:120},
-  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantômes',d:'Tuer 10 fantômes.',                  goal:10,    stat:'ghostKills',      reward:80},
-  {id:'no_hit_5',     ico:'💎',  n:'Perfection',          d:'5 vagues sans dégâts.',              goal:5,     stat:'noHitWaves',      reward:200},
+  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malediction.',          goal:1,     stat:'cursesAccepted',  reward:30},
+  {id:'curse_5',      ico:'🔥',  n:'Masochiste',          d:'Accepter 5 maledictions.',           goal:5,     stat:'cursesAccepted',  reward:120},
+  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantomes',d:'Tuer 10 fantomes.',                  goal:10,    stat:'ghostKills',      reward:80},
+  {id:'no_hit_5',     ico:'💎',  n:'Perfection',          d:'5 vagues sans degats.',              goal:5,     stat:'noHitWaves',      reward:200},
 ];
 
 // ─── TIP MESSAGES ───
 const TIPS = [
   'Le dash te rend invincible pendant 7 frames !',
-  'Les bombers explosent — éloigne-toi quand ils sont faibles.',
+  'Les bombers explosent — eloigne-toi quand ils sont faibles.',
   'Les guardians ont un bouclier — tire dessus d\'abord.',
   'Le tir automatique vise toujours ta souris / le stick droit.',
   'Les power-ups brillants au sol — ramasse-les !',
   'L\'aimant aspire tous les power-ups visibles.',
   'Le gel ralentit TOUS les ennemis pendant 3 secondes.',
-  'Combo × score ! Enchaîne les kills rapidement.',
-  'La bombe spéciale inflige 60 dégâts à tous les ennemis.',
-  'Les splitters se divisent en deux quand tués !',
-  'Les fantômes ignorent les obstacles — garde-les à l\'œil !',
-  'Les drones-tourelles tirent de loin — priorité haute !',
+  'Combo × score ! Enchaine les kills rapidement.',
+  'La bombe speciale inflige 60 degats a tous les ennemis.',
+  'Les splitters se divisent en deux quand tues !',
+  'Les fantomes ignorent les obstacles — garde-les a l\'oeil !',
+  'Les drones-tourelles tirent de loin — priorite haute !',
   'Les sangsues volent tes PV si elles te touchent !',
-  'Accepte une malédiction pour une récompense puissante.',
-  'La mini-map (coin bas-droit) montre les ennemis hors-écran.',
-  'Le puits de gravité des balles désoriente les hordes.',
-  'La surchauffe arme gère les rafales — ménage ta cadence.',
+  'Accepte une malediction pour une recompense puissante.',
+  'La mini-map (coin bas-droit) montre les ennemis hors ecran.',
+  'Le puits de gravite des balles desoriente les hordes.',
+  'La surchauffe arme gere les rafales — menage ta cadence.',
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -3755,21 +3755,21 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
-let achSeen    = loadData('pulse_ach_seen_v1', {}); // succès vus dans l'écran succès
+let achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
 const UPDATE_NOTES = [
-  '🎰 Emplacements reliques achetables — commence avec 1, achète jusqu'à 3',
-  '🔔 Système de notifications — succès, cadeaux, amis, mises à jour',
-  '🎮 Latence manette Bluetooth réduite (~2ms polling)',
-  '🧱 Correction clignotement d'écran avec les murs',
+  '🎰 Emplacements reliques achetables : 1 slot de base, max 3 achetables',
+  '🔔 Systeme de notifications — succes, cadeaux, amis, mises a jour',
+  '🎮 Latence manette Bluetooth reduite (~2ms polling)',
+  '🧱 Correction clignotement ecran avec les murs',
   '🌌 4 nouveaux skins exclusifs pass premium (VOID, SOLAIRE, GLITCH, COSMIQUE)',
   '⭐ Pass saisonnier dual-track FREE/PREMIUM',
-  '🔊 Bruitages améliorés (tir, dash, bombe, menus)',
-  '👥 Système amis + profils publics',
+  '🔊 Bruitages ameliores (tir, dash, bombe, menus)',
+  '👥 Systeme amis + profils publics',
 ];
 const LAST_UPDATE_VERSION = 'v28';
 
 // ═══════════════════════════════════════════════════════
-//  SYSTÈME DE NOTIFICATIONS
+//  SYSTEME DE NOTIFICATIONS
 // ═══════════════════════════════════════════════════════
 function loadNotifs(){ return loadData('pulse_notifs_v1',[]); }
 function saveNotifs(n){ saveData('pulse_notifs_v1',n); }
@@ -3837,7 +3837,7 @@ function delNotif(id){
 
 function _notifAgo(ts){
   const s=Math.floor((Date.now()-ts)/1000);
-  if(s<60) return 'A l'instant';
+  if(s<60) return 'Maintenant';
   if(s<3600) return Math.floor(s/60)+'min';
   if(s<86400) return Math.floor(s/3600)+'h';
   return Math.floor(s/86400)+'j';
@@ -3894,7 +3894,7 @@ function playChord(freqs,type,dur,vol=0.12){
   freqs.forEach((f,i)=>setTimeout(()=>playTone(f,type,dur,vol),i*30));
 }
 
-// ── SFX tir — laser court avec bruit d'impact ──────────
+// ── SFX tir — laser court avec bruit dimpact ──────────
 function sfxShoot(){
   const ac=getAC(); if(!ac||!settings.sfx) return;
   try{
@@ -4003,13 +4003,13 @@ function sfxBossDeath(){
   setTimeout(()=>playNoise(.2,.1),150);
 }
 
-// ── SFX succès ─────────────────────────────────────────
+// ── SFX succes ─────────────────────────────────────────
 function sfxAch(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.2,.14),i*90)); }
 
 // ── SFX level up ───────────────────────────────────────
 function sfxLevelUp(){ [392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.16,.12),i*55)); }
 
-// ── SFX malédiction ────────────────────────────────────
+// ── SFX malediction ────────────────────────────────────
 function sfxCurse(){ [300,240,180,140].forEach((f,i)=>setTimeout(()=>playTone(f,'sawtooth',.2,.14,-200),i*100)); }
 
 // ── SFX surchauffe ─────────────────────────────────────
@@ -4255,7 +4255,7 @@ function buildWavePool(w){
   if(w>=7)  pool.push(...Array(Math.floor(w*0.25*mult)).fill(D[16])); // shielder
   if(w>=9)  pool.push(...Array(Math.floor(w*0.2*mult)).fill(D[17]));  // lurker
   if(w>=11) pool.push(...Array(Math.floor(w*0.18*mult)).fill(D[18])); // mimic
-  // Mini-boss plus fréquents aux hautes vagues
+  // Mini-boss plus frequents aux hautes vagues
   if(w%2===0 && w>=4 && w%5!==0){
     const miniBossCount = 1 + Math.floor(w/15);
     pool.push(...Array(miniBossCount).fill(D[10]));
@@ -4298,13 +4298,13 @@ function startWave(){
   // Weather effects every 10 waves (wave 10, 20, 30...)
   if(w>0 && w%10===0 && currentMode!=='arena'){
     const WEATHERS=[
-      {id:'meteor',   ico:'☄️',  name:'PLUIE DE MÉTÉORES',  desc:'Explosions aléatoires toutes les 3s pendant la vague.',
+      {id:'meteor',   ico:'☄️',  name:'PLUIE DE METEORES',  desc:'Explosions aleatoires toutes les 3s pendant la vague.',
         apply:(g)=>{ g._weather='meteor'; g._weatherTimer=0; }},
-      {id:'haste',    ico:'⚡',  name:'HÂTE',               desc:'Tous les ennemis sont 40% plus rapides.',
+      {id:'haste',    ico:'⚡',  name:'HATE',               desc:'Tous les ennemis sont 40% plus rapides.',
         apply:(g)=>{ g._weather='haste'; g.enemies.forEach(e=>e.spd*=1.4); }},
-      {id:'regen',    ico:'💚',  name:'RÉGÉNÉRATION',       desc:'Tu régénères 5 PV/s pendant cette vague.',
+      {id:'regen',    ico:'💚',  name:'REGENERATION',       desc:'Tu regeneres 5 PV/s pendant cette vague.',
         apply:(g)=>{ g._weather='regen'; }},
-      {id:'darkness', ico:'🌑',  name:'OBSCURITÉ',          desc:'Les ennemis sont invisibles à moins de 150px.',
+      {id:'darkness', ico:'🌑',  name:'OBSCURITE',          desc:'Les ennemis sont invisibles a moins de 150px.',
         apply:(g)=>{ g._weather='darkness'; g.player.fogCurse=true; }},
       {id:'bouncy',   ico:'🔄',  name:'BALLES REBONDISSANTES', desc:'Toutes tes balles ricochent une fois.',
         apply:(g)=>{ g._weather='bouncy'; g.player.ricochet=true; }},
@@ -4317,7 +4317,7 @@ function startWave(){
     // Apply new weather
     wx.apply(G);
     G._weatherActive=wx;
-    showPopup(wx.ico+' MÉTÉO : '+wx.name,'#00bbf9');
+    showPopup(wx.ico+' METEO : '+wx.name,'#00bbf9');
     // Banner tip shows weather
     G._weatherTip=wx.ico+' '+wx.name+' : '+wx.desc;
   } else if(w===1){
@@ -4326,7 +4326,7 @@ function startWave(){
   if(w%3===0 && !isBoss && currentMode!=='arena'){
     const OBJECTIVES=[
       {lbl:'⚡ SANS BOMBE',   desc:'Ne pas utiliser la bombe',  check:()=>!G._usedSpecThisWave,  reward:60,  setup:()=>{ G._usedSpecThisWave=false; }},
-      {lbl:'🛡 SANS DÉGÂTS',  desc:'Finir sans prendre de dmg', check:()=>G.waveHitsReceived===0, reward:80,  setup:()=>{}},
+      {lbl:'🛡 SANS DEGATS',  desc:'Finir sans prendre de dmg', check:()=>G.waveHitsReceived===0, reward:80,  setup:()=>{}},
       {lbl:'💨 SPEED RUN',    desc:'Finir en moins de 30s',     check:()=>G._waveElapsed<30*60,   reward:70,  setup:()=>{ G._waveElapsed=0; }},
       {lbl:'🔥 COMBO ×15',   desc:'Maintenir un combo de ×15',  check:()=>G._waveMaxCombo>=15,   reward:55,  setup:()=>{ G._waveMaxCombo=0; }},
     ];
@@ -4395,9 +4395,9 @@ function genObstacles(){
       ow=28+Math.random()*55;
       oh=18+Math.random()*46;
       tries++;
-      // Évite : centre de l'écran (spawn joueur) ET position actuelle du joueur ET trop près des bords
+      // Evite : centre ecran (spawn joueur) ET position joueur ET trop pres des bords
       const tooCloseCenter = Math.hypot(x-W/2,y-H/2)<180;
-      const tooClosePlayer = Math.hypot(x-px,y-py)<120; // zone de sécurité autour du joueur
+      const tooClosePlayer = Math.hypot(x-px,y-py)<120; // zone de securite autour du joueur
     } while(tries<40 && (Math.hypot(x-W/2,y-H/2)<180 || Math.hypot(x-px,y-py)<120));
     obs.push({x,y,w:ow,h:oh});
   }
@@ -4429,10 +4429,10 @@ function spawnEnemy(def){
 
   // Elite system: starts at wave 5, grows to max 1/8 by wave 20
   const ELITE_TYPES = [
-    {id:'enrage',  lbl:'⚡ENRAGÉ',   col:'#ff5500', hpMult:1.4, spdMult:1.5, dmgMult:1.2, pts:2.5},
-    {id:'armored', lbl:'🛡BLINDÉ',   col:'#8899ff', hpMult:2.5, spdMult:0.8, dmgMult:1.3, pts:3.0},
+    {id:'enrage',  lbl:'⚡ENRAGE',   col:'#ff5500', hpMult:1.4, spdMult:1.5, dmgMult:1.2, pts:2.5},
+    {id:'armored', lbl:'🛡BLINDE',   col:'#8899ff', hpMult:2.5, spdMult:0.8, dmgMult:1.3, pts:3.0},
     {id:'swift',   lbl:'💨RAPIDE',   col:'#ffee00', hpMult:0.8, spdMult:2.2, dmgMult:0.9, pts:2.0},
-    {id:'giant',   lbl:'💀GÉANT',    col:'#ff44aa', hpMult:3.5, spdMult:0.7, dmgMult:2.0, pts:4.0},
+    {id:'giant',   lbl:'💀GEANT',    col:'#ff44aa', hpMult:3.5, spdMult:0.7, dmgMult:2.0, pts:4.0},
   ];
   const eliteChance = w>=5 ? Math.min(0.125, (w-4)/120) : 0;
   const isElite = !def.boss && !def.mini && Math.random()<eliteChance;
@@ -4573,7 +4573,7 @@ function tryShoot(now){
 function useSpecial(){
   if(!G||!G.running||G.paused) return;
   const p=G.player;
-  if(p.specCharge<p.specMax){ showPopup('BOMBE NON CHARGÉE','#b44fff'); return; }
+  if(p.specCharge<p.specMax){ showPopup('BOMBE NON CHARGEE','#b44fff'); return; }
   p.specCharge=0; updateSpecBar();
   G._usedSpecThisWave=true;
   // ✅ Gravity Well relic: pull enemies to center before exploding
@@ -4584,14 +4584,14 @@ function useSpecial(){
       const dx=p.x-e.x, dy=p.y-e.y, d=Math.sqrt(dx*dx+dy*dy);
       if(d>10){ const pull=Math.min(d, 180); e.x+=dx/d*pull; e.y+=dy/d*pull; pulled++; }
     }
-    showPopup('🌀 GRAVITÉ !','#b44fff');
+    showPopup('🌀 GRAVITE !','#b44fff');
     spawnFx(p.x,p.y,'#b44fff',12);
-    setTimeout(()=>{ if(G&&G.running){ doNuke(G,30); flashEl('spec-fx'); sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200); showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff'); }},350);
+    setTimeout(()=>{ if(G&&G.running){ doNuke(G,30); flashEl('spec-fx'); sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200); showPopup('💥 BOMBE NUCLEAIRE !','#b44fff'); }},350);
   } else {
     doNuke(G,30);
     flashEl('spec-fx');
     sfxSpecial(); vib([80,40,80]); vibGp(1.0,0.6,200);
-    showPopup('💥 BOMBE NUCLÉAIRE !','#b44fff');
+    showPopup('💥 BOMBE NUCLEAIRE !','#b44fff');
   }
 }
 
@@ -4599,7 +4599,7 @@ function doNuke(g,dmg){
   for(const e of g.enemies){
     if(e.dead) continue;
     if(e.shielded&&e.shieldHp>0){ e.shieldHp=0; e.shielded=false; continue; }
-    // Boss et mini-boss résistent : dégâts réduits de 60%
+    // Boss et mini-boss resistent : degats reduits de 60%
     const actualDmg = (e.boss||e.mini) ? Math.round(dmg*0.4) : dmg;
     e.hp-=actualDmg; spawnFx(e.x,e.y,e.col,8);
     if(e.hp<=0){ e.dead=true; onKill(e); }
@@ -4648,7 +4648,7 @@ function doDash(){
     G.particles.push({x:p.x,y:p.y,vx:0,vy:0,r:8,col:'#00f5d4',life:12,maxLife:12,alpha:0.6,ring:true});
   }
   sfxDash(); vib(18); vibGp(0.2,0.4,60);
-  // Spectre: invisibilité après dash
+  // Spectre: invisibilite apres dash
   if(G.player._spectreInvis){ G.player._spectreActive=G.player._spectreInvis; G.player._spectreOn=true; if(G.player._spectreSpeed) G.player._spectreSpeedBoost=G.player._spectreSpeed; }
 }
 
@@ -4673,7 +4673,7 @@ function update(now){
       G._lowFpsCount=(G._lowFpsCount||0)+1;
       if(G._lowFpsCount===8&&!window._ecoSuggested){ // Only once per session, after 4s
         window._ecoSuggested=true;
-        showPopup('⚠ MODE ÉCO RECOMMANDÉ (Paramètres)','#ff9f1c');
+        showPopup('⚠ MODE ECO RECOMMANDE (Parametres)','#ff9f1c');
         G._lowFpsCount=0;
       }
     } else if(fps>=55) G._lowFpsCount=0;
@@ -4736,7 +4736,7 @@ function update(now){
     if(p.regenTimer>=120){ p.regenTimer=0; p.hp=Math.min(p.maxHp,p.hp+p.regen); updateHPBar(); }
   }
   // ── SKIN PASSIFS continus ──────────────────────────────────────
-  // Crimson frénésie
+  // Crimson frenesie
   if(p._furyActive){
     const lowHP = p.hp/p.maxHp < 0.30;
     p._furyOn = lowHP;
@@ -4755,13 +4755,13 @@ function update(now){
     G._circuitBoostTimer--;
     if(G._circuitBoostTimer===0){ p._circuitBoosted=false; }
   }
-  // Solar scaling: dégâts augmentent par vague
+  // Solar scaling: degats augmentent par vague
   if(p._solarScaling && G.wave){
     const mult=Math.min(p._solarMax||2, 1+G.wave*p._solarScaling);
     p._solarCurrentMult=mult;
     if(p._solarRegen){ p.regenTimer3=(p.regenTimer3||0)+1; if(p.regenTimer3>=120){ p.regenTimer3=0; p.hp=Math.min(p.maxHp,p.hp+p._solarRegen); updateHPBar(); } }
   }
-  // Spectre: invisibilité après dash
+  // Spectre: invisibilite apres dash
   if(p._spectreInvis && p._spectreActive>0){
     p._spectreActive--;
     if(p._spectreActive===0){ p._spectreOn=false; }
@@ -4826,7 +4826,7 @@ function update(now){
   }
   _dom['frz-fx'].style.opacity=G.freeze>0?(.08+Math.min(G.freeze/200,.1)).toFixed(3):'0';
 
-  // ── PRESSION DE VAGUE : à partir de la vague 15, les ennemis proches brûlent le joueur ──
+  // ── PRESSION DE VAGUE : a partir de la vague 15, les ennemis proches brulent le joueur ──
   if(G.wave>=15 && frame%90===0 && !p.dashing && p.invincible<=0){
     const pressureDmg = Math.max(1, Math.floor((G.wave-14)*0.7));
     for(const e of G.enemies){
@@ -4888,7 +4888,7 @@ function update(now){
     }
   }
 
-  // Auto-fire every frame — clamp now so tab-switch doesn't stall shooting
+  // Auto-fire every frame — clamp now so tab-switch doesnt stall shooting
   const shootNow = (G._lastFrame && now - G._lastFrame > 500) ? (p.lastShot + p.fireRate + 1) : now;
   G._lastFrame = now;
   tryShoot(shootNow);
@@ -4949,7 +4949,7 @@ function update(now){
     // Movement — avec collision sur les obstacles
     let mvx, mvy;
     if(e.turret){
-      mvx=0; mvy=0; // drones don't move
+      mvx=0; mvy=0; // drones dont move
     } else if(e.ghostEnemy){
       // Ghost: ignores obstacles, phases through
       const _gs=getGameSpeed(); mvx=nx*e.spd*slowFactor*_gs; mvy=ny*e.spd*slowFactor*_gs;
@@ -5043,7 +5043,7 @@ function update(now){
       for(const e of G.enemies){ if(!e.dead){ const d=Math.hypot(b.x-e.x,b.y-e.y); if(d<cd){cd=d;cl=e;} } }
       if(cl&&cd<380){
         const dx=cl.x-b.x,dy=cl.y-b.y,l=Math.sqrt(dx*dx+dy*dy);
-        b.vx+=(dx/l)*.38; b.vy+=(dy/l)*.38;  // réduit de .9 → .38 (moins cheaté)
+        b.vx+=(dx/l)*.38; b.vy+=(dy/l)*.38;  // reduit de .9 → .38 (moins cheate)
         const bl=Math.sqrt(b.vx*b.vx+b.vy*b.vy),ts=p.bulletSpeed;
         b.vx=b.vx/bl*ts; b.vy=b.vy/bl*ts;
       }
@@ -5298,7 +5298,7 @@ function onKill(e){
     P2.specCharge=Math.min(P2.specMax,P2.specCharge+(e.boss?28:e.mini?15:7)*P2.specRate);
   }
   if(e.boss||e.mini){ gStats.bossKills=(gStats.bossKills||0)+1; checkAch('boss_kill',gStats.bossKills); checkAch('boss_5',gStats.bossKills); saveGStats(); }
-  if(e.elite){ awardCoins(15); addKF(`⭐ ÉLITE +15🪙`,'g'); showPopup(`⭐ ${e.lbl} vaincu !`,e.col); }
+  if(e.elite){ awardCoins(15); addKF(`⭐ ELITE +15🪙`,'g'); showPopup(`⭐ ${e.lbl} vaincu !`,e.col); }
   const cls=e.boss?'g':e.mini?'p':pts>50?'g':'';
   addKF(`+${pts} ${e.lbl}`, cls);
   checkAch('first_kill',1); checkAch('kills_100',G.sessionKills); checkAch('kills_500',G.sessionKills);
@@ -5307,7 +5307,7 @@ function onKill(e){
   if(p.vampireRelic && currentMode!=='hardcore'){ p.hp=Math.min(p.maxHp,p.hp+2); updateHPBar(); }
 
   // ── SKIN PASSIFS ───────────────────────────────────────────────
-  // Hexagone: recharge bombe à chaque N kills
+  // Hexagone: recharge bombe a chaque N kills
   if(p._hexChargeEvery){
     G._hexKillCount=(G._hexKillCount||0)+1;
     if(G._hexKillCount>=p._hexChargeEvery){
@@ -5317,11 +5317,11 @@ function onKill(e){
       updateSpecBar();
     }
   }
-  // Or: bonus pièces
+  // Or: bonus pieces
   if(p._greedMult){ awardCoins(Math.round((e.boss?15:e.mini?8:2)*(p._greedMult-1))); }
   if(p._greedCombo && G.combo>=10){ awardCoins(1); }
-  // Étoile: explosion au level-up (géré dans gainXP)
-  // Triangle: piercing balle (géré dans la création de balle)
+  // Etoile: explosion au level-up (gere dans gainXP)
+  // Triangle: piercing balle (gere dans la creation de balle)
   // Circuit: overclocking
   if(p._circuitKillThresh){
     G._circuitKills=(G._circuitKills||0)+1;
@@ -5332,7 +5332,7 @@ function onKill(e){
       showPopup('⚡ OVERCLOCKING !','#00bbf9');
     }
   }
-  // Rainbow: spawn balles aléatoires
+  // Rainbow: spawn balles aleatoires
   if(p._rainbowBullets){
     for(let i=0;i<p._rainbowBullets;i++){
       const angle=Math.random()*Math.PI*2;
@@ -5346,7 +5346,7 @@ function onKill(e){
     G._voidClones=G._voidClones||[];
     G._voidClones.push({x:p.x+(Math.random()-.5)*60,y:p.y+(Math.random()-.5)*60,timer:p._voidCloneDur||180,r:p.r*.8});
   }
-  // Glitch: crit / instakill déjà géré dans le tir
+  // Glitch: crit / instakill deja gere dans le tir
   
   // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
@@ -5356,9 +5356,9 @@ function onKill(e){
     nukeKills.forEach(en=>en._fromNuke=true);
     doNuke(G,18+(p.berserkerRelic?10:0)); 
     setTimeout(()=>{ if(G) G.enemies.forEach(en=>en._fromNuke=false); },100);
-    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ RÉACTION !','#ffbe0b'); 
+    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ REACTION !','#ffbe0b'); 
   }
-  // ✅ NEW: Foudre Chain (p.chain) — arc électrique vers l'ennemi le plus proche
+  // ✅ NEW: Foudre Chain (p.chain) — arc electrique vers lennemi le plus proche
   if(p.chain && !e._fromNuke){
     const others=G.enemies.filter(en=>!en.dead&&en!==e);
     if(others.length>0){
@@ -5380,13 +5380,13 @@ function onKill(e){
       }
     }
   }
-  // ✅ NEW: Time Thief — chaque kill pendant Time Slow prolonge l'effet de 0.5s (30 frames)
+  // ✅ NEW: Time Thief — chaque kill pendant Time Slow prolonge leffet de 0.5s (30 frames)
   if(p.timeThiefRelic && G.timeSlow>0 && !e._fromNuke){
     G.timeSlow=Math.min(G.timeSlow+30, 420); // max 7s
     addKF('⏳ +0.5s','p');
   }
   // Relic: coin magnet bonus
-  if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNÉTISME','g'); }
+  if(p.coinMagnet && G.combo>=10 && G.combo%10===0){ awardCoins(5); addKF('+5🪙 MAGNETISME','g'); }
   // Relic: scavenger
   if(p.scavengerRelic && Math.random()<0.20){ awardCoins(2); }
   // Relic: soul harvest (HP part disabled in hardcore)
@@ -5496,7 +5496,7 @@ function draw(){
     }
 
     // Bordure principale — couleur statique, pas de pulsation rapide
-    const pulse=0.75; // Valeur fixe, pas d'animation par frame
+    const pulse=0.75; // Valeur fixe, pas danimation par frame
     ctx.shadowColor='#00f5d4'; ctx.shadowBlur=settings.lowQuality?0:6;
     ctx.strokeStyle=`rgba(0,245,212,${pulse*.7})`; ctx.lineWidth=2;
     ctx.strokeRect(x1,y1,o.w,o.h);
@@ -5915,7 +5915,7 @@ function renderUpgradeChoices(){
     const cnt=G.player.upgradeCounts[u.id]||0;
     const c=document.createElement('div');
     c.className='uc'+(u.tier==='rare'?' rare':u.tier==='legendary'?' leg':'');
-    c.innerHTML=`<div class="uc-rar">${u.tier==='legendary'?'★ LÉGENDAIRE':u.tier==='rare'?'✦ RARE':'COMMUN'}</div><div class="uc-ico">${u.ico}</div><div class="uc-name">${u.n}</div><div class="uc-desc">${u.d}</div>${cnt>0?`<div class="uc-stk">×${cnt+1}</div>`:''}`;
+    c.innerHTML=`<div class="uc-rar">${u.tier==='legendary'?'★ LEGENDAIRE':u.tier==='rare'?'✦ RARE':'COMMUN'}</div><div class="uc-ico">${u.ico}</div><div class="uc-name">${u.n}</div><div class="uc-desc">${u.d}</div>${cnt>0?`<div class="uc-stk">×${cnt+1}</div>`:''}`;
     const pick=()=>{
       u.apply(G.player);
       G.player.upgradeCounts[u.id]=(G.player.upgradeCounts[u.id]||0)+1;
@@ -5964,7 +5964,7 @@ function updatePassives(){
   if(p.homing)     pips.push({t:'🎯 TRACK',cls:'p'});
   if(p.ricochet)   pips.push({t:'🔄 RICO',cls:''});
   if(p.omni)       pips.push({t:'🌟 OMNI',cls:'g'});
-  if(p.reflect)    pips.push({t:'🪞 RÉFL.',cls:'p'});
+  if(p.reflect)    pips.push({t:'🪞 REFL.',cls:'p'});
   if(p.piercing)   pips.push({t:`➡️×${p.piercing}`,cls:''});
   if(p.lifesteal)  pips.push({t:`🩸+${p.lifesteal}`,cls:'r'});
   if(p.tempShield) pips.push({t:`🛡×${p.tempShieldHp}`,cls:'p'});
@@ -6058,7 +6058,7 @@ function gameOver(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
   const m=Math.floor(elapsed/60), s=elapsed%60;
-  const modeLabel = currentMode==='daily'?'Défi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arène':'Arène'):currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo Classique':'Classique';
+  const modeLabel = currentMode==='daily'?'Defi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arene':'Arene'):currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo Classique':'Classique';
   const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
   addToHistory(entry);
   if(currentMode==='daily') saveDailyScore(G.score);
@@ -6098,11 +6098,11 @@ function gameOver(){
 
   // Arena-specific subtitle
   if(currentMode==='arena'){
-    document.getElementById('go-h').textContent='ÉLIMINÉ !';
+    document.getElementById('go-h').textContent='ELIMINE !';
     const reachedLvl = arenaLevel; // already reset to 1 above
-    document.getElementById('go-sub').textContent=`Arène — Meilleur niveau atteint : ${arenaBestLevel} · Recommence au niveau 1`;
+    document.getElementById('go-sub').textContent=`Arene — Meilleur niveau atteint : ${arenaBestLevel} · Recommence au niveau 1`;
     const replayBtn = document.getElementById('go-replay-lbl');
-    if(replayBtn) replayBtn.textContent='↺ RECOMMENCER L\'ARÈNE';
+    if(replayBtn) replayBtn.textContent='↺ RECOMMENCER L\'ARENE';
   } else {
     document.getElementById('go-sub').textContent=`Vague ${G.wave} · ${G.totalKills} kills · Niveau ${G.player.level}`;
     const replayBtn = document.getElementById('go-replay-lbl');
@@ -6118,7 +6118,7 @@ function gameOver(){
   document.getElementById('go-rec').textContent=isRec?'🏆 NOUVEAU RECORD !':scores[0]?.score>0?`Meilleur : ${scores[0].score.toLocaleString('fr-FR')}`:'';
   document.getElementById('go-new-ach').textContent=newAchThisRun.length?`🎖 ${newAchThisRun.join(' · ')}`:'';
   document.getElementById('go-upgs').textContent=G.player.upgrades.length?G.player.upgrades.join(' · '):'';
-  document.getElementById('go-coins').textContent=`🪙 +${coinsEarned} pièces`;
+  document.getElementById('go-coins').textContent=`🪙 +${coinsEarned} pieces`;
   document.getElementById('go-bp-xp').textContent=`⭐ +${bpXpGained} XP`;
   renderDetailedStats(G);
 
@@ -6159,7 +6159,7 @@ function gameOver(){
   }, 500);
 
   show('s-go');
-  // Hide game canvas so it doesn't bleed through
+  // Hide game canvas so it doesnt bleed through
   const _gw=document.getElementById('game-wrap');
   if(_gw) _gw.style.opacity='0';
   document.body.classList.remove('game-active'); // CSS handles hiding all HUD elements
@@ -6178,7 +6178,7 @@ function checkAch(id,val){
   if(val>=def.goal){
     achDone[id]=true; saveAch();
   achSeen[id]=false; saveData('pulse_ach_seen_v1',achSeen);
-  // Badge rouge sur le bouton succès
+  // Badge rouge sur le bouton succes
   const achBadgeCount=Object.keys(achDone).filter(k=>!achSeen[k]).length;
   setBadge('btn-ach-badge',achBadgeCount);
     newAchThisRun.push(def.n);
@@ -6191,7 +6191,7 @@ function checkAch(id,val){
     }
     showAchToast(def);
     sfxAch();
-    pushNotif('ach', '🎖 SUCCÈS DÉBLOQUÉ', def.n+(def.reward?' · +'+def.reward+'🪙':''));
+    pushNotif('ach', '🎖 SUCCES DEBLOQUE', def.n+(def.reward?' · +'+def.reward+'🪙':''));
   }
 }
 
@@ -6210,7 +6210,7 @@ function renderAch(){
   saveData('pulse_ach_unseen_v1',[]);
   setTimeout(updateMenuBadges, 100);
   const done=Object.keys(achDone).length;
-  document.getElementById('ach-prog-lbl').textContent=`${done} / ${ACH_DEFS.length} DÉBLOQUÉS`;
+  document.getElementById('ach-prog-lbl').textContent=`${done} / ${ACH_DEFS.length} DEBLOQUES`;
   const grid=document.getElementById('ach-grid'); grid.innerHTML='';
   for(const a of ACH_DEFS){
     const isDone=achDone[a.id];
@@ -6218,7 +6218,7 @@ function renderAch(){
     const c=document.createElement('div');
     c.className='ach-card'+(isDone?' done':'');
     const rewardBadge=a.reward?`<span style="font-size:7px;color:var(--c3);letter-spacing:.1em;margin-left:6px;">+${a.reward}🪙</span>`:'';
-    const progressBar=!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div><div style="font-size:7px;color:var(--dim);margin-top:2px;">${Math.min(gStats[a.stat]||0,a.goal)} / ${a.goal}</div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DÉBLOQUÉ</div>';
+    const progressBar=!isDone?`<div class="ach-prog"><div class="ach-pf" style="width:${progress*100}%"></div></div><div style="font-size:7px;color:var(--dim);margin-top:2px;">${Math.min(gStats[a.stat]||0,a.goal)} / ${a.goal}</div>`:'<div class="ach-desc" style="color:var(--c3);margin-top:3px">✓ DEBLOQUE</div>';
     c.innerHTML=`<div class="ach-icon">${a.ico}</div><div style="flex:1"><div style="display:flex;align-items:center;""><div class="ach-name">${a.n}</div>${rewardBadge}</div><div class="ach-desc">${a.d}</div>${progressBar}</div>`;
     grid.appendChild(c);
   }
@@ -6251,7 +6251,7 @@ function showCurses(){
   for(const curse of chosen){
     const card=document.createElement('div');
     card.className='cc';
-    card.innerHTML=`<div class="cc-badge">MALÉDICTION</div><div class="cc-ico">${curse.ico}</div><div class="cc-name">${curse.n}</div><div class="cc-desc">${curse.d}</div><div class="cc-reward">Récompense : ${curse.reward}</div>`;
+    card.innerHTML=`<div class="cc-badge">MALEDICTION</div><div class="cc-ico">${curse.ico}</div><div class="cc-name">${curse.n}</div><div class="cc-desc">${curse.d}</div><div class="cc-reward">Recompense : ${curse.reward}</div>`;
     const pick=()=>{
       curse.apply(G.player, G);
       curse.rewardApply(G.player, G);
@@ -6338,7 +6338,7 @@ function drawMinimap(){
 //  STATS + SETTINGS
 // ═══════════════════════════════════════════════════════
 function renderStats(){
-  // Stats maintenant dans l'onglet Profil — rediriger si nécessaire
+  // Stats maintenant dans longlet Profil — rediriger si necessaire
   if(document.getElementById('s-stats')?.classList.contains('on')){
     show('s-profile'); renderProfile(); 
     setTimeout(()=>{ const btn=document.getElementById('ptab-stats'); if(btn) profileTab('stats',btn); },50);
@@ -6348,19 +6348,19 @@ function renderStats(){
   const totalTime=g.totalTime||0;
   const hh=Math.floor(totalTime/3600), mm=Math.floor((totalTime%3600)/60);
   const data=[
-    ['Parties jouées',    g.gamesPlayed||0,     '🎮'],
+    ['Parties jouees',    g.gamesPlayed||0,     '🎮'],
     ['Kills total',       g.totalKills||0,      '💀'],
     ['Meilleur score',    (g.maxScore||0).toLocaleString('fr-FR'), '🏆'],
     ['Score total',       (g.totalScore||0).toLocaleString('fr-FR'), '📈'],
     ['Meilleure vague',   g.maxWave||0,         '🌊'],
     ['Meilleur combo',    g.maxCombo||0,         '🔥'],
     ['Niveau max',        g.maxLevel||0,         '⭐'],
-    ['Boss tués',         g.bossKills||0,        '☠️'],
+    ['Boss tues',         g.bossKills||0,        '☠️'],
     ['Vagues parfaites',  g.noHitWaves||0,       '🛡'],
-    ['Malédictions',      g.cursesAccepted||0,   '😈'],
-    ['Fantômes tués',     g.ghostKills||0,       '👻'],
+    ['Maledictions',      g.cursesAccepted||0,   '😈'],
+    ['Fantomes tues',     g.ghostKills||0,       '👻'],
     ['Temps total',       hh+'h'+mm.toString().padStart(2,'0')+'m', '⏱'],
-    ['Meilleur niv. Arène', arenaBestLevel||0,   '💀'],
+    ['Meilleur niv. Arene', arenaBestLevel||0,   '💀'],
   ];
   const grid = document.getElementById('stats-grid');
   if(!grid) return;
@@ -6372,7 +6372,7 @@ function renderStats(){
   const histEl = document.getElementById('scores-history');
   if(histEl){
     if(!scores||!scores.length){
-      histEl.innerHTML='<div style="font-size:8px;color:var(--dim);letter-spacing:.1em;text-align:center;padding:10px;">Aucune partie enregistrée.</div>';
+      histEl.innerHTML='<div style="font-size:8px;color:var(--dim);letter-spacing:.1em;text-align:center;padding:10px;">Aucune partie enregistree.</div>';
     } else {
       const recent=[...scores].reverse().slice(0,10);
       histEl.innerHTML=recent.map(s=>`
@@ -6386,7 +6386,7 @@ function renderStats(){
 }
 
 function renderSettings(){
-  // Bannière mise à jour
+  // Banniere mise a jour
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   const settingsTop = document.getElementById('settings-update-banner');
   if(settingsTop){
@@ -6396,7 +6396,7 @@ function renderSettings(){
         <div style="display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(0,245,212,.3);background:rgba(0,245,212,.05);padding:12px;margin-bottom:10px;border-radius:3px;">
           <div style="font-size:18px;">🆕</div>
           <div style="flex:1;">
-            <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c1);margin-bottom:6px;">NOUVEAUTÉS VERSION ${LAST_UPDATE_VERSION}</div>
+            <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c1);margin-bottom:6px;">NOUVEAUTES VERSION ${LAST_UPDATE_VERSION}</div>
             ${UPDATE_NOTES.map(n=>`<div style="font-size:7px;color:var(--txt2);margin-bottom:3px;">• ${n}</div>`).join('')}
           </div>
           <button onclick="saveData('pulse_last_seen_ver',LAST_UPDATE_VERSION);renderSettings();" style="font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;padding:4px 8px;border:1px solid var(--border);color:var(--dim);background:none;cursor:pointer;white-space:nowrap;">✓ VU</button>
@@ -6412,9 +6412,9 @@ function renderSettings(){
     {lbl:'Sons & Effets',hint:'Sons de tir, kills, etc.',key:'sfx',type:'toggle'},
     {lbl:'Musique',hint:'Musique en jeu',key:'music',type:'toggle'},
     {lbl:'Vibration',hint:'Retour haptique (mobile)',key:'haptique',type:'toggle'},
-    {lbl:'Screen Shake',hint:'Vibration de l\'écran',key:'screenshake',type:'toggle'},
+    {lbl:'Screen Shake',hint:'Vibration ecran',key:'screenshake',type:'toggle'},
     {lbl:'Afficher FPS',hint:'Compteur images/seconde',key:'showFps',type:'toggle'},
-    {lbl:'Mode Éco',hint:'Réduit ombres/effets — améliore perf. mobile',key:'lowQuality',type:'toggle'},
+    {lbl:'Mode Eco',hint:'Reduit ombres/effets — ameliore perf. mobile',key:'lowQuality',type:'toggle'},
     {lbl:'Vitesse de jeu',hint:'',key:'gameSpeed',type:'speed'},
     {lbl:'Volume sons',hint:'',key:'sfxVol',type:'range',min:0,max:100},
   ];
@@ -6425,17 +6425,17 @@ function renderSettings(){
     return '';
   }).join('');
 
-  // ── Contrôles sub-nav ──
+  // ── Controles sub-nav ──
   const ctrlDiv=document.createElement('div');
   ctrlDiv.innerHTML=`
     <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.28em;color:var(--txt2);
-      padding:8px 0 6px;border-bottom:1px solid var(--border);margin:12px 0 6px;">🎮 CONTRÔLES</div>
+      padding:8px 0 6px;border-bottom:1px solid var(--border);margin:12px 0 6px;">🎮 CONTROLES</div>
     <div class="settings-subnav">
       <button class="settings-subnav-btn" onclick="openKeybinds()">
         <span class="settings-subnav-ico">⌨️</span>
         <span class="settings-subnav-text">
           <span class="settings-subnav-lbl">CLAVIER</span>
-          <span class="settings-subnav-hint">Remapper déplacement, dash, bombe…</span>
+          <span class="settings-subnav-hint">Remapper deplacement, dash, bombe…</span>
         </span>
         <span class="settings-subnav-arrow">›</span>
       </button>
@@ -6443,7 +6443,7 @@ function renderSettings(){
         <span class="settings-subnav-ico">🕹️</span>
         <span class="settings-subnav-text">
           <span class="settings-subnav-lbl">MANETTE</span>
-          <span class="settings-subnav-hint">${gpIndex!==null?'Manette connectée ✓':'Aucune manette détectée'}</span>
+          <span class="settings-subnav-hint">${gpIndex!==null?'Manette connectee ✓':'Aucune manette detectee'}</span>
         </span>
         <span class="settings-subnav-arrow">›</span>
       </button>
@@ -6457,9 +6457,9 @@ function renderSettings(){
     accDiv.innerHTML = `
       <div class="acc-section-title">👤 COMPTE</div>
       <div class="acc-guest-notice">
-        Tu joues en mode invité.<br>
-        <span style="color:var(--c1);cursor:pointer;text-decoration:underline;" onclick="doLogout()">Se connecter / Créer un compte</span><br>
-        pour sauvegarder ta progression dans le cloud et apparaître dans le classement global.
+        Tu joues en mode invite.<br>
+        <span style="color:var(--c1);cursor:pointer;text-decoration:underline;" onclick="doLogout()">Se connecter / Creer un compte</span><br>
+        pour sauvegarder ta progression dans le cloud et apparaitre dans le classement global.
       </div>`;
   } else {
     const emailShort = currentUser.email||'';
@@ -6467,7 +6467,7 @@ function renderSettings(){
       <div class="acc-section-title">👤 COMPTE — ${emailShort}</div>
       ${currentUser&&(typeof ADMIN_EMAILS!=='undefined'?ADMIN_EMAILS.includes(currentUser.email):currentUser.email==='fozyllll.yt@gmail.com')?'<button class="admin-btn save" style="margin-bottom:8px;width:100%;" onclick="openAdmin()">⚡ PANEL ADMIN</button>':''}
       <div class="acc-field">
-        <div class="acc-label">PSEUDO (affiché dans le classement)</div>
+        <div class="acc-label">PSEUDO (affiche dans le classement)</div>
         <div class="acc-row">
           <input class="acc-input" id="acc-pseudo-input" type="text" placeholder="TON_PSEUDO" maxlength="16" value="${getPseudo()}">
           <button class="acc-save-btn" onclick="handleSavePseudo()">SAUVEGARDER</button>
@@ -6477,24 +6477,24 @@ function renderSettings(){
       <div class="acc-field" style="margin-top:4px;">
         <div class="acc-label">NOUVEAU MOT DE PASSE</div>
         <div class="acc-row">
-          <input class="acc-input" id="acc-pass-input" type="password" placeholder="Minimum 6 caractères" autocomplete="new-password">
+          <input class="acc-input" id="acc-pass-input" type="password" placeholder="Minimum 6 caracteres" autocomplete="new-password">
           <button class="acc-save-btn" onclick="handleChangePassword()">MODIFIER</button>
         </div>
         <div class="acc-msg" id="acc-pass-msg"></div>
       </div>
       <div style="margin-top:10px;">
-        <button class="acc-save-btn danger" onclick="doLogout()">⬡ SE DÉCONNECTER</button>
+        <button class="acc-save-btn danger" onclick="doLogout()">⬡ SE DECONNECTER</button>
       </div>`;
   }
   list.appendChild(accDiv);
 
-  // ── Mise à jour ──
+  // ── Mise a jour ──
   const updDiv = document.createElement('div');
   updDiv.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
   updDiv.innerHTML=`
-    <div style="font-size:7px;letter-spacing:.18em;color:var(--txt2);">🔄 MISE À JOUR</div>
-    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;text-align:center;">Si le jeu ne se met pas à jour, vide le cache ici.</div>
-    <button class="acc-save-btn" id="update-btn" onclick="forceUpdate()">⬇ METTRE À JOUR</button>
+    <div style="font-size:7px;letter-spacing:.18em;color:var(--txt2);">🔄 MISE A JOUR</div>
+    <div style="font-size:7px;color:var(--dim);letter-spacing:.08em;text-align:center;">Si le jeu ne se met pas a jour, vide le cache ici.</div>
+    <button class="acc-save-btn" id="update-btn" onclick="forceUpdate()">⬇ METTRE A JOUR</button>
     <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;" id="update-status"></div>`;
   list.appendChild(updDiv);
 
@@ -6537,16 +6537,16 @@ async function forceUpdate(){
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
     }
-    if(status) status.textContent = '✓ Cache vidé — rechargement…';
+    if(status) status.textContent = '✓ Cache vide — rechargement…';
     setTimeout(() => location.reload(true), 800);
   } catch(e){
     if(status) status.textContent = 'Erreur: ' + e.message;
-    if(btn) btn.textContent = '⬇ METTRE À JOUR';
+    if(btn) btn.textContent = '⬇ METTRE A JOUR';
   }
 }
 
 // ═══════════════════════════════════════════════════════
-//  SYSTÈME DE CADEAUX
+//  SYSTEME DE CADEAUX
 // ═══════════════════════════════════════════════════════
 function renderGiftValueUI(){
   const type = document.getElementById('gift-type')?.value;
@@ -6560,9 +6560,9 @@ function renderGiftValueUI(){
       return def ? `<option value="${s}">${def.name}</option>` : '';
     }).join('');
     wrap.innerHTML=opts ? `<select class="acc-input" id="gift-skin-val" style="width:100%;">${opts}</select>`
-      : `<div style="font-size:7px;color:var(--c2);">Aucun skin à offrir</div>`;
+      : `<div style="font-size:7px;color:var(--c2);">Aucun skin a offrir</div>`;
   } else {
-    wrap.innerHTML=`<div style="font-size:7px;color:var(--txt2);letter-spacing:.08em;">Coût : ${PREMIUM_PASS_COST} 🪙</div>`;
+    wrap.innerHTML=`<div style="font-size:7px;color:var(--txt2);letter-spacing:.08em;">Cout : ${PREMIUM_PASS_COST} 🪙</div>`;
   }
 }
 
@@ -6577,7 +6577,7 @@ function renderGiftUI(pseudoPreset=''){
     el.innerHTML=`<div style="text-align:center;color:var(--txt2);font-size:8px;letter-spacing:.12em;padding:20px;">Connecte-toi pour envoyer des cadeaux.</div>`;
     return;
   }
-  // Skins possédés (non premium) qu'on peut offrir
+  // Skins possedes (non premium) quon peut offrir
   const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&ownedSkins.includes(sk.id)&&sk.id!=='default');
   el.innerHTML=`
     <div style="margin-bottom:6px;">
@@ -6588,9 +6588,9 @@ function renderGiftUI(pseudoPreset=''){
       <div style="flex:1;">
         <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:4px;">TYPE</div>
         <select class="acc-input" id="gift-type" style="width:100%;" onchange="renderGiftValueUI()">
-          <option value="coins">🪙 Pièces</option>
+          <option value="coins">🪙 Pieces</option>
           ${gifSkins.length?'<option value="skin">🎨 Skin</option>':''}
-          <option value="pass">⭐ Passe Amélioré (${PREMIUM_PASS_COST}🪙)</option>
+          <option value="pass">⭐ Passe Ameliore (${PREMIUM_PASS_COST}🪙)</option>
         </select>
       </div>
       <div id="gift-value-wrap" style="flex:1;">
@@ -6629,41 +6629,41 @@ async function sendGift(){
 
   if(type==='coins'){
     const amount = Math.max(1, Math.min(10000, parseInt(document.getElementById('gift-coins-val')?.value)||0));
-    if(coins < amount){ if(msg){msg.textContent='Pas assez de pièces.';msg.className='acc-msg err';} return; }
-    const ok = await pulseConfirm(`Envoyer ${amount} 🪙 à ${tgt.pseudo||target} ?`);
+    if(coins < amount){ if(msg){msg.textContent='Pas assez de pieces.';msg.className='acc-msg err';} return; }
+    const ok = await pulseConfirm(`Envoyer ${amount} 🪙 a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     coins -= amount;
     saveData('pulse_coins_v3', coins);
     await saveCloudProfile({coins});
     updateCoinsHUD();
     await SB.from('profiles').update({coins:(tgt.coins||0)+amount}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ ${amount} pièces envoyées à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
+    if(msg){msg.textContent=`✓ ${amount} pieces envoyees a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
 
   } else if(type==='skin'){
     const skinId = document.getElementById('gift-skin-val')?.value;
     if(!skinId){ if(msg){msg.textContent='Choisis un skin.';msg.className='acc-msg err';} return; }
     const skinDef = SKIN_DEFS.find(s=>s.id===skinId);
-    const ok = await pulseConfirm(`Offrir le skin ${skinDef?.name||skinId} à ${tgt.pseudo||target} ?`);
+    const ok = await pulseConfirm(`Offrir le skin ${skinDef?.name||skinId} a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     const tgtSkins = tgt.owned_skins||['default'];
     if(!tgtSkins.includes(skinId)) tgtSkins.push(skinId);
     await SB.from('profiles').update({owned_skins:tgtSkins}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
+    if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
 
   } else if(type==='pass'){
-    if(coins < PREMIUM_PASS_COST){ if(msg){msg.textContent=`Pas assez de pièces (${PREMIUM_PASS_COST} requis).`;msg.className='acc-msg err';} return; }
+    if(coins < PREMIUM_PASS_COST){ if(msg){msg.textContent=`Pas assez de pieces (${PREMIUM_PASS_COST} requis).`;msg.className='acc-msg err';} return; }
     const tgtBp = tgt.premium_pass||{};
-    if(tgtBp.owned){ if(msg){msg.textContent='Ce joueur possède déjà le Passe Amélioré.';msg.className='acc-msg err';} return; }
-    const ok = await pulseConfirm(`Offrir le Passe Amélioré à ${tgt.pseudo||target} pour ${PREMIUM_PASS_COST} 🪙 ?`);
+    if(tgtBp.owned){ if(msg){msg.textContent='Ce joueur possede deja le Passe Ameliore.';msg.className='acc-msg err';} return; }
+    const ok = await pulseConfirm(`Offrir le Passe Ameliore a ${tgt.pseudo||target} pour ${PREMIUM_PASS_COST} 🪙 ?`);
     if(!ok) return;
     coins -= PREMIUM_PASS_COST;
     saveData('pulse_coins_v3', coins);
     await saveCloudProfile({coins});
     updateCoinsHUD();
     await SB.from('profiles').update({premium_pass:{season:BP_SEASON_CURRENT,owned:true}}).eq('id',tgt.id);
-    if(msg){msg.textContent=`✓ Passe Amélioré offert à ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
+    if(msg){msg.textContent=`✓ Passe Ameliore offert a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
   }
 }
@@ -6683,17 +6683,17 @@ async function doResetPassword(){
   if(!email){ document.getElementById('reset-err').textContent='Saisis ton email.'; return; }
   try {
     const {error}=await SB.auth.resetPasswordForEmail(email,{
-      redirectTo: window.location.href // redirige vers le jeu après reset
+      redirectTo: window.location.href // redirige vers le jeu apres reset
     });
     if(error){
       document.getElementById('reset-err').textContent=translateAuthErr(error.message);
     } else {
-      document.getElementById('reset-ok').textContent='✉️ Email envoyé ! Vérifie ta boîte mail.';
+      document.getElementById('reset-ok').textContent='✉️ Email envoye ! Verifie ta boite mail.';
       document.getElementById('reset-email').value='';
       setTimeout(()=>showAuthFrom('reset'), 3500);
     }
   } catch(e){
-    document.getElementById('reset-err').textContent='Erreur réseau : '+e.message;
+    document.getElementById('reset-err').textContent='Erreur reseau : '+e.message;
   }
 }
 
@@ -6710,31 +6710,31 @@ function showAuthFrom(from){
 let userPseudo = loadData('pulse_pseudo_v3', '');
 
 function getPseudo(){
-  return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITÉ');
+  return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
 }
 
 async function savePseudo(pseudo){
   pseudo = pseudo.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g,'').slice(0,16);
-  if(!pseudo||pseudo.length<3) return {ok:false, msg:'Pseudo invalide (3-16 caractères, lettres/chiffres/-/_).'};
+  if(!pseudo||pseudo.length<3) return {ok:false, msg:'Pseudo invalide (3-16 caracteres, lettres/chiffres/-/_).'};
   // Check uniqueness (exclude self)
   if(SB&&currentUser){
     const {data:existing} = await SB.from('profiles').select('id').ilike('pseudo', pseudo).neq('id', currentUser.id).limit(1);
-    if(existing&&existing.length>0) return {ok:false, msg:'Ce pseudo est déjà pris.'};
+    if(existing&&existing.length>0) return {ok:false, msg:'Ce pseudo est deja pris.'};
   }
   userPseudo = pseudo;
   saveData('pulse_pseudo_v3', pseudo);
   if(currentUser && SB) await saveCloudProfile({pseudo});
   updateUserBar();
-  return {ok:true, msg:'✓ Pseudo sauvegardé !'};
+  return {ok:true, msg:'✓ Pseudo sauvegarde !'};
 }
 
 async function changePassword(newPass){
-  if(!SB||!currentUser) return {ok:false, msg:'Non connecté.'};
-  if(newPass.length<6) return {ok:false, msg:'Minimum 6 caractères.'};
+  if(!SB||!currentUser) return {ok:false, msg:'Non connecte.'};
+  if(newPass.length<6) return {ok:false, msg:'Minimum 6 caracteres.'};
   try {
     const {error}=await SB.auth.updateUser({password:newPass});
     if(error) return {ok:false, msg:translateAuthErr(error.message)};
-    return {ok:true, msg:'✓ Mot de passe modifié !'};
+    return {ok:true, msg:'✓ Mot de passe modifie !'};
   } catch(e){ return {ok:false, msg:'Erreur : '+e.message}; }
 }
 
@@ -6744,7 +6744,7 @@ async function changePassword(newPass){
 async function fetchGlobalLeaderboard(){
   if(!SB) return null;
   try {
-    // Récupère le meilleur score de chaque joueur
+    // Recupere le meilleur score de chaque joueur
     const {data,error}=await SB.from('profiles')
       .select('pseudo, scores')
       .not('scores','eq','[]')
@@ -7087,7 +7087,7 @@ aimZone.addEventListener('touchstart', e=>{
   aimCx=t.clientX; aimCy=t.clientY;
   aimKnob.style.left=aimCx+'px'; aimKnob.style.top=aimCy+'px';
   aimKnob.classList.add('v');
-  // Start aiming in whatever was last direction — don't reset to (0,-1)
+  // Start aiming in whatever was last direction — dont reset to (0,-1)
   // G.aimActive is now just used for "finger is down"
   if(G) G.aimActive=true;
   resumeAC();
@@ -7149,14 +7149,14 @@ function getSeasonEndDate(){
 function formatSeasonEnd(){
   const end=getSeasonEndDate();
   const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
-  return diff<=0?'SAISON TERMINÉE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
+  return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
 }
 
 const BP_SEASON_CURRENT = getCurrentSeason();
 const BP_MAX_LEVEL = 30;
 const BP_XP_PER_LEVEL = 500;
 
-// ── THÈMES SAISONNIERS ──
+// ── THEMES SAISONNIERS ──
 const SEASON_THEMES = [
   {name:'NEON CITY',   accent:[0,245,212],  bg:'#03030a', effect:'scanlines'},
   {name:'BLOOD MOON',  accent:[255,26,110], bg:'#120308', effect:'radial'},
@@ -7173,96 +7173,96 @@ const SEASON_THEMES = [
 ];
 function getSeasonTheme(){return SEASON_THEMES[(BP_SEASON_CURRENT-1)%SEASON_THEMES.length];}
 
-// ── RÉCOMPENSES DUAL-TRACK ──
+// ── RECOMPENSES DUAL-TRACK ──
 // track: 'free' ou 'premium'
 const BP_REWARDS = [
   // NIV 1
-  {lv:1,  track:'free',    type:'coins',  value:50,          label:'+50 pièces',          icon:'🪙', rarity:'common'},
-  {lv:1,  track:'premium', type:'coins',  value:150,         label:'+150 pièces',          icon:'🪙', rarity:'rare'},
+  {lv:1,  track:'free',    type:'coins',  value:50,          label:'+50 pieces',          icon:'🪙', rarity:'common'},
+  {lv:1,  track:'premium', type:'coins',  value:150,         label:'+150 pieces',          icon:'🪙', rarity:'rare'},
   // NIV 2
-  {lv:2,  track:'free',    type:'perma',  value:'p_hp',      label:'Vitalité +',           icon:'❤️', rarity:'rare'},
+  {lv:2,  track:'free',    type:'perma',  value:'p_hp',      label:'Vitalite +',           icon:'❤️', rarity:'rare'},
   {lv:2,  track:'premium', type:'perma',  value:'p_dmg',     label:'Puissance +',          icon:'💥', rarity:'rare'},
   // NIV 3
-  {lv:3,  track:'free',    type:'coins',  value:75,          label:'+75 pièces',           icon:'🪙', rarity:'common'},
-  {lv:3,  track:'premium', type:'coins',  value:200,         label:'+200 pièces',          icon:'🪙', rarity:'rare'},
+  {lv:3,  track:'free',    type:'coins',  value:75,          label:'+75 pieces',           icon:'🪙', rarity:'common'},
+  {lv:3,  track:'premium', type:'coins',  value:200,         label:'+200 pieces',          icon:'🪙', rarity:'rare'},
   // NIV 4
   {lv:4,  track:'free',    type:'skin',   value:'crimson',   label:'Skin Crimson',         icon:'🔴', rarity:'rare'},
   {lv:4,  track:'premium', type:'skin',   value:'void',      label:'Skin VOID',             icon:'🌌', rarity:'epic'},
   // NIV 5
-  {lv:5,  track:'free',    type:'coins',  value:100,         label:'+100 pièces',          icon:'🪙', rarity:'common'},
+  {lv:5,  track:'free',    type:'coins',  value:100,         label:'+100 pieces',          icon:'🪙', rarity:'common'},
   {lv:5,  track:'premium', type:'relic',  value:'berserker', label:'Relique : Berserker',  icon:'😤', rarity:'epic'},
   // NIV 6
-  {lv:6,  track:'free',    type:'perma',  value:'p_spd',     label:'Agilité +',            icon:'💨', rarity:'rare'},
-  {lv:6,  track:'premium', type:'perma',  value:'p_regen',   label:'Régéné +',             icon:'💚', rarity:'rare'},
+  {lv:6,  track:'free',    type:'perma',  value:'p_spd',     label:'Agilite +',            icon:'💨', rarity:'rare'},
+  {lv:6,  track:'premium', type:'perma',  value:'p_regen',   label:'Regene +',             icon:'💚', rarity:'rare'},
   // NIV 7
-  {lv:7,  track:'free',    type:'coins',  value:100,         label:'+100 pièces',          icon:'🪙', rarity:'common'},
-  {lv:7,  track:'premium', type:'coins',  value:250,         label:'+250 pièces',          icon:'🪙', rarity:'rare'},
+  {lv:7,  track:'free',    type:'coins',  value:100,         label:'+100 pieces',          icon:'🪙', rarity:'common'},
+  {lv:7,  track:'premium', type:'coins',  value:250,         label:'+250 pieces',          icon:'🪙', rarity:'rare'},
   // NIV 8
   {lv:8,  track:'free',    type:'skin',   value:'wire',      label:'Skin Wire',            icon:'⬡',  rarity:'rare'},
   {lv:8,  track:'premium', type:'skin',   value:'circuit',   label:'Skin Circuit',         icon:'🔌', rarity:'epic'},
   // NIV 9
-  {lv:9,  track:'free',    type:'coins',  value:125,         label:'+125 pièces',          icon:'🪙', rarity:'common'},
+  {lv:9,  track:'free',    type:'coins',  value:125,         label:'+125 pieces',          icon:'🪙', rarity:'common'},
   {lv:9,  track:'premium', type:'perma',  value:'p_spec',    label:'Bombe +',              icon:'💜', rarity:'rare'},
   // NIV 10
   {lv:10, track:'free',    type:'perma',  value:'p_coins',   label:'Fortune +',            icon:'💰', rarity:'rare'},
   {lv:10, track:'premium', type:'skin',   value:'solar',     label:'Skin Solaire',          icon:'☀️', rarity:'epic'},
   // NIV 11
-  {lv:11, track:'free',    type:'coins',  value:150,         label:'+150 pièces',          icon:'🪙', rarity:'common'},
-  {lv:11, track:'premium', type:'coins',  value:300,         label:'+300 pièces',          icon:'🪙', rarity:'rare'},
+  {lv:11, track:'free',    type:'coins',  value:150,         label:'+150 pieces',          icon:'🪙', rarity:'common'},
+  {lv:11, track:'premium', type:'coins',  value:300,         label:'+300 pieces',          icon:'🪙', rarity:'rare'},
   // NIV 12
   {lv:12, track:'free',    type:'perma',  value:'p_dash',    label:'Dash +',               icon:'⚡', rarity:'rare'},
   {lv:12, track:'premium', type:'relic',  value:'reflect',   label:'Relique : Reflet',     icon:'🛡', rarity:'epic'},
   // NIV 13
-  {lv:13, track:'free',    type:'coins',  value:175,         label:'+175 pièces',          icon:'🪙', rarity:'common'},
-  {lv:13, track:'premium', type:'coins',  value:350,         label:'+350 pièces',          icon:'🪙', rarity:'rare'},
+  {lv:13, track:'free',    type:'coins',  value:175,         label:'+175 pieces',          icon:'🪙', rarity:'common'},
+  {lv:13, track:'premium', type:'coins',  value:350,         label:'+350 pieces',          icon:'🪙', rarity:'rare'},
   // NIV 14
   {lv:14, track:'free',    type:'skin',   value:'square',    label:'Skin Cube',            icon:'🟦', rarity:'rare'},
   {lv:14, track:'premium', type:'skin',   value:'violet',    label:'Skin Spectre',         icon:'💜', rarity:'epic'},
   // NIV 15
-  {lv:15, track:'free',    type:'perma',  value:'p_hp',      label:'Vitalité + (x2)',      icon:'❤️', rarity:'rare'},
-  {lv:15, track:'premium', type:'perma',  value:'p_magnet',  label:'Magnétisme',           icon:'🧲', rarity:'rare'},
+  {lv:15, track:'free',    type:'perma',  value:'p_hp',      label:'Vitalite + (x2)',      icon:'❤️', rarity:'rare'},
+  {lv:15, track:'premium', type:'perma',  value:'p_magnet',  label:'Magnetisme',           icon:'🧲', rarity:'rare'},
   // NIV 16
-  {lv:16, track:'free',    type:'coins',  value:200,         label:'+200 pièces',          icon:'🪙', rarity:'common'},
-  {lv:16, track:'premium', type:'coins',  value:400,         label:'+400 pièces',          icon:'🪙', rarity:'epic'},
+  {lv:16, track:'free',    type:'coins',  value:200,         label:'+200 pieces',          icon:'🪙', rarity:'common'},
+  {lv:16, track:'premium', type:'coins',  value:400,         label:'+400 pieces',          icon:'🪙', rarity:'epic'},
   // NIV 17
-  {lv:17, track:'free',    type:'coins',  value:200,         label:'+200 pièces',          icon:'🪙', rarity:'common'},
+  {lv:17, track:'free',    type:'coins',  value:200,         label:'+200 pieces',          icon:'🪙', rarity:'common'},
   {lv:17, track:'premium', type:'skin',   value:'glitch',    label:'Skin Glitch',           icon:'⚡', rarity:'epic'},
   // NIV 18
   {lv:18, track:'free',    type:'perma',  value:'p_dmg',     label:'Puissance + (x2)',     icon:'💥', rarity:'rare'},
   {lv:18, track:'premium', type:'perma',  value:'p_spec',    label:'Bombe + (x2)',         icon:'💜', rarity:'rare'},
   // NIV 19
-  {lv:19, track:'free',    type:'coins',  value:225,         label:'+225 pièces',          icon:'🪙', rarity:'common'},
-  {lv:19, track:'premium', type:'coins',  value:450,         label:'+450 pièces',          icon:'🪙', rarity:'epic'},
+  {lv:19, track:'free',    type:'coins',  value:225,         label:'+225 pieces',          icon:'🪙', rarity:'common'},
+  {lv:19, track:'premium', type:'coins',  value:450,         label:'+450 pieces',          icon:'🪙', rarity:'epic'},
   // NIV 20
-  {lv:20, track:'free',    type:'skin',   value:'star',      label:'Skin Étoile',          icon:'⭐', rarity:'epic'},
+  {lv:20, track:'free',    type:'skin',   value:'star',      label:'Skin Etoile',          icon:'⭐', rarity:'epic'},
   {lv:20, track:'premium', type:'skin',   value:'pulsering', label:'Skin Pulse Ring',      icon:'🟡', rarity:'epic'},
   // NIV 21
-  {lv:21, track:'free',    type:'coins',  value:250,         label:'+250 pièces',          icon:'🪙', rarity:'common'},
-  {lv:21, track:'premium', type:'relic',  value:'chain_kill',label:'Relique : Réaction',   icon:'⚡', rarity:'epic'},
+  {lv:21, track:'free',    type:'coins',  value:250,         label:'+250 pieces',          icon:'🪙', rarity:'common'},
+  {lv:21, track:'premium', type:'relic',  value:'chain_kill',label:'Relique : Reaction',   icon:'⚡', rarity:'epic'},
   // NIV 22
-  {lv:22, track:'free',    type:'perma',  value:'p_regen',   label:'Régéné + (x2)',        icon:'💚', rarity:'rare'},
+  {lv:22, track:'free',    type:'perma',  value:'p_regen',   label:'Regene + (x2)',        icon:'💚', rarity:'rare'},
   {lv:22, track:'premium', type:'perma',  value:'p_coins',   label:'Fortune + (x2)',       icon:'💰', rarity:'rare'},
   // NIV 23
-  {lv:23, track:'free',    type:'coins',  value:275,         label:'+275 pièces',          icon:'🪙', rarity:'common'},
-  {lv:23, track:'premium', type:'coins',  value:500,         label:'+500 pièces',          icon:'🪙', rarity:'epic'},
+  {lv:23, track:'free',    type:'coins',  value:275,         label:'+275 pieces',          icon:'🪙', rarity:'common'},
+  {lv:23, track:'premium', type:'coins',  value:500,         label:'+500 pieces',          icon:'🪙', rarity:'epic'},
   // NIV 24
   {lv:24, track:'free',    type:'perma',  value:'p_dash',    label:'Dash + (x2)',          icon:'⚡', rarity:'rare'},
-  {lv:24, track:'premium', type:'skin',   value:'ghost',     label:'Skin Fantôme',         icon:'👻', rarity:'epic'},
+  {lv:24, track:'premium', type:'skin',   value:'ghost',     label:'Skin Fantome',         icon:'👻', rarity:'epic'},
   // NIV 25
-  {lv:25, track:'free',    type:'coins',  value:300,         label:'+300 pièces',          icon:'🪙', rarity:'common'},
-  {lv:25, track:'premium', type:'perma',  value:'p_hp',      label:'Vitalité + (x3)',      icon:'❤️', rarity:'rare'},
+  {lv:25, track:'free',    type:'coins',  value:300,         label:'+300 pieces',          icon:'🪙', rarity:'common'},
+  {lv:25, track:'premium', type:'perma',  value:'p_hp',      label:'Vitalite + (x3)',      icon:'❤️', rarity:'rare'},
   // NIV 26
   {lv:26, track:'free',    type:'skin',   value:'octagon',   label:'Skin Octa',            icon:'⬡',  rarity:'epic'},
-  {lv:26, track:'premium', type:'coins',  value:600,         label:'+600 pièces',          icon:'🪙', rarity:'epic'},
+  {lv:26, track:'premium', type:'coins',  value:600,         label:'+600 pieces',          icon:'🪙', rarity:'epic'},
   // NIV 27
-  {lv:27, track:'free',    type:'coins',  value:300,         label:'+300 pièces',          icon:'🪙', rarity:'common'},
+  {lv:27, track:'free',    type:'coins',  value:300,         label:'+300 pieces',          icon:'🪙', rarity:'common'},
   {lv:27, track:'premium', type:'skin',   value:'cosmic',    label:'Skin Cosmique',         icon:'🌠', rarity:'legendary'},
   // NIV 28
-  {lv:28, track:'free',    type:'perma',  value:'p_spd',     label:'Agilité + (x3)',       icon:'💨', rarity:'rare'},
+  {lv:28, track:'free',    type:'perma',  value:'p_spd',     label:'Agilite + (x3)',       icon:'💨', rarity:'rare'},
   {lv:28, track:'premium', type:'perma',  value:'p_dmg',     label:'Puissance + (x3)',     icon:'💥', rarity:'rare'},
   // NIV 29
-  {lv:29, track:'free',    type:'coins',  value:350,         label:'+350 pièces',          icon:'🪙', rarity:'common'},
-  {lv:29, track:'premium', type:'coins',  value:700,         label:'+700 pièces',          icon:'🪙', rarity:'epic'},
+  {lv:29, track:'free',    type:'coins',  value:350,         label:'+350 pieces',          icon:'🪙', rarity:'common'},
+  {lv:29, track:'premium', type:'coins',  value:700,         label:'+700 pieces',          icon:'🪙', rarity:'epic'},
   // NIV 30
   {lv:30, track:'free',    type:'skin',   value:'triangle',  label:'Skin Tri-Force',       icon:'🔺', rarity:'epic'},
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
@@ -7315,7 +7315,7 @@ function checkBpAutoClaim(level){
     if(r.track==='premium'&&!hasPremiumPass.owned) return false;
     return true;
   });
-  if(still.length>0) showPopup('⭐ RÉCOMPENSE À RÉCLAMER !','#ffbe0b');
+  if(still.length>0) showPopup('⭐ RECOMPENSE A RECLAMER !','#ffbe0b');
 }
 
 function claimBpReward(level, track){
@@ -7353,7 +7353,7 @@ function claimBpReward(level, track){
   const titleEl=document.getElementById('bp-claim-title');
   const descEl=document.getElementById('bp-claim-desc');
   ic.textContent=reward.icon;
-  titleEl.textContent=reward.type==='coins'?'+'+reward.value+' PIÈCES !':reward.type==='skin'?'SKIN DÉBLOQUÉ !':reward.type==='relic'?'RELIQUE DÉBLOQUÉE !':'AMÉLIORATION !';
+  titleEl.textContent=reward.type==='coins'?'+'+reward.value+' PIECES !':reward.type==='skin'?'SKIN DEBLOQUE !':reward.type==='relic'?'RELIQUE DEBLOQUEE !':'AMELIORATION !';
   descEl.textContent=reward.label;
   const card=ov.querySelector('.bp-claim-card');
   if(card){card.style.animation='none';void card.offsetWidth;card.style.animation='';}
@@ -7395,15 +7395,15 @@ function closeBpClaim(){
 }
 
 function buyPremiumPass(){
-  if(hasPremiumPass.owned){showPopup('Déjà possédé !','#00f5d4');return;}
-  if(coins<PREMIUM_PASS_COST){showPopup('Pas assez de pièces ! ('+PREMIUM_PASS_COST+' requis)','#ff1a6e');return;}
-  pulseConfirm('Acheter le Passe Amélioré pour '+PREMIUM_PASS_COST+' 🪙 ?\n\nDébloques toutes les récompenses PREMIUM de la saison en cours.').then(ok=>{
+  if(hasPremiumPass.owned){showPopup('Deja possede !','#00f5d4');return;}
+  if(coins<PREMIUM_PASS_COST){showPopup('Pas assez de pieces ! ('+PREMIUM_PASS_COST+' requis)','#ff1a6e');return;}
+  pulseConfirm('Acheter le Passe Ameliore pour '+PREMIUM_PASS_COST+' 🪙 ?\n\nDebloques toutes les recompenses PREMIUM de la saison en cours.').then(ok=>{
     if(!ok) return;
     coins-=PREMIUM_PASS_COST;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
     hasPremiumPass={season:BP_SEASON_CURRENT,owned:true};saveData('pulse_premium_v1',hasPremiumPass);
     if(currentUser&&SB)saveCloudProfile({premium_pass:hasPremiumPass});
-    showPopup('✨ PASSE AMÉLIORÉ ACTIVÉ !','#ffbe0b');
-    // Auto-claim les skins premium déjà débloqués par le niveau actuel
+    showPopup('✨ PASSE AMELIORE ACTIVE !','#ffbe0b');
+    // Auto-claim les skins premium deja debloques par le niveau actuel
     checkBpAutoClaim(battlePass.level);
     renderBP();
   });
@@ -7429,10 +7429,10 @@ function renderBP(){
   const btnWrap=document.getElementById('bp-premium-btn-wrap');
   if(banner){
     banner.className='bp-premium-banner '+(premium?'owned':'not-owned');
-    document.getElementById('bp-premium-title').textContent=premium?'✓ PASSE AMÉLIORÉ ACTIF':'PASSE AMÉLIORÉ';
+    document.getElementById('bp-premium-title').textContent=premium?'✓ PASSE AMELIORE ACTIF':'PASSE AMELIORE';
     document.getElementById('bp-premium-desc').textContent=premium
-      ?'Tu as accès aux deux pistes de récompenses pour cette saison !'
-      :'Débloque la piste PREMIUM et ses récompenses exclusives tout au long de la saison.';
+      ?'Tu as acces aux deux pistes de recompenses pour cette saison !'
+      :'Debloque la piste PREMIUM et ses recompenses exclusives tout au long de la saison.';
     if(btnWrap) btnWrap.innerHTML=premium
       ?'<div style="font-size:8px;color:var(--c1);letter-spacing:.1em;font-family:Orbitron,monospace;">✓ ACTIF JUSQU\'AU '+(new Date(getSeasonEndDate().getTime()-86400000)).toLocaleDateString('fr')+'</div>'
       :'<button class="btn btn-g" onclick="buyPremiumPass()" style="white-space:nowrap;"><span>⭐ 1500🪙</span></button>';
@@ -7447,7 +7447,7 @@ function renderBP(){
   const unclBar=document.getElementById('bp-unclaimed-bar');
   const unclHint=document.getElementById('bp-unclaimed-hint');
   if(unclBar){ unclBar.style.display=unclaimed.length>0?'flex':'none'; }
-  if(unclHint){ unclHint.textContent=unclaimed.length+' récompense'+(unclaimed.length>1?'s':'')+' à réclamer !'; }
+  if(unclHint){ unclHint.textContent=unclaimed.length+' recompense'+(unclaimed.length>1?'s':'')+' a reclamer !'; }
 
   // Dual-track rows
   const track=document.getElementById('bp-track');
@@ -7476,7 +7476,7 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
   const claimed=battlePass.claimed[key];
   const unlocked=playerLv>=lv;
   const claimable=unlocked&&!claimed&&!premiumLocked;
-  const rarityLbl=r.rarity==='legendary'?'★ LÉGENDAIRE':r.rarity==='epic'?'◆ ÉPIQUE':r.rarity==='rare'?'✦ RARE':'';
+  const rarityLbl=r.rarity==='legendary'?'★ LEGENDAIRE':r.rarity==='epic'?'◆ EPIQUE':r.rarity==='rare'?'✦ RARE':'';
   const typeClass=r.type==='coins'?'coins':r.type==='skin'?'skin':r.type==='perma'||r.type==='relic'?'perma':'title';
   let cls='bp-cell'+(r.track==='premium'?' premium-cell':'');
   if(claimed) cls+=' claimed-cell';
@@ -7487,7 +7487,7 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
 
   const lockIcon = premiumLocked ? '<span class="bp-cell-lock">🔒</span>' : '';
   const checkIcon = claimed ? '<span class="bp-cell-check">✓</span>' : '';
-  const claimBtn = claimable ? `<button class="bp-cell-claim" onclick="claimBpReward(${lv},'${r.track}')">RÉCLAMER</button>` : '';
+  const claimBtn = claimable ? `<button class="bp-cell-claim" onclick="claimBpReward(${lv},'${r.track}')">RECLAMER</button>` : '';
 
   return `<div class="${cls}" ${claimable?`onclick="claimBpReward(${lv},'${r.track}')"`:''}>
     <div class="bp-cell-icon">${r.icon}</div>
@@ -7532,7 +7532,7 @@ function renderDuoPlayer1(){
   }
   const note=document.createElement('div');
   note.style.cssText='font-size:7px;color:var(--dim);letter-spacing:.1em;margin-top:8px;';
-  note.textContent='P1: WASD / Flèches (configurable dans Paramètres)';
+  note.textContent='P1: WASD / Fleches (configurable dans Parametres)';
   el.appendChild(note);
 }
 
@@ -7553,7 +7553,7 @@ function renderDuoPlayer2(){
   }
   const resetBtn=document.createElement('button');
   resetBtn.className='bind-reset'; resetBtn.style.marginTop='8px';
-  resetBtn.textContent='↺ DÉFAUT'; resetBtn.onclick=function(){ p2KeyMap=Object.assign({},P2_KEY_DEFAULT); saveData('pulse_p2keys_v1',p2KeyMap); renderDuoPlayer2(); };
+  resetBtn.textContent='↺ DEFAUT'; resetBtn.onclick=function(){ p2KeyMap=Object.assign({},P2_KEY_DEFAULT); saveData('pulse_p2keys_v1',p2KeyMap); renderDuoPlayer2(); };
   el.appendChild(resetBtn);
 }
 
@@ -7635,7 +7635,7 @@ function showModeSelect(){
     const progDiv = arenaCard.querySelector('.arena-progress') || document.createElement('div');
     progDiv.className='arena-progress';
     progDiv.style.cssText='font-size:6px;letter-spacing:.15em;color:var(--c3);margin-top:3px;';
-    progDiv.textContent=arenaLevel>1?`NIV.${arenaLevel} : ${lvlDef?lvlDef.emoji+' '+lvlDef.n:''}  · MEILLEUR: ${arenaBestLevel}`:'COMMENCE À ZÉRO';
+    progDiv.textContent=arenaLevel>1?`NIV.${arenaLevel} : ${lvlDef?lvlDef.emoji+' '+lvlDef.n:''}  · MEILLEUR: ${arenaBestLevel}`:'COMMENCE A ZERO';
     if(!arenaCard.querySelector('.arena-progress')) arenaCard.appendChild(progDiv);
   }
 }
@@ -7660,7 +7660,7 @@ function initModeHud(){
     el.id='mode-hud-extra';
     el.style.cssText='position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:102;font-family:Orbitron,monospace;font-size:9px;color:var(--c2);letter-spacing:.2em;pointer-events:none;text-align:center;';
     const lvlDef=ARENA_LEVELS[(arenaLevel-1)%ARENA_LEVELS.length];
-    el.innerHTML=(_duoActive?'👥 DUO · ':'')+`ARÈNE NIV.${arenaLevel} — ${lvlDef?lvlDef.emoji+' '+lvlDef.n:''}`;
+    el.innerHTML=(_duoActive?'👥 DUO · ':'')+`ARENE NIV.${arenaLevel} — ${lvlDef?lvlDef.emoji+' '+lvlDef.n:''}`;
     document.body.appendChild(el);
   }
   if(_duoActive && currentMode!=='arena'){
@@ -7676,15 +7676,15 @@ function initModeHud(){
 function updateModeLogic(){
   if(!G||!G.running||G.paused) return;
   if(currentMode==='chrono'){
-    if(G._countingDown) return; // ne pas décompter pendant le 3-2-1
+    if(G._countingDown) return; // ne pas decompter pendant le 3-2-1
     modeTimer--;
     const secLeft=Math.ceil(modeTimer/60);
     const el=document.getElementById('mode-hud-extra');
     if(el){ el.textContent=secLeft>0?secLeft+'s':'⏱ FINI'; el.style.color=secLeft<=10?'var(--c2)':'var(--c3)'; }
     if(modeTimer<=0){
       G.running=false; cancelAnimationFrame(animId); clearTimeout(cdTm);
-      // Chrono terminé — afficher victoire, pas game over
-      document.getElementById('go-h').textContent='TEMPS ÉCOULÉ !';
+      // Chrono termine — afficher victoire, pas game over
+      document.getElementById('go-h').textContent='TEMPS ECOULE !';
       document.getElementById('go-h').className='go-h win';
       gameOver();
     }
@@ -7701,52 +7701,52 @@ function updateModeLogic(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  ARÈNE — SYSTÈME DE NIVEAUX PROGRESSIFS
+//  ARENE — SYSTEME DE NIVEAUX PROGRESSIFS
 // ═══════════════════════════════════════════════════════
 let arenaLevel = loadData('pulse_arena_level_v1', 1);
 let arenaBestLevel = loadData('pulse_arena_best_v1', 0);
 
 const ARENA_LEVELS = [
   // {n: nom, desc, enemies: [{id, count}], reward: {type, value, label, icon, desc}}
-  {n:'ÉCHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
+  {n:'ECHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
     enemies:[{id:'grunt',n:15},{id:'runner',n:8},{id:'swarm',n:10}],
-    reward:{type:'coins',value:80,label:'+80 PIÈCES',icon:'🪙',desc:'Bon début, survivant.'}},
+    reward:{type:'coins',value:80,label:'+80 PIECES',icon:'🪙',desc:'Bon debut, survivant.'}},
   {n:'PREMIER SANG',  emoji:'⚔️', desc:'Les hunters arrivent. Reste mobile.',
     enemies:[{id:'grunt',n:18},{id:'runner',n:10},{id:'hunter',n:5},{id:'swarm',n:12}],
-    reward:{type:'coins',value:120,label:'+120 PIÈCES',icon:'🪙',desc:'Les triangles bleus ne font plus peur.'}},
+    reward:{type:'coins',value:120,label:'+120 PIECES',icon:'🪙',desc:'Les triangles bleus ne font plus peur.'}},
   {n:'BOUCLIER',      emoji:'🛡', desc:'Premiers guardians avec bouclier.',
     enemies:[{id:'grunt',n:15},{id:'guardian',n:6},{id:'hunter',n:6},{id:'runner',n:8}],
-    reward:{type:'heal',value:40,label:'+40 PV MAX',icon:'❤️',desc:'Survie prolongée.'}},
-  {n:'EXPLOSION',     emoji:'💥', desc:'Les bombers jaunes explosent à la mort.',
+    reward:{type:'heal',value:40,label:'+40 PV MAX',icon:'❤️',desc:'Survie prolongee.'}},
+  {n:'EXPLOSION',     emoji:'💥', desc:'Les bombers jaunes explosent a la mort.',
     enemies:[{id:'bomber',n:12},{id:'grunt',n:15},{id:'runner',n:10},{id:'zigzag',n:6}],
-    reward:{type:'coins',value:160,label:'+160 PIÈCES',icon:'🪙',desc:'Explosif mais gérable.'}},
-  {n:'TANK',          emoji:'🟣', desc:'Les hexagones mauves tirent et résistent.',
+    reward:{type:'coins',value:160,label:'+160 PIECES',icon:'🪙',desc:'Explosif mais gerable.'}},
+  {n:'TANK',          emoji:'🟣', desc:'Les hexagones mauves tirent et resistent.',
     enemies:[{id:'tank',n:5},{id:'grunt',n:20},{id:'hunter',n:8},{id:'swarm',n:15}],
     reward:{type:'upgrade',value:'multishot',label:'TRI-SHOT GRATUIT',icon:'✳️',desc:'Un tir de plus par salve.'}},
   {n:'HORDE',         emoji:'👥', desc:'Des dizaines d\'ennemis rapides.',
     enemies:[{id:'swarm',n:40},{id:'runner',n:20},{id:'zigzag',n:10},{id:'grunt',n:15}],
-    reward:{type:'coins',value:200,label:'+200 PIÈCES',icon:'🪙',desc:'La horde a été repoussée.'}},
-  {n:'FANTÔMES',      emoji:'👻', desc:'Les fantômes ignorent les murs. Attention.',
+    reward:{type:'coins',value:200,label:'+200 PIECES',icon:'🪙',desc:'La horde a ete repoussee.'}},
+  {n:'FANTOMES',      emoji:'👻', desc:'Les fantomes ignorent les murs. Attention.',
     enemies:[{id:'ghost',n:12},{id:'hunter',n:8},{id:'grunt',n:15},{id:'guardian',n:5}],
-    reward:{type:'speccharge',value:1,label:'BOMBE CHARGÉE',icon:'💜',desc:'Une bombe offerte pour la suite.'}},
+    reward:{type:'speccharge',value:1,label:'BOMBE CHARGEE',icon:'💜',desc:'Une bombe offerte pour la suite.'}},
   {n:'SNIPER',        emoji:'🎯', desc:'Les snipers tirent de loin. Couvre-toi.',
     enemies:[{id:'sniper',n:8},{id:'drone',n:6},{id:'grunt',n:15},{id:'tank',n:4}],
-    reward:{type:'coins',value:250,label:'+250 PIÈCES',icon:'🪙',desc:'Précision récompensée.'}},
-  {n:'SPLITTERS',     emoji:'🔪', desc:'Chaque mort crée deux nouveaux ennemis.',
+    reward:{type:'coins',value:250,label:'+250 PIECES',icon:'🪙',desc:'Precision recompensee.'}},
+  {n:'SPLITTERS',     emoji:'🔪', desc:'Chaque mort cree deux nouveaux ennemis.',
     enemies:[{id:'splitter',n:12},{id:'bomber',n:8},{id:'guardian',n:6},{id:'hunter',n:8}],
-    reward:{type:'perma_coins',value:1,label:'+1 NIVEAU FORTUNE',icon:'💰',desc:'Les pièces gagnées augmentent.'}},
-  {n:'MINI-BOSS',     emoji:'🔶', desc:'Un mini-boss blindé mène la charge.',
+    reward:{type:'perma_coins',value:1,label:'+1 NIVEAU FORTUNE',icon:'💰',desc:'Les pieces gagnees augmentent.'}},
+  {n:'MINI-BOSS',     emoji:'🔶', desc:'Un mini-boss blinde mene la charge.',
     enemies:[{id:'miniboss',n:2},{id:'grunt',n:20},{id:'hunter',n:10},{id:'tank',n:5}],
-    reward:{type:'relic_unlock',value:'chain_kill',label:'RELIQUE : RÉACTION EN CHAÎNE',icon:'⚡',desc:'5 kills d\'affilée = mini-nuke.'}},
-  {n:'TITAN',         emoji:'💜', desc:'Le Titan armé résiste à tout. Sauf toi.',
+    reward:{type:'relic_unlock',value:'chain_kill',label:'RELIQUE : REACTION EN CHAINE',icon:'⚡',desc:'5 kills d\'affilee = mini-nuke.'}},
+  {n:'TITAN',         emoji:'💜', desc:'Le Titan arme resiste a tout. Sauf toi.',
     enemies:[{id:'titan',n:1},{id:'tank',n:6},{id:'guardian',n:8},{id:'hunter',n:12}],
-    reward:{type:'coins',value:400,label:'+400 PIÈCES',icon:'🪙',desc:'Le colosse est tombé.'}},
-  {n:'ENFER',         emoji:'🔴', desc:'Tout le monde est là. En même temps.',
+    reward:{type:'coins',value:400,label:'+400 PIECES',icon:'🪙',desc:'Le colosse est tombe.'}},
+  {n:'ENFER',         emoji:'🔴', desc:'Tout le monde est la. En meme temps.',
     enemies:[{id:'grunt',n:25},{id:'bomber',n:10},{id:'tank',n:6},{id:'ghost',n:8},{id:'titan',n:1},{id:'miniboss',n:2}],
-    reward:{type:'skin_unlock',value:'crimson',label:'SKIN CRIMSON DÉBLOQUÉ',icon:'🔴',desc:'Le rouge du sang versé.'}},
+    reward:{type:'skin_unlock',value:'crimson',label:'SKIN CRIMSON DEBLOQUE',icon:'🔴',desc:'Le rouge du sang verse.'}},
 ];
 
-// Génère la pool d ennemis pour un niveau Arena donné
+// Genere la pool d ennemis pour un niveau Arena donne
 function buildArenaWave(level){
   const D=ENEMY_DEFS;
   const lvlDef = ARENA_LEVELS[(level-1) % ARENA_LEVELS.length];
@@ -7759,7 +7759,7 @@ function buildArenaWave(level){
   return pool.sort(()=>Math.random()-.5);
 }
 
-// Applique la récompense d'un niveau Arena
+// Applique la recompense dun niveau Arena
 function applyArenaReward(reward){
   if(!reward) return;
   if(reward.type==='coins'){
@@ -7769,7 +7769,7 @@ function applyArenaReward(reward){
     updateHPBar();
   } else if(reward.type==='speccharge'){
     G.player.specCharge=G.player.specMax; updateSpecBar();
-    showPopup('💜 BOMBE RECHARGÉE !','#b44fff');
+    showPopup('💜 BOMBE RECHARGEE !','#b44fff');
   } else if(reward.type==='upgrade'){
     // Apply a free upgrade
     const upgDef=UPGRADE_DEFS?UPGRADE_DEFS.find(u=>u.id===reward.value):null;
@@ -7777,10 +7777,10 @@ function applyArenaReward(reward){
   } else if(reward.type==='relic_unlock'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
     if(!ul.includes(reward.value)){ul.push(reward.value);saveData('pulse_unlocked_relics_v1',ul);}
-    showPopup('✨ RELIQUE DÉBLOQUÉE !','#ffbe0b');
+    showPopup('✨ RELIQUE DEBLOQUEE !','#ffbe0b');
   } else if(reward.type==='skin_unlock'){
     grantSkin(reward.value);
-    showPopup('🎨 SKIN DÉBLOQUÉ : '+reward.label,'#ffbe0b');
+    showPopup('🎨 SKIN DEBLOQUE : '+reward.label,'#ffbe0b');
   } else if(reward.type==='perma_coins'){
     const cur=getPermaLvl('p_coins');
     const def=PERMA_DEFS.find(d=>d.id==='p_coins');
@@ -7792,7 +7792,7 @@ function applyArenaReward(reward){
   }
 }
 
-// Affiche l'écran de victoire Arena
+// Affiche lecran de victoire Arena
 function showArenaVictory(){
   // Make absolutely sure game is stopped
   if(animId){ cancelAnimationFrame(animId); animId=null; }
@@ -7821,7 +7821,7 @@ function showArenaVictory(){
     arenaLevel=_arenaReplaySavedLevel;
     saveData('pulse_arena_level_v1',arenaLevel);
     _arenaReplayMode=false;
-    showPopup('✓ Replay terminé · +'+replayCoins+'🪙','#ffbe0b');
+    showPopup('✓ Replay termine · +'+replayCoins+'🪙','#ffbe0b');
     show('s-arena-map'); renderArenaMap();
     return;
   }
@@ -7846,7 +7846,7 @@ function showArenaVictory(){
 
   // Populate screen
   document.getElementById('arena-win-level').textContent=
-    'ARÈNE · NIVEAU '+level+(cycleBonus>0?' · CYCLE '+(cycleBonus+1):'');
+    'ARENE · NIVEAU '+level+(cycleBonus>0?' · CYCLE '+(cycleBonus+1):'');
 
   const kills=G.totalKills||0;
   document.getElementById('arena-win-stats').innerHTML=[
@@ -7873,7 +7873,7 @@ function showArenaVictory(){
     <div style="font-size:20px;margin-bottom:4px;">${nextDef.emoji}</div>
     <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.1em;color:var(--c2);">${nextDef.n}${nextScaleTxt}</div>
     <div style="font-size:7px;color:var(--txt2);margin-top:4px;">${nextDef.desc}</div>
-    <div style="font-size:7px;color:var(--c3);margin-top:6px;">Récompense : ${nextDef.reward.icon} ${nextDef.reward.label}</div>`;
+    <div style="font-size:7px;color:var(--c3);margin-top:6px;">Recompense : ${nextDef.reward.icon} ${nextDef.reward.label}</div>`;
 
   show('s-arena-win');
 }
@@ -7931,7 +7931,7 @@ async function loadArenaLeaderboard(){
 
   try{
     const {data}=await SB.from('profiles').select('pseudo,stats').limit(50).not('stats','is',null);
-    if(!data||!data.length){ panel.innerHTML=html+'<div style="text-align:center;padding:12px;font-size:8px;color:var(--dim);">Pas encore de données.</div>'; return; }
+    if(!data||!data.length){ panel.innerHTML=html+'<div style="text-align:center;padding:12px;font-size:8px;color:var(--dim);">Pas encore de donnees.</div>'; return; }
 
     const entries=data
       .map(p=>({name:p.pseudo||'Joueur',level:p.stats?.arenaMaxLevel||0}))
@@ -7993,7 +7993,7 @@ function renderArenaMap(){
       card.onmouseover=()=>card.style.borderColor='var(--c1)';
       card.onmouseout=()=>card.style.borderColor=borderCol;
       card.onclick=()=>{
-        pulseConfirm(`Rejouer le niveau ${lvlNum} — ${lvl.n} ? (récompense réduite : ${Math.round((lvl.reward.value||50)*.2)}🪙)`).then(ok=>{
+        pulseConfirm(`Rejouer le niveau ${lvlNum} — ${lvl.n} ? (recompense reduite : ${Math.round((lvl.reward.value||50)*.2)}🪙)`).then(ok=>{
           if(!ok) return;
           // Temporarily set level to replay
           const savedLevel=arenaLevel;
@@ -8127,7 +8127,7 @@ function updateP2(now){
   // Bomb charge from kills handled in onKill via _p2 flag
   // Spec bar update
   if(p.specCharge>=p.specMax && !p._bombReady){
-    p._bombReady=true; showPopup('💜 P2 BOMBE PRÊTE !','#b44fff');
+    p._bombReady=true; showPopup('💜 P2 BOMBE PRETE !','#b44fff');
   }
 
   // Dash
@@ -8169,7 +8169,7 @@ function updateP2(now){
       if(p.hp<=0){
         p._dead=true; p._respawnTimer=300; // 5s respawn
         spawnDeathFx(p.x,p.y,'#b44fff');
-        showPopup('💜 P2 ÉLIMINÉ — REVIE DANS 5s','#ff1a6e');
+        showPopup('💜 P2 ELIMINE — REVIE DANS 5s','#ff1a6e');
       }
     }
   }
@@ -8222,7 +8222,7 @@ function drawP2(){
 
 // ═══════════════════════════════════════════════════════
 //  MULTIJOUEUR EN LIGNE — Supabase Realtime
-//  Rooms publiques visibles par tous + rooms privées par code
+//  Rooms publiques visibles par tous + rooms privees par code
 // ═══════════════════════════════════════════════════════
 const OL_MAX_PLAYERS = 4;
 const OL_SYNC_MS = 120;
@@ -8296,7 +8296,7 @@ function olRefreshRooms(){
 function olRenderRoomList(){
   const el=document.getElementById('ol-room-list'); if(!el) return;
   const rooms=Object.values(olPublicRooms).filter(r=>r.players<OL_MAX_PLAYERS&&Date.now()-r.ts<30000);
-  if(!rooms.length){ el.innerHTML='<div class="online-empty">Aucune partie ouverte · Crée la tienne !</div>'; return; }
+  if(!rooms.length){ el.innerHTML='<div class="online-empty">Aucune partie ouverte · Cree la tienne !</div>'; return; }
   el.innerHTML='';
   rooms.forEach(function(r){
     const modeIcons={classic:'🌊',chrono:'⏱',arena:'💀',duo:'👥'};
@@ -8331,10 +8331,10 @@ async function olCreate(){
   olRoomName=(nameEl.value.trim()||olGetName()+"'S ROOM").substring(0,20);
   olRoomCode=olGenCode(); olIsHost=true; olMyUid=olMyUid||olGenCode();
   olPlayers={}; olPlayers[olMyUid]={name:olGetName(),hp:100,maxHp:100,wave:1,dead:false,score:0,isMe:true};
-  olStatus('create','Création de la room…','wait');
+  olStatus('create','Creation de la room…','wait');
   await olSubscribe(olRoomCode);
   olSend({t:'join',uid:olMyUid,name:olGetName(),mode:olMode});
-  olStatus('create','Room créée ! Code: '+olRoomCode+' · Mode: '+olMode.toUpperCase(),'ok');
+  olStatus('create','Room creee ! Code: '+olRoomCode+' · Mode: '+olMode.toUpperCase(),'ok');
   document.getElementById('ol-create-btn').style.display='none';
   document.getElementById('ol-start-btn').style.display='block';
   document.getElementById('ol-leave-btn').style.display='block';
@@ -8356,7 +8356,7 @@ async function olJoin(code,name){
   olRoomCode=code; olRoomName=name; olIsHost=false;
   olMyUid=olMyUid||olGenCode(); olPlayers={};
   olPlayers[olMyUid]={name:olGetName(),hp:100,maxHp:100,wave:1,dead:false,score:0,isMe:true};
-  olStatus(olTab==='join'?'join':'create','Connexion à la room…','wait');
+  olStatus(olTab==='join'?'join':'create','Connexion a la room…','wait');
   await olSubscribe(code);
   olSend({t:'join',uid:olMyUid,name:olGetName()});
   // Switch to join tab UI
@@ -8364,7 +8364,7 @@ async function olJoin(code,name){
   document.getElementById('ol-code-input').value=code;
   document.getElementById('ol-join-players').style.display='flex';
   document.getElementById('ol-join-leave-btn').style.display='block';
-  olStatus('join','Connecté ! Attends le lancement…','ok');
+  olStatus('join','Connecte ! Attends le lancement…','ok');
   olRenderLobby('ol-join-players');
 }
 
@@ -8402,7 +8402,7 @@ function olHandle(data){
   }
   if(data.t==='death'){
     if(olPlayers[data.uid]) olPlayers[data.uid].dead=true;
-    addKF('💀 '+(olPlayers[data.uid]?.name||'Allié')+' éliminé','r');
+    addKF('💀 '+(olPlayers[data.uid]?.name||'Allie')+' elimine','r');
     olUpdateHud(); return;
   }
 }
@@ -8515,7 +8515,7 @@ const ADMIN_EMAILS = ['fozyllll.yt@gmail.com','tcb.theo@gmail.com'];
 function isAdmin(){ return currentUser && ADMIN_EMAILS.includes(currentUser.email); }
 
 function openAdmin(){
-  if(!isAdmin()){ showPopup('⛔ ACCÈS REFUSÉ','#ff1a6e'); return; }
+  if(!isAdmin()){ showPopup('⛔ ACCES REFUSE','#ff1a6e'); return; }
   show('s-admin');
   adminLoadGlobalStats();
 }
@@ -8550,8 +8550,8 @@ async function adminSearch(){
     );
     // Also search by email via auth (limited — only pseudo/id searchable from profiles)
     adminRenderResults(results);
-    adminStatus(results.length ? results.length+' joueur(s) trouvé(s).' : 'Aucun résultat.', results.length?'ok':'err');
-  } catch(e){ adminStatus('Erreur réseau.','err'); }
+    adminStatus(results.length ? results.length+' joueur(s) trouve(s).' : 'Aucun resultat.', results.length?'ok':'err');
+  } catch(e){ adminStatus('Erreur reseau.','err'); }
 }
 
 async function adminLoadAll(){
@@ -8561,8 +8561,8 @@ async function adminLoadAll(){
     const {data,error} = await SB.from('profiles').select('*').order('coins',{ascending:false}).limit(50);
     if(error){ adminStatus('Erreur: '+error.message,'err'); return; }
     adminRenderResults(data);
-    adminStatus(data.length+' joueurs (top 50 par pièces).','ok');
-  } catch(e){ adminStatus('Erreur réseau.','err'); }
+    adminStatus(data.length+' joueurs (top 50 par pieces).','ok');
+  } catch(e){ adminStatus('Erreur reseau.','err'); }
 }
 
 function adminRenderResults(players){
@@ -8597,7 +8597,7 @@ function adminPlayerCard(p){
     </div>
     <div class="admin-fields">
       <div class="admin-field">
-        <div class="admin-field-lbl">🪙 PIÈCES</div>
+        <div class="admin-field-lbl">🪙 PIECES</div>
         <input class="admin-field-input" id="adm-coins-${p.id}" type="number" value="${p.coins||0}" min="0" max="99999">
       </div>
       <div class="admin-field">
@@ -8605,7 +8605,7 @@ function adminPlayerCard(p){
         <input class="admin-field-input" id="adm-bp-${p.id}" type="number" value="${p.battle_pass?.level||0}" min="0" max="30">
       </div>
       <div class="admin-field">
-        <div class="admin-field-lbl">❤️ VITALITÉ+ (0-5)</div>
+        <div class="admin-field-lbl">❤️ VITALITE+ (0-5)</div>
         <input class="admin-field-input" id="adm-php-${p.id}" type="number" value="${perma.p_hp||0}" min="0" max="5">
       </div>
       <div class="admin-field">
@@ -8654,46 +8654,46 @@ async function adminSave(playerId){
   const perma = Object.assign({}, cur?.perma_upgrades||{}, {p_hp:phpLvl, p_dmg:pdmgLvl});
 
   try {
-    // Sauvegarder en deux passes pour éviter l'erreur de cache Supabase sur battle_pass
+    // Sauvegarder en deux passes pour eviter lerreur de cache Supabase sur battle_pass
     const {error:e1} = await SB.from('profiles').update({
       coins, owned_skins:ownedSkins, perma_upgrades:perma
     }).eq('id', playerId);
 
     if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
 
-    // Mettre à jour battle_pass séparément
+    // Mettre a jour battle_pass separement
     const {error:e2} = await SB.from('profiles').update({
       battle_pass: bp
     }).eq('id', playerId);
 
     if(e2){
-      // Si battle_pass échoue (colonne manquante dans cache), ignorer et signaler partiellement
-      statusEl.textContent='✓ Sauvegardé (passe combat: '+e2.message+')';
+      // Si battle_pass echoue (colonne manquante dans cache), ignorer et signaler partiellement
+      statusEl.textContent='✓ Sauvegarde (passe combat: '+e2.message+')';
       statusEl.className='admin-status wait';
     } else {
-      statusEl.textContent='✓ Tout sauvegardé !';
+      statusEl.textContent='✓ Tout sauvegarde !';
       statusEl.className='admin-status ok';
     }
-  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
+  } catch(e){ statusEl.textContent='Erreur reseau.'; statusEl.className='admin-status err'; }
 }
 
 async function adminGiveAllSkins(playerId){
   const pills = document.querySelectorAll('#adm-skins-'+playerId+' .admin-skin-pill');
   pills.forEach(p=>p.classList.add('owned'));
   const statusEl = document.getElementById('adm-status-'+playerId);
-  statusEl.textContent='Tous les skins sélectionnés — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+  statusEl.textContent='Tous les skins selectionnes — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
 }
 
 function adminMaxPerma(playerId){
   document.getElementById('adm-php-'+playerId).value=5;
   document.getElementById('adm-pdmg-'+playerId).value=5;
   const statusEl = document.getElementById('adm-status-'+playerId);
-  statusEl.textContent='Améliorations max — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+  statusEl.textContent='Ameliorations max — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
 }
 
 async function adminReset(playerId){
   if(!isAdmin()) return;
-  const _confirmed = await pulseConfirm('RESET COMPLET de ce joueur ? Irréversible !');
+  const _confirmed = await pulseConfirm('RESET COMPLET de ce joueur ? Irreversible !');
   if(!_confirmed) return;
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Reset…'; statusEl.className='admin-status wait';
@@ -8705,10 +8705,10 @@ async function adminReset(playerId){
       ach:{}
     }).eq('id', playerId);
     if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
-    // Reset battle_pass séparément
+    // Reset battle_pass separement
     await SB.from('profiles').update({ battle_pass:{level:0,xp:0,season:1,claimed:{}} }).eq('id', playerId);
-    statusEl.textContent='✓ Joueur réinitialisé.'; statusEl.className='admin-status ok';
-  } catch(e){ statusEl.textContent='Erreur réseau.'; statusEl.className='admin-status err'; }
+    statusEl.textContent='✓ Joueur reinitialise.'; statusEl.className='admin-status ok';
+  } catch(e){ statusEl.textContent='Erreur reseau.'; statusEl.className='admin-status err'; }
 }
 
 function adminStatus(msg, cls){
@@ -8718,62 +8718,62 @@ function adminStatus(msg, cls){
 
 
 // ═══════════════════════════════════════════════════════
-//  SYSTÈME DE RELIQUES
+//  SYSTEME DE RELIQUES
 // ═══════════════════════════════════════════════════════
 const RELIC_DEFS = [
   // ── COMMUN ──
-  {id:'dash_trail',   ico:'💫', name:'TRAÎNE DE DASH',      desc:'Chaque dash laisse une traîne qui blesse les ennemis proches (15 dmg).', tag:'MOBILITÉ',  rarity:'common',  price:600,
+  {id:'dash_trail',   ico:'💫', name:'TRAINE DE DASH',      desc:'Chaque dash laisse une traine qui blesse les ennemis proches (15 dmg).', tag:'MOBILITE',  rarity:'common',  price:600,
     apply:(p)=>{ p.dashTrail=true; }},
   {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:600,
     apply:(p)=>{ p.vampireRelic=true; }},
-  {id:'coin_magnet',  ico:'🧲', name:'MAGNÉTISME MONÉTAIRE', desc:'+50% de pièces gagnées. Les kills à combo×10+ donnent des pièces bonus.', tag:'ÉCONOMIE', rarity:'common',  price:700,
+  {id:'coin_magnet',  ico:'🧲', name:'MAGNETISME MONETAIRE', desc:'+50% de pieces gagnees. Les kills a combo×10+ donnent des pieces bonus.', tag:'ECONOMIE', rarity:'common',  price:700,
     apply:(p)=>{ p.coinMagnet=true; }},
-  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE RÉGÉNÉRANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DÉFENSIF',   rarity:'common',  price:600,
+  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE REGENERANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DEFENSIF',   rarity:'common',  price:600,
     apply:(p)=>{ p.armorRegen=true; }},
-  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplémentaire.', tag:'MOBILITÉ',  rarity:'common',  price:700,
+  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplementaire.', tag:'MOBILITE',  rarity:'common',  price:700,
     apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
-  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tué a 20% de chance de dropper des pièces.', tag:'ÉCONOMIE',    rarity:'common',  price:550,
+  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tue a 20% de chance de dropper des pieces.', tag:'ECONOMIE',    rarity:'common',  price:550,
     apply:(p)=>{ p.scavengerRelic=true; }},
-  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est réduite de 25%.', tag:'MOBILITÉ',   rarity:'common',  price:600,
+  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est reduite de 25%.', tag:'MOBILITE',   rarity:'common',  price:600,
     apply:(p)=>{ p.dashCd=Math.max(350, Math.round(p.dashCd*0.75)); }},
-  {id:'thorns',       ico:'🌵', name:'ÉPINES',               desc:'Renvoie 30% des dégâts reçus aux ennemis.', tag:'DÉFENSIF',  rarity:'common',  price:650,
+  {id:'thorns',       ico:'🌵', name:'EPINES',               desc:'Renvoie 30% des degats recus aux ennemis.', tag:'DEFENSIF',  rarity:'common',  price:650,
     apply:(p)=>{ p.thornsRelic=true; }},
 
   // ── RARE ──
-  {id:'chain_kill',   ico:'⚡', name:'RÉACTION EN CHAÎNE',  desc:'Tuer 5 ennemis d\'affilée déclenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:1100,
+  {id:'chain_kill',   ico:'⚡', name:'REACTION EN CHAINE',  desc:'Tuer 5 ennemis d\'affilee declenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.chainKill=true; }},
-  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATÉGIQUE',rarity:'rare',    price:1200,
+  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATEGIQUE',rarity:'rare',    price:1200,
     apply:(p)=>{ p.gravityNuke=true; }},
-  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Dégâts +6% par vague jouée. Cumulatif — devient dévastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:1000,
+  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Degats +6% par vague jouee. Cumulatif — devient devastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:1000,
     apply:(p)=>{ p.berserkerRelic=true; }},
-  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doublés par la cadence.', tag:'RISQUE',     rarity:'rare',    price:1000,
+  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doubles par la cadence.', tag:'RISQUE',     rarity:'rare',    price:1000,
     apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); }},
-  {id:'ghost_step',   ico:'👟', name:'PAS FANTÔME',          desc:'Après un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITÉ',   rarity:'rare',    price:1100,
+  {id:'ghost_step',   ico:'👟', name:'PAS FANTOME',          desc:'Apres un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITE',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.ghostStepRelic=true; }},
-  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'ÂMES',    desc:'Chaque boss ou mini-boss tué restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:1200,
+  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'AMES',    desc:'Chaque boss ou mini-boss tue restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:1200,
     apply:(p)=>{ p.soulHarvestRelic=true; }},
-  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGÉ',     desc:'La bombe se recharge 2× plus vite grâce aux kills.', tag:'OFFENSIF',  rarity:'rare',    price:1150,
+  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGE',     desc:'La bombe se recharge 2× plus vite grace aux kills.', tag:'OFFENSIF',  rarity:'rare',    price:1150,
     apply:(p)=>{ p.overloadCoreRelic=true; }},
 
-  // ── ÉPIQUE ──
-  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir déclenche une explosion de 16 balles. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:1800,
+  // ── EPIQUE ──
+  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir declenche une explosion de 16 balles. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:1800,
     apply:(p)=>{ p.bulletNova=true; }},
-  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s.', tag:'STRATÉGIQUE',rarity:'epic',   price:1700,
+  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s.', tag:'STRATEGIQUE',rarity:'epic',   price:1700,
     apply:(p)=>{ p.timeThiefRelic=true; }},
-  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, mais dégâts doublés. Synergie : Vampirisme + Épines.', tag:'RISQUE',     rarity:'epic',    price:1600,
+  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max reduits a 40, mais degats doubles. Synergie : Vampirisme + Epines.', tag:'RISQUE',     rarity:'epic',    price:1600,
     apply:(p)=>{ p.maxHp=40; p.hp=Math.min(p.hp,40); p.bulletDmg*=2; }},
-  {id:'adrenaline',    ico:'💉', name:'ADRÉNALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:1900,
+  {id:'adrenaline',    ico:'💉', name:'ADRENALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:1900,
     apply:(p)=>{ p.adrenalineRelic=true; }},
 
-  // ── EXCLUSIF PASSE AMÉLIORÉ ──
-  {id:'transcend',    ico:'✨', name:'TRANSCENDANCE',        desc:'Régénère 25 PV toutes les 5 vagues. Exclusif Passe Amélioré ⭐', tag:'⭐ PREMIUM', rarity:'epic', price:0, premium:true,
+  // ── EXCLUSIF PASSE AMELIORE ──
+  {id:'transcend',    ico:'✨', name:'TRANSCENDANCE',        desc:'Regenere 25 PV toutes les 5 vagues. Exclusif Passe Ameliore ⭐', tag:'⭐ PREMIUM', rarity:'epic', price:0, premium:true,
     apply:(p)=>{ p.transcendRelic=true; }},
-  {id:'ghost_walk',   ico:'👻', name:'MARCHE FANTÔME',       desc:'Le dash traverse les obstacles. Exclusif Passe Amélioré ⭐', tag:'⭐ PREMIUM',  rarity:'epic', price:0, premium:true,
+  {id:'ghost_walk',   ico:'👻', name:'MARCHE FANTOME',       desc:'Le dash traverse les obstacles. Exclusif Passe Ameliore ⭐', tag:'⭐ PREMIUM',  rarity:'epic', price:0, premium:true,
     apply:(p)=>{ p.phantom=true; }},
 ];
 
 // ═══════════════════════════════════════════════════════
-//  CONFIRM PERSONNALISÉ
+//  CONFIRM PERSONNALISE
 // ═══════════════════════════════════════════════════════
 let _pcResolve = null;
 (function(){
@@ -8810,9 +8810,9 @@ function offerRelic(){
   if(pendingRelicOffer) return;
   pendingRelicOffer = true;
   G.paused = true;
-  // Recharge les reliques débloquées depuis localStorage à chaque offre
+  // Recharge les reliques debloquees depuis localStorage a chaque offre
   const unlockedIds = loadData('pulse_unlocked_relics_v1', []);
-  // Pick 3 random relics: débloquées, pas déjà actives, pas premium sauf si possédé
+  // Pick 3 random relics: debloquees, pas deja actives, pas premium sauf si possede
   const available = RELIC_DEFS.filter(r=>
     !activeRelics.find(a=>a.id===r.id) &&
     (!r.premium || hasPremiumPass.owned) &&
@@ -8824,7 +8824,7 @@ function offerRelic(){
   container.innerHTML='';
   shuffled.forEach(r=>{
     const rarityClass = r.rarity ? `rarity-${r.rarity}` : '';
-    const rarityLabel = r.rarity==='epic'?'ÉPIQUE':r.rarity==='rare'?'RARE':'COMMUN';
+    const rarityLabel = r.rarity==='epic'?'EPIQUE':r.rarity==='rare'?'RARE':'COMMUN';
     const rarityCol = r.rarity==='epic'?'#b44fff':r.rarity==='rare'?'#00bbf9':'#ffbe0b';
     const div=document.createElement('div'); div.className=`relic-card ${rarityClass}`;
     div.innerHTML=`<div class="relic-card-ico">${r.ico}</div>
@@ -8882,16 +8882,16 @@ function resetRelics(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  DÉFI QUOTIDIEN
+//  DEFI QUOTIDIEN
 // ═══════════════════════════════════════════════════════
 const DAILY_MODIFIERS_POOL = [
   {id:'fast_enemies',  ico:'💨', name:'ENNEMIS RAPIDES',   desc:'Vitesse ennemis +40%', apply:(g)=>{ g._dailyMod_fastEnemies=true; }},
   {id:'no_powerups',   ico:'🚫', name:'SANS BONUS',         desc:'Aucun powerup au sol', apply:(g)=>{ g._dailyMod_noPowerups=true; }},
   {id:'double_enemies',ico:'👥', name:'DOUBLE VAGUE',       desc:'2× plus d\'ennemis par vague', apply:(g)=>{ g._dailyMod_doubleEnemies=true; }},
-  {id:'no_upgrade',    ico:'🔒', name:'PAS D\'UPGRADE',     desc:'Pas d\'upgrade entre les vagues (malédictions uniquement)', apply:(g)=>{ g._dailyMod_noUpgrade=true; }},
-  {id:'tiny_player',   ico:'🔬', name:'MICRO JOUEUR',       desc:'Taille du joueur réduite de 40%, vitesse +20%', apply:(g)=>{ g.player.r=7; g.player.speed*=1.2; }},
-  {id:'glass_cannon',  ico:'💥', name:'CANON DE VERRE',     desc:'Dégâts ×2 mais PV max = 40', apply:(g)=>{ g.player.bulletDmg*=2; g.player.maxHp=40; g.player.hp=40; }},
-  {id:'fog_always',    ico:'🌫', name:'BROUILLARD TOTAL',   desc:'Visibilité permanente réduite', apply:(g)=>{ g.player.fogCurse=true; }},
+  {id:'no_upgrade',    ico:'🔒', name:'PAS D\'UPGRADE',     desc:'Pas d\'upgrade entre les vagues (maledictions uniquement)', apply:(g)=>{ g._dailyMod_noUpgrade=true; }},
+  {id:'tiny_player',   ico:'🔬', name:'MICRO JOUEUR',       desc:'Taille du joueur reduite de 40%, vitesse +20%', apply:(g)=>{ g.player.r=7; g.player.speed*=1.2; }},
+  {id:'glass_cannon',  ico:'💥', name:'CANON DE VERRE',     desc:'Degats ×2 mais PV max = 40', apply:(g)=>{ g.player.bulletDmg*=2; g.player.maxHp=40; g.player.hp=40; }},
+  {id:'fog_always',    ico:'🌫', name:'BROUILLARD TOTAL',   desc:'Visibilite permanente reduite', apply:(g)=>{ g.player.fogCurse=true; }},
 ];
 
 let dailyState = {played:false, score:0, date:''};
@@ -8944,18 +8944,18 @@ async function initDailyChallenge(){
       const totalCoins = (saved.baseRewarded||50) + (saved.finalRank===1?750:saved.finalRank===2?350:saved.finalRank===3?150:saved.finalRank<=10?50:0);
       rewardLabel = medal ? `${medal} · +${totalCoins}🪙 total` : `+${saved.baseRewarded||50}🪙`;
     } else if(saved.date === dateStr) {
-      rewardLabel = `+${saved.baseRewarded||50}🪙 (rang attribué à minuit)`;
+      rewardLabel = `+${saved.baseRewarded||50}🪙 (rang attribue a minuit)`;
     } else {
       rewardLabel = `+${saved.baseRewarded||50}🪙`;
     }
     document.getElementById('daily-my-score').textContent=`Ton score : ${saved.score.toLocaleString('fr-FR')} pts · ${rewardLabel}`;
-    if(playBtn){ playBtn.querySelector('span').textContent='✓ DÉJÀ JOUÉ AUJOURD\'HUI'; playBtn.style.opacity='.4'; playBtn.style.pointerEvents='none'; }
+    if(playBtn){ playBtn.querySelector('span').textContent='✓ DEJA JOUE AUJOURD\'HUI'; playBtn.style.opacity='.4'; playBtn.style.pointerEvents='none'; }
   } else {
     document.getElementById('daily-my-score').textContent='';
-    if(playBtn){ playBtn.querySelector('span').textContent='⚡ JOUER LE DÉFI'; playBtn.style.opacity=''; playBtn.style.pointerEvents=''; }
+    if(playBtn){ playBtn.querySelector('span').textContent='⚡ JOUER LE DEFI'; playBtn.style.opacity=''; playBtn.style.pointerEvents=''; }
   }
   await loadDailyLeaderboard(dateStr);
-  // Vérifie si une récompense de rang du jour précédent est due
+  // Verifie si une recompense de rang du jour precedent est due
   checkDailyRankReward();
 }
 
@@ -8988,7 +8988,7 @@ async function loadDailyLeaderboard(dateStr){
 function startDailyChallenge(){
   const dateStr=getDailyDateStr();
   const saved=loadData('pulse_daily_v1',{date:'',score:0});
-  if(saved.date===dateStr){ showPopup('Déjà joué aujourd\'hui !','#ff1a6e'); return; }
+  if(saved.date===dateStr){ showPopup('Deja joue aujourd\'hui !','#ff1a6e'); return; }
   currentMode='daily';
   const mods=getDailyModifiers();
   G=null;
@@ -9007,10 +9007,10 @@ async function saveDailyScore(score){
 
   const wave = G?.wave || 0;
 
-  // Récompense immédiate : +50🪙 juste pour avoir joué (bronze garanti)
+  // Recompense immediate : +50🪙 juste pour avoir joue (bronze garanti)
   const baseReward = 50;
   awardCoins(baseReward);
-  showPopup(`⚡ DÉFI JOUÉ · +${baseReward}🪙 — Classement à minuit !`, '#ffbe0b');
+  showPopup(`⚡ DEFI JOUE · +${baseReward}🪙 — Classement a minuit !`, '#ffbe0b');
 
   // Sauvegarder localement
   const dailyEntry = {
@@ -9037,19 +9037,19 @@ async function saveDailyScore(score){
   } catch(e){ console.warn('saveDailyScore cloud error:', e); }
 }
 
-// Appelée à chaque ouverture du défi — vérifie si une récompense de rang est due
+// Appelee a chaque ouverture du defi — verifie si une recompense de rang est due
 async function checkDailyRankReward(){
   if(!SB || !currentUser) return;
 
   const todayStr     = getDailyDateStr();
   const saved        = loadData('pulse_daily_v1', {date:'', rankRewarded:false});
 
-  // Rien joué ou rang déjà attribué
+  // Rien joue ou rang deja attribue
   if(!saved.date || saved.rankRewarded) return;
-  // On n'attribue le rang qu'une fois le jour terminé (date sauvée ≠ aujourd'hui)
+  // On nattribue le rang quune fois le jour termine (date sauvee ≠ aujourdhui)
   if(saved.date === todayStr) return;
 
-  // Le joueur a joué hier (ou avant) → calculer son rang final
+  // Le joueur a joue hier (ou avant) → calculer son rang final
   const playedDateStr = saved.date;
   try {
     const {data} = await SB.from('profiles').select('pseudo,scores').limit(500);
@@ -9068,21 +9068,21 @@ async function checkDailyRankReward(){
       return e.score === saved.score;
     });
 
-    // Pièces bonus selon rang (au-delà du bronze déjà reçu)
+    // Pieces bonus selon rang (au-dela du bronze deja recu)
     let rankBonus = 0;
     let rankLabel = '';
     if(myRank === 0)       { rankBonus = 800 - (saved.baseRewarded||50); rankLabel = '👑 1ER !'; }
     else if(myRank === 1)  { rankBonus = 400 - (saved.baseRewarded||50); rankLabel = '🥇 2E !'; }
     else if(myRank === 2)  { rankBonus = 200 - (saved.baseRewarded||50); rankLabel = '🥈 3E !'; }
     else if(myRank <= 9)   { rankBonus = 100 - (saved.baseRewarded||50); rankLabel = '🥉 TOP 10'; }
-    // else : bronze déjà reçu, pas de bonus supplémentaire
+    // else : bronze deja recu, pas de bonus supplementaire
 
     if(rankBonus > 0) {
       awardCoins(rankBonus);
-      showPopup(`⚡ DÉFI HIER — ${rankLabel} +${rankBonus}🪙 bonus !`, '#ffbe0b');
+      showPopup(`⚡ DEFI HIER — ${rankLabel} +${rankBonus}🪙 bonus !`, '#ffbe0b');
     }
 
-    // Marquer comme attribué
+    // Marquer comme attribue
     saveData('pulse_daily_v1', Object.assign({}, saved, {rankRewarded:true, finalRank:myRank+1}));
   } catch(e){ console.warn('checkDailyRankReward error:', e); }
 }
@@ -9101,7 +9101,7 @@ function addToHistory(entry){
 function renderHistory(){
   const el=document.getElementById('history-list'); if(!el) return;
   el.innerHTML='';
-  if(!gameHistory.length){ el.innerHTML='<div style="color:var(--dim);font-size:8px;letter-spacing:.15em;padding:12px;text-align:center;">Aucune partie jouée</div>'; return; }
+  if(!gameHistory.length){ el.innerHTML='<div style="color:var(--dim);font-size:8px;letter-spacing:.15em;padding:12px;text-align:center;">Aucune partie jouee</div>'; return; }
   gameHistory.forEach((h,i)=>{
     const div=document.createElement('div'); div.className='history-item';
     div.innerHTML=`<div class="history-wave">V.${h.wave}</div>
@@ -9113,7 +9113,7 @@ function renderHistory(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  STATS DÉTAILLÉES EN FIN DE PARTIE
+//  STATS DETAILLEES EN FIN DE PARTIE
 // ═══════════════════════════════════════════════════════
 function renderDetailedStats(G){
   const el=document.getElementById('go-detail-stats'); if(!el||!G) return;
@@ -9124,7 +9124,7 @@ function renderDetailedStats(G){
   el.innerHTML=[
     {v:dps, l:'DPS SCORE'},
     {v:kps, l:'KILLS/SEC'},
-    {v:accuracy+'%', l:'PRÉCISION'},
+    {v:accuracy+'%', l:'PRECISION'},
     {v:G.player.upgrades?.length||0, l:'UPGRADES'},
     {v:G.maxComboThisRun||0, l:'MAX COMBO'},
     {v:activeRelics.length, l:'RELIQUES'},
@@ -9135,12 +9135,12 @@ function renderDetailedStats(G){
 }
 
 // ═══════════════════════════════════════════════════════
-//  VITESSE DE JEU — appliquée dans update()
+//  VITESSE DE JEU — appliquee dans update()
 // ═══════════════════════════════════════════════════════
 function getGameSpeed(){ return settings.gameSpeed||1; }
 
 
-// ── DIFFICULTÉ ADAPTATIVE ──
+// ── DIFFICULTE ADAPTATIVE ──
 function getDifficultyMult(){
   if(!G||!G.player) return 1;
   const upgCount=Object.keys(G.player.upgradeCounts||{}).length;
@@ -9148,9 +9148,9 @@ function getDifficultyMult(){
   return 1+Math.min(0.8,upgCount*0.05+permaTotal*0.03);
 }
 
-// ── UPGRADES SPÉCIFIQUES AUX SKINS ──
+// ── UPGRADES SPECIFIQUES AUX SKINS ──
 // ══════════════════════════════════════════════════════════════
-//  SKIN PASSIFS — 3 niveaux par skin, stockés dans localStorage
+//  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
 let skinPerkLevels = loadData('pulse_skin_perks_v1', {});
@@ -9158,7 +9158,7 @@ let skinPerkLevels = loadData('pulse_skin_perks_v1', {});
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
-// Coût d'upgrade par niveau (0→1, 1→2, 2→3)
+// Cout dupgrade par niveau (0→1, 1→2, 2→3)
 const SKIN_PERK_COSTS = [200, 500, 1000];
 
 const SKIN_PERKS = {
@@ -9169,83 +9169,83 @@ const SKIN_PERKS = {
     apply: function(p, lvl){ p._hexChargeEvery=lvl===3?5:lvl===2?6:8; p._hexHeal=lvl===3?5:0; }
   },
   'crimson': {
-    ico:'🩸', name:'FRÉNÉSIE',
-    desc: ['<30% PV → cadence de tir ×1.3', '<30% PV → cadence ×1.4 + dégâts +10%', '<30% PV → cadence ×1.5 + dégâts +20% + regen 1/s'],
+    ico:'🩸', name:'FRENESIE',
+    desc: ['<30% PV → cadence de tir ×1.3', '<30% PV → cadence ×1.4 + degats +10%', '<30% PV → cadence ×1.5 + degats +20% + regen 1/s'],
     apply: function(p, lvl){ p._furyActive=true; p._furyFireMult=lvl===3?1.5:lvl===2?1.4:1.3; p._furyDmgBonus=lvl===3?0.2:lvl===2?0.1:0; p._furyRegen=lvl===3?1:0; }
   },
   'gold': {
-    ico:'💰', name:'AVIDITÉ',
-    desc: ['+20% pièces par kill', '+35% pièces par kill', '+50% pièces par kill + 1 pièce bonus par combo'],
+    ico:'💰', name:'AVIDITE',
+    desc: ['+20% pieces par kill', '+35% pieces par kill', '+50% pieces par kill + 1 piece bonus par combo'],
     apply: function(p, lvl){ p._greedMult=lvl===3?1.5:lvl===2?1.35:1.2; p._greedCombo=lvl===3; }
   },
   'violet': {
     ico:'👁️', name:'SPECTRE',
-    desc: ['Invisibilité 1s après dash (ennemis ignorent)', 'Invisibilité 1.5s + vitesse +15% après dash', 'Invisibilité 2s + vitesse +20% + 1 tir fantôme (traverse tout)'],
+    desc: ['Invisibilite 1s apres dash (ennemis ignorent)', 'Invisibilite 1.5s + vitesse +15% apres dash', 'Invisibilite 2s + vitesse +20% + 1 tir fantome (traverse tout)'],
     apply: function(p, lvl){ p._spectreInvis=lvl===3?120:lvl===2?90:60; p._spectreSpeed=lvl>=2?lvl===3?0.2:0.15:0; p._spectreShot=lvl===3; }
   },
   'ice': {
     ico:'❄️', name:'AURA DE GEL',
-    desc: ['Ennemis à <80px ralentis de 30%', 'Ennemis à <100px ralentis de 40%', 'Ennemis à <120px ralentis de 50% + gel à la mort'],
+    desc: ['Ennemis a <80px ralentis de 30%', 'Ennemis a <100px ralentis de 40%', 'Ennemis a <120px ralentis de 50% + gel a la mort'],
     apply: function(p, lvl){ p._iceRange=lvl===3?120:lvl===2?100:80; p._iceSlow=lvl===3?0.5:lvl===2?0.4:0.3; p._iceDeathFreeze=lvl===3; }
   },
   'fire': {
-    ico:'🔥', name:'TRAÎNE ENFLAMMÉE',
-    desc: ['Balles enflamment les ennemis (5 dégâts/s, 2s)', 'Flammes durent 3s + propagation aux voisins', 'Flammes durent 4s + explosion a mort de l ennemi enflamme'],
+    ico:'🔥', name:'TRAINE ENFLAMMEE',
+    desc: ['Balles enflamment les ennemis (5 degats/s, 2s)', 'Flammes durent 3s + propagation aux voisins', 'Flammes durent 4s + explosion a mort de l ennemi enflamme'],
     apply: function(p, lvl){ p._fireDot=lvl===3?4*60:lvl===2?3*60:2*60; p._fireSpread=lvl>=2; p._fireExplode=lvl===3; }
   },
   'triangle': {
     ico:'💨', name:'TRANCHANT',
-    desc: ['1 balle sur 5 traverse les ennemis (piercing)', '1 balle sur 4 perce + +5% vitesse de déplacement', '1 balle sur 3 perce + +10% vitesse + ricochet 1 fois'],
+    desc: ['1 balle sur 5 traverse les ennemis (piercing)', '1 balle sur 4 perce + +5% vitesse de deplacement', '1 balle sur 3 perce + +10% vitesse + ricochet 1 fois'],
     apply: function(p, lvl){ p._triPierceEvery=lvl===3?3:lvl===2?4:5; p._triSpeed=lvl===3?0.1:lvl>=2?0.05:0; p._triRicochet=lvl===3; }
   },
   'square': {
     ico:'🛡️', name:'BLINDAGE',
-    desc: ['Reçois 10% moins de dégâts', 'Reçois 15% moins de dégâts + +15 PV max', 'Reçois 20% moins de dégâts + +25 PV max + rebond des dégâts'],
+    desc: ['Recois 10% moins de degats', 'Recois 15% moins de degats + +15 PV max', 'Recois 20% moins de degats + +25 PV max + rebond des degats'],
     apply: function(p, lvl){ p._squareArmor=lvl===3?0.8:lvl===2?0.85:0.9; p._squareHp=lvl===3?25:lvl>=2?15:0; p._squareReflect=lvl===3?0.1:0; if(p._squareHp){ p.maxHp+=p._squareHp; p.hp+=p._squareHp; } }
   },
   'octagon': {
     ico:'⚡', name:'TITAN',
-    desc: ['Bombe recharge +20% plus vite', 'Bombe recharge +35% plus vite + rayon +15%', 'Bombe recharge +50% + rayon +20% + mini-bombe gratuite à chaque vague'],
+    desc: ['Bombe recharge +20% plus vite', 'Bombe recharge +35% plus vite + rayon +15%', 'Bombe recharge +50% + rayon +20% + mini-bombe gratuite a chaque vague'],
     apply: function(p, lvl){ p._octSpecRate=lvl===3?1.5:lvl===2?1.35:1.2; p._octNukeRadius=lvl>=2?lvl===3?1.2:1.15:1; p._octWaveBomb=lvl===3; }
   },
   'star': {
     ico:'💫', name:'NOVA STELLAIRE',
-    desc: ['Level-up → explosion de 8 balles', 'Level-up → explosion de 12 balles + +5 dégâts', 'Level-up → explosion de 16 balles + +10 dégâts + soin 15 PV'],
+    desc: ['Level-up → explosion de 8 balles', 'Level-up → explosion de 12 balles + +5 degats', 'Level-up → explosion de 16 balles + +10 degats + soin 15 PV'],
     apply: function(p, lvl){ p._starNovaBullets=lvl===3?16:lvl===2?12:8; p._starNovaDmgBonus=lvl===3?10:lvl>=2?5:0; p._starNovaHeal=lvl===3?15:0; }
   },
   'rainbow': {
     ico:'🌈', name:'CHAOS CHROMATIQUE',
-    desc: ['Chaque kill spawne 2 balles aléatoires', 'Chaque kill spawne 3 balles + couleur change les dégâts', 'Chaque kill spawne 4 balles + chaque couleur a son effet'],
+    desc: ['Chaque kill spawne 2 balles aleatoires', 'Chaque kill spawne 3 balles + couleur change les degats', 'Chaque kill spawne 4 balles + chaque couleur a son effet'],
     apply: function(p, lvl){ p._rainbowBullets=lvl===3?4:lvl===2?3:2; p._rainbowColor=lvl>=2; p._rainbowEffects=lvl===3; }
   },
   'ghost': {
     ico:'👻', name:'TERREUR',
-    desc: ['Les ennemis proches fuient à ta mort pendant 3s', 'Les ennemis fuient 5s + vitesse réduite', 'Les ennemis fuient 5s + ralentis + 1 vie bonus'],
+    desc: ['Les ennemis proches fuient a ta mort pendant 3s', 'Les ennemis fuient 5s + vitesse reduite', 'Les ennemis fuient 5s + ralentis + 1 vie bonus'],
     apply: function(p, lvl){ p._ghostFearDur=lvl===3?300:lvl===2?300:180; p._ghostFearSlow=lvl>=2; p._ghostExtraLife=lvl===3; }
   },
   'wire': {
     ico:'⚡', name:'CADENCE NETTE',
-    desc: ['+8% cadence de tir', '+15% cadence de tir', '+20% cadence + balles perforent 1 ennemi supplémentaire'],
+    desc: ['+8% cadence de tir', '+15% cadence de tir', '+20% cadence + balles perforent 1 ennemi supplementaire'],
     apply: function(p, lvl){ p._wireFire=lvl===3?0.8:lvl===2?0.85:0.92; p._wirePierce=lvl===3; if(p._wireFire) p.fireRate=Math.round(p.fireRate*p._wireFire); }
   },
   'neon': {
     ico:'🔴', name:'SURCHARGE ROUGE',
-    desc: ['+10% dégâts', '+18% dégâts + balles plus grandes', '+25% dégâts + balles grandes + saignement'],
+    desc: ['+10% degats', '+18% degats + balles plus grandes', '+25% degats + balles grandes + saignement'],
     apply: function(p, lvl){ p._neonDmg=lvl===3?1.25:lvl===2?1.18:1.1; p._neonBig=lvl>=2; p._neonBleed=lvl===3; p.bulletDmg*=p._neonDmg; }
   },
   'circuit': {
     ico:'🔌', name:'OVERCLOCKING',
-    desc: ['Après 10 kills enchaînés : vitesse +25% pendant 5s', 'Après 8 kills : vitesse +35% pendant 6s', 'Après 6 kills : vitesse +40% + tir +20% pendant 8s'],
+    desc: ['Apres 10 kills enchaines : vitesse +25% pendant 5s', 'Apres 8 kills : vitesse +35% pendant 6s', 'Apres 6 kills : vitesse +40% + tir +20% pendant 8s'],
     apply: function(p, lvl){ p._circuitKillThresh=lvl===3?6:lvl===2?8:10; p._circuitSpeedBoost=lvl===3?0.4:lvl===2?0.35:0.25; p._circuitFireBoost=lvl===3?0.2:0; }
   },
   'pulsering': {
-    ico:'🟡', name:'RÉSONANCE',
-    desc: ['Ondes de choc visuelles à chaque vague', 'Ondes font 5 dégâts aux ennemis proches', 'Ondes font 10 dégâts + ralentissent'],
+    ico:'🟡', name:'RESONANCE',
+    desc: ['Ondes de choc visuelles a chaque vague', 'Ondes font 5 degats aux ennemis proches', 'Ondes font 10 degats + ralentissent'],
     apply: function(p, lvl){ p._pulseWaveShock=lvl>=1; p._pulseWaveDmg=lvl===3?10:lvl===2?5:0; p._pulseWaveSlow=lvl===3; }
   },
   'arrow': {
-    ico:'🎯', name:'PRÉCISION',
-    desc: ['+15% dégâts si pas touché depuis 5s', '+20% dégâts + headshot aléatoire (×2)', '+25% dégâts + headshots + balles accélèrent en vol'],
+    ico:'🎯', name:'PRECISION',
+    desc: ['+15% degats si pas touche depuis 5s', '+20% degats + headshot aleatoire (×2)', '+25% degats + headshots + balles accelerent en vol'],
     apply: function(p, lvl){ p._arrowNoHitBonus=lvl===3?1.25:lvl===2?1.2:1.15; p._arrowHeadshot=lvl>=2; p._arrowAccel=lvl===3; }
   },
   // ── SKINS PREMIUM ──
@@ -9256,17 +9256,17 @@ const SKIN_PERKS = {
   },
   'solar': {
     ico:'☀️', name:'FUSION SOLAIRE',
-    desc: ['+5% dégâts par vague en cours (cumulatif, max ×2)', '+8% par vague (max ×2.5)', '+10% par vague (max ×3) + régén solaire 0.5/s'],
+    desc: ['+5% degats par vague en cours (cumulatif, max ×2)', '+8% par vague (max ×2.5)', '+10% par vague (max ×3) + regen solaire 0.5/s'],
     apply: function(p, lvl){ p._solarScaling=lvl===3?0.1:lvl===2?0.08:0.05; p._solarMax=lvl===3?3:lvl===2?2.5:2; p._solarRegen=lvl===3?0.5:0; }
   },
   'glitch': {
     ico:'⚡', name:'ERREUR CRITIQUE',
-    desc: ['5% de chance de doubler les dégâts d une balle', '8% de chance ×2 dégâts + 2% chance d instakill', '12% chance ×2 + 3% instakill + glitch des boss (−20% PV)'],
+    desc: ['5% de chance de doubler les degats d une balle', '8% de chance ×2 degats + 2% chance d instakill', '12% chance ×2 + 3% instakill + glitch des boss (−20% PV)'],
     apply: function(p, lvl){ p._glitchCrit=lvl===3?0.12:lvl===2?0.08:0.05; p._glitchInstakill=lvl===3?0.03:lvl>=2?0.02:0; p._glitchBoss=lvl===3?0.8:1; }
   },
   'cosmic': {
-    ico:'🌠', name:'GRAVITÉ COSMIQUE',
-    desc: ['Bombe attire les ennemis au centre avant d exploser', 'Attire + ralentit les ennemis +2s après l explosion', 'Attire + ralentit + mini-orbites de balles en permanence'],
+    ico:'🌠', name:'GRAVITE COSMIQUE',
+    desc: ['Bombe attire les ennemis au centre avant d exploser', 'Attire + ralentit les ennemis +2s apres l explosion', 'Attire + ralentit + mini-orbites de balles en permanence'],
     apply: function(p, lvl){ p._cosmicPull=lvl>=1; p._cosmicSlow=lvl>=2?lvl===3?120:60:0; p._cosmicOrbit=lvl===3; }
   },
 };
@@ -9286,9 +9286,9 @@ function upgradeSkinPerk(skinId){
   const lvl = getSkinPerkLvl(skinId);
   if(lvl >= 3){ showPopup('Niveau maximum !','#00f5d4'); return; }
   const cost = SKIN_PERK_COSTS[lvl];
-  pulseConfirm('Améliorer ' + (SKIN_PERKS[skinId]&&SKIN_PERKS[skinId].name||skinId) + ' au niveau ' + (lvl+1) + ' pour ' + cost + ' pièces ?').then(function(ok){
+  pulseConfirm('Ameliorer ' + (SKIN_PERKS[skinId]&&SKIN_PERKS[skinId].name||skinId) + ' au niveau ' + (lvl+1) + ' pour ' + cost + ' pieces ?').then(function(ok){
     if(!ok) return;
-    if(!spendCoins(cost)){ showPopup('Pas assez de pièces !','#ff1a6e'); return; }
+    if(!spendCoins(cost)){ showPopup('Pas assez de pieces !','#ff1a6e'); return; }
     skinPerkLevels[skinId] = lvl + 1;
     saveData('pulse_skin_perks_v1', skinPerkLevels);
     if(currentUser&&SB) saveCloudProfile({skin_perks: skinPerkLevels});
@@ -9301,7 +9301,7 @@ function getSkinSpecificUpgrades(){
   return [];
 }
 
-// ── DÉCOR PAR SAISON (défini dans le système BP) ──
+// ── DECOR PAR SAISON (defini dans le systeme BP) ──
 
 
 function renderRelicEquip(){
@@ -9317,7 +9317,7 @@ function renderRelicEquip(){
     slots.innerHTML='';
     const maxSlots=loadData('pulse_relic_slots_v1',1);
     const SLOT_PRICES=[0,0,1000,2000]; // slot 1 gratuit, slot 2 gratuit, slot 3 = 1000, slot 4 = 2000
-    // Afficher les slots débloqués
+    // Afficher les slots debloques
     for(let i=0;i<maxSlots;i++){
       const eqId=equipped[i];
       const r=eqId?RELIC_DEFS.find(x=>x.id===eqId):null;
@@ -9335,14 +9335,14 @@ function renderRelicEquip(){
       buySlot.onmouseover=()=>buySlot.style.borderColor='rgba(255,190,11,.5)';
       buySlot.onmouseout=()=>buySlot.style.borderColor='rgba(255,190,11,.2)';
       buySlot.onclick=()=>{
-        if(coins<price){showPopup('Pas assez de pièces ! ('+price+' 🪙 requis)','#ff1a6e');return;}
-        pulseConfirm('Débloquer le slot '+(maxSlots+1)+' pour '+price+' 🪙 ?').then(ok=>{
+        if(coins<price){showPopup('Pas assez de pieces ! ('+price+' 🪙 requis)','#ff1a6e');return;}
+        pulseConfirm('Debloquer le slot '+(maxSlots+1)+' pour '+price+' 🪙 ?').then(ok=>{
           if(!ok) return;
           coins-=price; saveData('pulse_coins_v3',coins);
           if(currentUser&&SB) saveCloudProfile({coins});
           updateCoinsHUD();
           saveData('pulse_relic_slots_v1',maxSlots+1);
-          showPopup('✨ Slot '+(maxSlots+1)+' débloqué !','#ffbe0b');
+          showPopup('✨ Slot '+(maxSlots+1)+' debloque !','#ffbe0b');
           renderRelicEquip();
         });
       };
@@ -9361,7 +9361,7 @@ function renderRelicEquip(){
   });
 
   const rarityCol={common:'var(--c3)',rare:'#00bbf9',epic:'#b44fff'};
-  const rarityLbl={common:'COMMUN',rare:'RARE',epic:'ÉPIQUE'};
+  const rarityLbl={common:'COMMUN',rare:'RARE',epic:'EPIQUE'};
 
   sorted.forEach(r=>{
     const owned=unlocked.includes(r.id)||(r.premium&&hasPremiumPass.owned);
@@ -9384,7 +9384,7 @@ function renderRelicEquip(){
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:5px;letter-spacing:.18em;padding:2px 5px;border:1px solid ${rc}40;color:${rc};">${r.tag}</span>
         ${owned
-          ? (isEq?'<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;">✓ ÉQUIPÉE</span>':'<span style="font-size:7px;color:var(--txt2);">Cliquer pour équiper</span>')
+          ? (isEq?'<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;">✓ EQUIPEE</span>':'<span style="font-size:7px;color:var(--txt2);">Cliquer pour equiper</span>')
           : `<span style="font-size:7px;color:${coins>=(r.price||0)?'var(--c3)':'var(--c2)'};">🪙 ${r.price||0}</span>`
         }
       </div>`;
@@ -9392,13 +9392,13 @@ function renderRelicEquip(){
     div.onmouseout=()=>div.style.borderColor=borderCol;
     div.onclick=()=>{
       if(!owned){
-        if(!r.price){showPopup('Relique non disponible à l\'achat','#ff1a6e');return;}
-        if(coins<r.price){showPopup('Pas assez de pièces ! ('+r.price+' requis)','#ff1a6e');return;}
+        if(!r.price){showPopup('Relique non disponible a l\'achat','#ff1a6e');return;}
+        if(coins<r.price){showPopup('Pas assez de pieces ! ('+r.price+' requis)','#ff1a6e');return;}
         pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
           if(!ok) return;
           coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
           const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
-          showPopup('✨ '+r.name+' débloquée !','#ffbe0b');
+          showPopup('✨ '+r.name+' debloquee !','#ffbe0b');
           renderRelicEquip();
         });
         return;
@@ -9408,7 +9408,7 @@ function renderRelicEquip(){
       if(eq2.includes(r.id)){
         saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
       } else {
-        if(eq2.length>=loadData('pulse_relic_slots_v1',1)){showPopup('Achète un slot supplémentaire pour équiper plus de reliques !','#ff1a6e');return;}
+        if(eq2.length>=loadData('pulse_relic_slots_v1',1)){showPopup('Achete un slot supplementaire pour equiper plus de reliques !','#ff1a6e');return;}
         eq2.push(r.id);saveData('pulse_eq_relics_v1',eq2);
       }
       renderRelicEquip();
@@ -9448,7 +9448,7 @@ let kbRemapListener = null;
 function kbKeyName(key){
   const names = {
     ' ':'ESPACE','ArrowUp':'↑','ArrowDown':'↓','ArrowLeft':'←','ArrowRight':'→',
-    'Escape':'ÉCHAP','Enter':'ENTRÉE','Backspace':'⌫','Tab':'TAB','Shift':'SHIFT',
+    'Escape':'ECHAP','Enter':'ENTREE','Backspace':'⌫','Tab':'TAB','Shift':'SHIFT',
     'Control':'CTRL','Alt':'ALT','Meta':'WIN',
     'Mouse0':'CLIC G','Mouse2':'CLIC D','Mouse1':'CLIC M',
   };
@@ -9621,7 +9621,7 @@ function kbIsMove(key, dir){
 let gpIndex=null, gpPrev={};
 let _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
 
-// Deadzone réduite à 0.12 pour meilleure réactivité (surtout BT)
+// Deadzone reduite a 0.12 pour meilleure reactivite (surtout BT)
 const GP_DEADZONE=0.12;
 
 // Auto-detect gamepad layout from id string
@@ -9643,7 +9643,7 @@ function gpBtnLabels(layout){
 const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
 let gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
 let gpRemapTarget=null, gpRemapListener=null;
-const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALÉ.'};
+const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
 function gpVal(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.value:b):0; }
 function gpPressed(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.pressed:!!b):false; }
@@ -9700,7 +9700,7 @@ const _gpInterval=setInterval(()=>{
         return;
       }
     }
-    _gpSnap=snap; return; // don't process game inputs while remapping
+    _gpSnap=snap; return; // dont process game inputs while remapping
   }
 
   _gpSnap=snap;
@@ -9724,7 +9724,7 @@ try{
     const isBT = /bluetooth|wireless/i.test(e.gamepad.id);
     const layoutLabel={nintendo:'🟡 Nintendo',xbox:'🟢 Xbox',playstation:'🔵 PlayStation',standard:'🎮'}[_gpLayout]||'🎮';
     document.getElementById('gamepad-name').textContent=layoutLabel+' '+(name||'MANETTE')+(isBT?' 📶':'');
-    if(G) showPopup('🎮 MANETTE CONNECTÉE — '+layoutLabel+(isBT?' BT':''),'#b44fff');
+    if(G) showPopup('🎮 MANETTE CONNECTEE — '+layoutLabel+(isBT?' BT':''),'#b44fff');
     refreshGpMapIfOpen();
   });
   window.addEventListener('gamepaddisconnected',e=>{
@@ -9732,7 +9732,7 @@ try{
       gpIndex=null; gpPrev={}; _gpSnap=null;
       document.getElementById('gamepad-hud').classList.remove('on');
       document.body.classList.remove('gamepad-active');
-      if(G) showPopup('🎮 MANETTE DÉCONNECTÉE','#ff1a6e');
+      if(G) showPopup('🎮 MANETTE DECONNECTEE','#ff1a6e');
       refreshGpMapIfOpen();
     }
   });
@@ -9751,7 +9751,7 @@ function startRemap(action,btnEl){
   document.querySelectorAll('.bind-btn,.gp-remap-btn').forEach(b=>b.classList.remove('listening'));
   btnEl.classList.add('listening');
   btnEl.textContent='▶ APPUIE…';
-  // graceTo: ignore all inputs for 400ms so the click itself doesn't count
+  // graceTo: ignore all inputs for 400ms so the click itself doesnt count
   const graceTo=Date.now()+400;
   gpRemapListener={action,btnEl,deadline:graceTo+7000,graceTo};
 }
@@ -9775,9 +9775,9 @@ function renderGpMapScreen(){
   const isBT=gpLive?/bluetooth|wireless/i.test(gpLive.id):false;
   if(tip){
     const layoutLabel={nintendo:'🟡 Nintendo Switch',xbox:'🟢 Xbox',playstation:'🔵 PlayStation',standard:'🎮 Standard'}[_gpLayout]||'🎮';
-    if(!hasGp) tip.innerHTML='Branchez une manette pour configurer les boutons.<br><span style="color:var(--txt2)">Xbox, PlayStation, Nintendo et manettes génériques supportées.</span>';
-    else if(isBT) tip.innerHTML=`${layoutLabel} · Bluetooth · Clique un bouton puis appuie la touche (timeout 6s).<br><span style="color:var(--c3)">Conseil BT: reste à moins de 2m pour moins de latence.</span>`;
-    else tip.innerHTML=`${layoutLabel} · Câble · Clique un bouton puis appuie la touche (timeout 6s).`;
+    if(!hasGp) tip.innerHTML='Branchez une manette pour configurer les boutons.<br><span style="color:var(--txt2)">Xbox, PlayStation, Nintendo et manettes generiques supportees.</span>';
+    else if(isBT) tip.innerHTML=`${layoutLabel} · Bluetooth · Clique un bouton puis appuie la touche (timeout 6s).<br><span style="color:var(--c3)">Conseil BT: reste a moins de 2m pour moins de latence.</span>`;
+    else tip.innerHTML=`${layoutLabel} · Cable · Clique un bouton puis appuie la touche (timeout 6s).`;
   }
   if(!hasGp) return;
 
@@ -9830,7 +9830,7 @@ function renderGpMapScreen(){
     }
     window._gpTesterRAF=requestAnimationFrame(updateTester);
   }
-  // Auto-refresh si manette pas encore détectée à l'ouverture
+  // Auto-refresh si manette pas encore detectee a louverture
   if(!gp && !window._gpMapRefreshInterval){
     window._gpMapRefreshInterval=setInterval(()=>{
       if(!document.getElementById('s-gpmap')?.classList.contains('on')){
@@ -10028,8 +10028,8 @@ function detectDevice(){
     const isPortrait=(window.visualViewport?.height||window.innerHeight)>(window.visualViewport?.width||window.innerWidth);
     document.getElementById('ctrl-hint').innerHTML=
       isPortrait
-        ? '👆 BAS GAUCHE = joystick déplacement<br>👆 BAS DROITE = viser (tir auto)<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash<br>Tourne en paysage pour plus d\'espace !'
-        : '👆 GAUCHE = joystick déplacement<br>👆 DROITE = viser (tir auto dans cette direction)<br>La visée persiste quand tu retires le doigt<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash';
+        ? '👆 BAS GAUCHE = joystick deplacement<br>👆 BAS DROITE = viser (tir auto)<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash<br>Tourne en paysage pour plus d\'espace !'
+        : '👆 GAUCHE = joystick deplacement<br>👆 DROITE = viser (tir auto dans cette direction)<br>La visee persiste quand tu retires le doigt<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash';
     if(isPortrait){
       const combo=document.getElementById('combo');
       combo.style.bottom='38%';
@@ -10075,17 +10075,17 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }
 
-  // Détecter si on est en file:// (aperçu iOS Fichiers)
+  // Detecter si on est en file:// (apercu iOS Fichiers)
   const isFileProtocol = location.protocol === 'file:';
 
   if(isFileProtocol){
-    // Mode fichier local — démarrer directement en invité
-    // Supabase est bloqué sur file://, inutile d'essayer
+    // Mode fichier local — demarrer directement en invite
+    // Supabase est bloque sur file://, inutile dessayer
     isGuest = true;
     SB = null;
-    // Afficher un message dans l'écran titre
+    // Afficher un message dans lecran titre
     const userBar = document.getElementById('title-user-pill');
-    if(userBar) userBar.textContent = '📱 Mode local · Compte désactivé';
+    if(userBar) userBar.textContent = '📱 Mode local · Compte desactive';
     maybeShowOnboard(false);
     updateCoinsHUD();
     updateUserBar();
@@ -10120,8 +10120,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Wire up leaderboard button
   document.querySelector('.btn-g[onclick*="s-lb"]').addEventListener('click',renderLeaderboard);
 
-  // iOS fix: sur file://, les clics sur boutons peuvent être bloqués.
-  // On écoute touchend et on déclenche .click() manuellement.
+  // iOS fix: sur file://, les clics sur boutons peuvent etre bloques.
+  // On ecoute touchend et on declenche .click() manuellement.
   if(isFileProtocol){
     document.addEventListener('touchend', function(e){
       var el = e.target;
@@ -10276,16 +10276,16 @@ if('serviceWorker' in navigator){
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
-      // Nouvelle version détectée — purger tous les caches + SW
+      // Nouvelle version detectee — purger tous les caches + SW
       navigator.serviceWorker.getRegistrations().then(regs=>{
         regs.forEach(r=>r.unregister());
       });
       caches.keys().then(keys=>{ keys.forEach(k=>caches.delete(k)); });
       localStorage.setItem(swVersionKey, APP_VERSION);
-      console.log('[SW] Cache purgé — version', APP_VERSION);
+      console.log('[SW] Cache purge — version', APP_VERSION);
     }
     navigator.serviceWorker.register('sw.js?v=29',{scope:'/Pulse/'})
-      .then(reg=>{ reg.update(); console.log('[SW] Enregistré v28'); })
+      .then(reg=>{ reg.update(); console.log('[SW] Enregistre v28'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
