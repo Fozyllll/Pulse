@@ -2881,7 +2881,7 @@ function setBadge(id, count){
   if(count>0){
     if(!el){
       // Find the button to attach to — match by contained text
-      const label=id==='btn-bp-badge'?'PASSE DE COMBAT':id==='btn-ach-badge'?'SUCCES':null;
+      const label=id==='btn-bp-badge'?'PASSE DE COMBAT':id==='btn-ach-badge'?'SUCCES':id==='btn-notif-badge'?'NOTIFS':null;
       if(label){
         const allBtns=document.querySelectorAll('.btn');
         for(const btn of allBtns){
@@ -3699,18 +3699,18 @@ const ENEMY_DEFS = [
   {id:'tank',     col:'#9b5de5', r:20, hp:15,  spd:0.58, pts:45,  dmg:22, lbl:'TANK',     shape:'hex', ranged:true, shootInterval:240},
   {id:'swarm',    col:'#f15bb5', r:5,  hp:1,   spd:2.2,  pts:7,   dmg:4,  lbl:'SWARM',    shape:'circle'},
   {id:'hunter',   col:'#00bbf9', r:9,  hp:8,   spd:0.52, pts:28,  dmg:14, lbl:'HUNTER',   shape:'tri'},
-  {id:'bomber',   col:'#ff5500', r:12, hp:4,   spd:1.8,  pts:30,  dmg:35, lbl:'BOMBER',   shape:'circle', explodes:true},
+  {id:'bomber',   col:'#ff5500', r:12, hp:4,   spd:1.8,  pts:30,  dmg:25, lbl:'BOMBER',   shape:'circle', explodes:true},
   {id:'guardian', col:'#44aaff', r:11, hp:6,   spd:0.9,  pts:35,  dmg:12, lbl:'GUARDIAN', shape:'circle', shieldHp:10},
   {id:'zigzag',   col:'#ff44bb', r:8,  hp:3,   spd:2.5,  pts:20,  dmg:10, lbl:'ZIGZAG',   shape:'diamond', zigzag:true},
   {id:'sniper',   col:'#88ffcc', r:9,  hp:4,   spd:0.6,  pts:32,  dmg:18, lbl:'SNIPER',   shape:'tri',   ranged:true},
   {id:'splitter', col:'#ffcc00', r:14, hp:8,   spd:0.9,  pts:40,  dmg:15, lbl:'SPLITTER', shape:'circle', splits:true},
-  {id:'miniboss', col:'#ff6600', r:22, hp:40,  spd:1.1,  pts:130, dmg:26, lbl:'MINI-BOSS',shape:'hex',   mini:true},
-  {id:'boss',     col:'#fee440', r:30, hp:80,  spd:0.88, pts:320, dmg:36, lbl:'BOSS',     shape:'boss',  boss:true},
+  {id:'miniboss', col:'#ff6600', r:22, hp:40,  spd:1.0,  pts:130, dmg:20, lbl:'MINI-BOSS',shape:'hex',   mini:true},
+  {id:'boss',     col:'#fee440', r:30, hp:80,  spd:0.82, pts:320, dmg:24, lbl:'BOSS',     shape:'boss',  boss:true},
   // ── NEW v5 ENEMIES ──
   {id:'ghost',    col:'rgba(180,79,255,0.55)', r:10, hp:3, spd:1.9, pts:22, dmg:10, lbl:'FANTOME', shape:'circle', ghostEnemy:true},
   {id:'drone',    col:'#00f5d4', r:8,  hp:3,   spd:0.3,  pts:25,  dmg:16, lbl:'DRONE',    shape:'diamond', ranged:true, turret:true},
   {id:'leech',    col:'#ff88aa', r:9,  hp:5,   spd:1.6,  pts:35,  dmg:12, lbl:'SANGSUE',  shape:'circle', leech:true},
-  {id:'titan',    col:'#cc44ff', r:26, hp:60,  spd:0.65, pts:200, dmg:40, lbl:'TITAN',    shape:'hex',   mini:true, armored:true},
+  {id:'titan',    col:'#cc44ff', r:26, hp:60,  spd:0.65, pts:200, dmg:28, lbl:'TITAN',    shape:'hex',   mini:true, armored:true},
   // ── NEW v6 ENEMIES ──
   {id:'shielder', col:'#22ddff', r:13, hp:7,   spd:1.0,  pts:50,  dmg:14, lbl:'SHIELDER', shape:'hex', shieldBearer:true, shieldRange:90},
   {id:'lurker',   col:'#8844ff', r:10, hp:5,   spd:2.0,  pts:55,  dmg:18, lbl:'LURKER',   shape:'diamond', lurker:true, lurkerRevealRange:80},
@@ -3777,28 +3777,28 @@ const CURSE_DEFS = [
 
 // ─── ACHIEVEMENTS ───
 const ACH_DEFS = [
-  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',      d:'Tuer son premier ennemi.',           goal:1,     stat:'totalKills',      reward:25},
-  {id:'kills_100',    ico:'💀',  n:'Centurion',          d:'Tuer 100 ennemis en une partie.',    goal:100,   stat:'sessionKills',    reward:50},
-  {id:'kills_500',    ico:'🔥',  n:'Exterminateur',      d:'Tuer 500 ennemis en une partie.',    goal:500,   stat:'sessionKills',    reward:150},
-  {id:'wave_10',      ico:'🌊',  n:'Surfeur',             d:'Atteindre la vague 10.',             goal:10,    stat:'maxWave',         reward:75},
-  {id:'wave_20',      ico:'🏄',  n:'Pro de la vague',    d:'Atteindre la vague 20.',             goal:20,    stat:'maxWave',         reward:150},
-  {id:'wave_30',      ico:'👑',  n:'Maitre des vagues',  d:'Atteindre la vague 30.',             goal:30,    stat:'maxWave',         reward:300},
-  {id:'score_10k',    ico:'💎',  n:'10 000 pts',          d:'Atteindre 10 000 points.',           goal:10000, stat:'maxScore',        reward:50},
-  {id:'score_50k',    ico:'💠',  n:'50 000 pts',          d:'Atteindre 50 000 points.',           goal:50000, stat:'maxScore',        reward:100},
-  {id:'score_100k',   ico:'💜',  n:'100 000 pts',         d:'Atteindre 100 000 points.',          goal:100000,stat:'maxScore',        reward:250},
-  {id:'combo_20',     ico:'🔥',  n:'Combo x20',           d:'Atteindre un combo de 20.',          goal:20,    stat:'maxCombo',        reward:40},
-  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',           d:'Atteindre un combo de 50.',          goal:50,    stat:'maxCombo',        reward:100},
-  {id:'combo_100',    ico:'👑',  n:'Combo x100',          d:'Atteindre un combo de 100.',         goal:100,   stat:'maxCombo',        reward:250},
-  {id:'level_10',     ico:'⭐',  n:'Niveau 10',           d:'Atteindre le niveau 10.',            goal:10,    stat:'maxLevel',        reward:60},
-  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',       d:'Vaincre un boss.',                   goal:1,     stat:'bossKills',       reward:75},
-  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',         d:'Vaincre 5 boss.',                    goal:5,     stat:'bossKills',       reward:200},
-  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',         d:'Finir une vague sans prendre de dmg.',goal:1,   stat:'noHitWaves',      reward:50},
-  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades differents.',    goal:10,    stat:'uniqueUpgrades',  reward:80},
-  {id:'games_10',     ico:'🎮',  n:'Accro',               d:'Jouer 10 parties.',                  goal:10,    stat:'gamesPlayed',     reward:100},
-  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malediction.',          goal:1,     stat:'cursesAccepted',  reward:30},
-  {id:'curse_5',      ico:'🔥',  n:'Masochiste',          d:'Accepter 5 maledictions.',           goal:5,     stat:'cursesAccepted',  reward:120},
-  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantomes',d:'Tuer 10 fantomes.',                  goal:10,    stat:'ghostKills',      reward:80},
-  {id:'no_hit_5',     ico:'💎',  n:'Perfection',          d:'5 vagues sans degats.',              goal:5,     stat:'noHitWaves',      reward:200},
+  {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',       d:'Tuer son premier ennemi.',              goal:1,      stat:'totalKills',     reward:25},
+  {id:'kills_100',    ico:'💀',  n:'Centurion',           d:'Tuer 100 ennemis en une partie.',       goal:100,    stat:'sessionKills',   reward:50},
+  {id:'kills_500',    ico:'☣️',  n:'Exterminateur',       d:'Tuer 500 ennemis en une partie.',       goal:500,    stat:'sessionKills',   reward:150},
+  {id:'wave_10',      ico:'🌊',  n:'Surfeur',             d:'Atteindre la vague 10.',                goal:10,     stat:'maxWave',        reward:75},
+  {id:'wave_20',      ico:'🏄',  n:'Pro des vagues',      d:'Atteindre la vague 20.',                goal:20,     stat:'maxWave',        reward:150},
+  {id:'wave_30',      ico:'🌀',  n:'Maitre des vagues',   d:'Atteindre la vague 30.',                goal:30,     stat:'maxWave',        reward:300},
+  {id:'score_10k',    ico:'💎',  n:'10 000 pts',          d:'Atteindre 10 000 points.',              goal:10000,  stat:'maxScore',       reward:50},
+  {id:'score_50k',    ico:'💠',  n:'50 000 pts',          d:'Atteindre 50 000 points.',              goal:50000,  stat:'maxScore',       reward:100},
+  {id:'score_100k',   ico:'🔮',  n:'100 000 pts',         d:'Atteindre 100 000 points.',             goal:100000, stat:'maxScore',       reward:250},
+  {id:'combo_20',     ico:'⚡',  n:'Combo x20',           d:'Atteindre un combo de 20.',             goal:20,     stat:'maxCombo',       reward:40},
+  {id:'combo_50',     ico:'🌪️',  n:'Combo x50',           d:'Atteindre un combo de 50.',             goal:50,     stat:'maxCombo',       reward:100},
+  {id:'combo_100',    ico:'🏅',  n:'Combo x100',          d:'Atteindre un combo de 100.',            goal:100,    stat:'maxCombo',       reward:250},
+  {id:'level_10',     ico:'⭐',  n:'Niveau 10',           d:'Atteindre le niveau 10 en une partie.', goal:10,     stat:'maxLevel',       reward:60},
+  {id:'boss_kill',    ico:'☠️',  n:'Tueur de Boss',       d:'Vaincre un boss.',                      goal:1,      stat:'bossKills',      reward:75},
+  {id:'boss_5',       ico:'🏆',  n:'Boss Hunter',         d:'Vaincre 5 boss.',                       goal:5,      stat:'bossKills',      reward:200},
+  {id:'no_dmg_wave',  ico:'🛡',  n:'Intouchable',         d:'Finir une vague sans prendre de degats.',goal:1,    stat:'noHitWaves',     reward:50},
+  {id:'all_upgrades', ico:'🎁',  n:'Collectionneur',      d:'Obtenir 10 upgrades differents.',        goal:10,    stat:'uniqueUpgrades', reward:80},
+  {id:'games_10',     ico:'🎮',  n:'Accro',               d:'Jouer 10 parties.',                      goal:10,    stat:'gamesPlayed',    reward:100},
+  {id:'cursed',       ico:'😈',  n:'Maudit',              d:'Accepter une malediction.',              goal:1,     stat:'cursesAccepted', reward:30},
+  {id:'curse_5',      ico:'👹',  n:'Masochiste',          d:'Accepter 5 maledictions.',               goal:5,     stat:'cursesAccepted', reward:120},
+  {id:'ghost_kill',   ico:'👻',  n:'Chasseur de fantomes',d:'Tuer 10 fantomes.',                      goal:10,    stat:'ghostKills',     reward:80},
+  {id:'no_hit_5',     ico:'💫',  n:'Perfection',          d:'5 vagues sans degats.',                  goal:5,     stat:'noHitWaves',     reward:200},
 ];
 
 // ─── TIP MESSAGES ───
@@ -4498,7 +4498,9 @@ function spawnEnemy(def){
   else{x=-pad;y=Math.random()*H;}
   const w = G.wave;
   const hpScale  = w<=10 ? 1+w*0.15 : (1+10*0.15) * Math.pow(1.12, w-10);
+  // Degats : scaling normal pour petits ennemis, plafonné pour boss
   const dmgScale = w<=10 ? 1+w*0.10 : (1+10*0.10) * Math.pow(1.09, w-10);
+  const bossDmgScale = w<=10 ? 1+w*0.06 : (1+10*0.06) * Math.pow(1.05, w-10); // scaling boss plus doux
   const spdScale = 1 + w*0.032 + Math.max(0,(w-10)*0.018);
   if(G.enemies.length>=120) return;
 
@@ -4519,7 +4521,7 @@ function spawnEnemy(def){
     hp:baseHp, maxHp:baseHp,
     spd:def.spd*spdScale*(elite?.spdMult||1),
     col:elite?.col||def.col, pts:Math.round(def.pts*(1+w*0.05)*(elite?.pts||1)),
-    dmg:Math.round(def.dmg*dmgScale*(elite?.dmgMult||1)),
+    dmg:Math.round(def.dmg*(def.boss||def.mini?bossDmgScale:dmgScale)*(elite?.dmgMult||1)),
     id:def.id, boss:def.boss||false, mini:def.mini||false,
     shape:def.shape||'circle',
     explodes:def.explodes||false,
@@ -6273,6 +6275,7 @@ function checkAch(id,val){
     showAchToast(def);
     sfxAch();
     pushNotif('ach', '🎖 SUCCES DEBLOQUE', def.n+(def.reward?' · +'+def.reward+'🪙':''));
+    updateNotifBadge();
   }
 }
 
@@ -6976,6 +6979,8 @@ function startGame(){
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
+  // Grace period 3s au debut — evite le spawn kill
+  G.player.invincible=180;
   P2=null; initModeHud();
   // Spawn P2 if duo active
   if(_duoActive){
