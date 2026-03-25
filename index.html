@@ -3756,7 +3756,6 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 let scores     = loadData('pulse_scores_v2',   []);
 let achDone    = loadData('pulse_ach_v2',      {});
 let achSeen    = loadData('pulse_ach_seen_v1', {}); // succès vus dans l'écran succès
-const LAST_UPDATE_VERSION = '27.0';
 const UPDATE_NOTES = [
   '🎰 Emplacements reliques achetables — commence avec 1, achète jusqu'à 3',
   '🔔 Système de notifications — succès, cadeaux, amis, mises à jour',
