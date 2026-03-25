@@ -1301,7 +1301,7 @@ body.touch #minimap{display:none;}
     <div class="hb hw-cd"><div class="hl">⚡DASH</div><div class="bt"><div class="bf" id="bfcd"></div></div></div>
     <div id="hud-sep"></div>
     <div class="hb" style="text-align:right"><div class="hl">VAGUE</div><div class="hv hv1" id="hv-wave">—</div></div>
-    <div class="hb" style="text-align:right"><div class="hl">SCORE</div><div class="hv hv3" id="hv-score">0</div></div>
+    <div class="hb" style="text-align:right"><div class="hl">SCORE</div><div class="hv hv3" id="hv-score">0</div><div id="hud-streak" style="color:var(--c2);font-size:8px;letter-spacing:.1em;opacity:0;transition:opacity .3s;min-height:12px;"></div></div>
     <div class="hb" style="text-align:right"><div class="hl">KILLS</div><div class="hv hv2" id="hv-kills">0</div></div>
     <div class="hb" style="text-align:right"><div class="hl">ENNEMIS</div><div class="hv" style="color:var(--c6)" id="hv-enemies">0</div></div>
     <button id="hud-pause-btn" onclick="togglePause()">❙❙</button>
@@ -1414,6 +1414,7 @@ body.touch #minimap{display:none;}
     <div class="title-user-pill" id="title-user-pill"></div>
     <div class="hdiv"></div>
     <div class="title-best" id="title-best"></div>
+    <div id="title-stats-bar" style="display:flex;gap:12px;justify-content:center;font-size:7px;letter-spacing:.15em;color:var(--dim);margin-top:2px;"></div>
 
     <!-- Primary actions -->
     <div class="btn-col" style="margin-top:8px;gap:10px;">
@@ -1662,6 +1663,7 @@ body.touch #minimap{display:none;}
     <div class="go-rec" id="go-rec"></div>
     <div class="go-new-ach" id="go-new-ach"></div>
     <div class="go-upgs" id="go-upgs"></div>
+    <div id="go-history" style="text-align:center;max-width:300px;line-height:1.8;"></div>
     <!-- Stats détaillées -->
     <div class="go-detail-stats" id="go-detail-stats"></div>
     <!-- Pièces & XP row -->
@@ -2861,6 +2863,16 @@ function updateUserBar(){
 }
 
 function renderTitleBest(){
+  // Stats bar rapide
+  const bar = document.getElementById('title-stats-bar');
+  if(bar){
+    const parts = [];
+    if(gStats.gamesPlayed) parts.push('🎮 '+gStats.gamesPlayed+' parties');
+    if(gStats.totalKills) parts.push('💀 '+(gStats.totalKills>=1000?(gStats.totalKills/1000).toFixed(1)+'k':gStats.totalKills)+' kills');
+    if(gStats.maxWave) parts.push('🌊 V.'+gStats.maxWave+' record');
+    bar.textContent = parts.join('  ·  ');
+  }
+  // Titre best
   const best=scores[0]?.score||0;
   document.getElementById('title-best').textContent=best>0?`🏆 MEILLEUR SCORE : ${best}`:'';
   updateMenuBadges();
@@ -3926,6 +3938,18 @@ function saveScores(){
   saveData('pulse_scores_v2',scores);
   if(currentUser&&SB) saveCloudProfile({scores,stats:gStats});
 }
+
+function recordRunSummary(score, wave, kills, mode){
+  const runs = loadData('pulse_run_history_v1',[]);
+  runs.unshift({
+    score, wave, kills, mode: mode||'classique',
+    skin: equippedSkin||'default',
+    date: new Date().toLocaleDateString('fr-FR'),
+    ts: Date.now()
+  });
+  if(runs.length>20) runs.length=20;
+  saveData('pulse_run_history_v1', runs);
+}
 function saveAch(){
   saveData('pulse_ach_v2',achDone);
   if(currentUser&&SB) saveCloudProfile({ach:achDone});
@@ -4746,7 +4770,7 @@ function update(now){
   const _fpsNow=performance.now();
   if(_fpsNow-_fpsT0>=500){ fps=Math.round(fpsCount/(_fpsNow-_fpsT0)*1000); fpsCount=0; _fpsT0=_fpsNow;
     // Auto-suggest low quality mode if consistently slow
-    if(fps<40&&!settings.lowQuality&&G&&G.wave>2){
+    if(fps<35&&!settings.lowQuality&&G&&G.wave>2){
       G._lowFpsCount=(G._lowFpsCount||0)+1;
       if(G._lowFpsCount===8&&!window._ecoSuggested){ // Only once per session, after 4s
         window._ecoSuggested=true;
@@ -4783,6 +4807,11 @@ function update(now){
     const noHit=G.waveHitsReceived===0;
     if(noHit){ gStats.noHitWaves=(gStats.noHitWaves||0)+1; checkAch('no_dmg_wave',gStats.noHitWaves); checkAch('no_hit_5',gStats.noHitWaves); saveGStats(); showPopup('🛡 VAGUE PARFAITE ! +'+(waveScore).toLocaleString()+'pts','#00f5d4'); }
     else { showPopup(`✓ VAGUE ${G.wave} — +${waveScore.toLocaleString()}pts`, '#00f5d4'); }
+    // Indicateur de difficulte toutes les 5 vagues
+    if(G.wave>0 && G.wave%5===0){
+      const danger = G.wave<=10?'⚠ VAGUE '+(G.wave)+' — DANGER':G.wave<=20?'🔥 VAGUE '+(G.wave)+' — EXTREME':'☠ VAGUE '+(G.wave)+' — CAUCHEMAR';
+      setTimeout(()=>{ if(G) showPopup(danger,'#ff1a6e',2500); },400);
+    }
   }
   if(!G.waveActive&&G.waveCooldown>0){ G.waveCooldown--; if(G.waveCooldown===0){
     // Every 3 waves (but not on boss waves), offer a curse
@@ -5219,6 +5248,14 @@ function update(now){
   // Throttle HUD text updates to every 4 frames (reduces layout thrash)
   if(frame%4===0){
     _dom['hv-score'].textContent=G.score;
+  // Streak HUD
+  if(G._streak>=5){
+    const streakEl=document.getElementById('hud-streak');
+    if(streakEl){ streakEl.textContent='🔥×'+G._streak; streakEl.style.opacity='1'; }
+  } else {
+    const streakEl=document.getElementById('hud-streak');
+    if(streakEl) streakEl.style.opacity='0';
+  }
     _dom['hv-kills'].textContent=G.totalKills;
     const enemyCount=G.enemies.filter(e=>!e.dead).length;
     if(_dom['hv-enemies']) _dom['hv-enemies'].textContent=enemyCount+(G.waveActive&&G.spawnIdx<G.spawnPool.length?'+':'');
@@ -5341,6 +5378,8 @@ function onKill(e){
   const hardMult=G._hardcoreScoreMult||1;
   const pts=Math.round(e.pts*mult*hardMult);
   G.score+=pts; G.totalKills++; G.sessionKills++;
+  G._streak=(G._streak||0)+1;
+  G._streakTimer=180; // 3s pour continuer le streak
   G.combo++; G.comboTimer=215;
   updateCombo();
   // Kill streak — kills within 2 seconds
@@ -5791,7 +5830,7 @@ function draw(){
       ctx.restore(); continue;
     }
     // Trail — skip when many bullets on screen for perf
-    if(b.trail&&b.trail.length>1&&!settings.lowQuality&&!_manyBullets){
+    if(b.trail&&b.trail.length>1&&!settings.lowQuality&&!_manyBullets){ b.trail=b.trail.slice(-4);
       for(let i=1;i<b.trail.length;i++){
         const frac=1-i/b.trail.length;
         ctx.globalAlpha=frac*(b.enemy?0.25:0.45);
@@ -6145,6 +6184,7 @@ function gameOver(){
   const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
   addToHistory(entry);
   if(currentMode==='daily') saveDailyScore(G.score);
+  recordRunSummary(G.score, G.wave, G.totalKills, currentMode);
   scores.push(entry); scores.sort((a,b)=>b.score-a.score); scores=scores.slice(0,5);
   saveScores();
   // Update global stats
@@ -6199,7 +6239,14 @@ function gameOver(){
     <div class="go-stat"><div class="go-sv">${G.player.level}</div><div class="go-sl">NIVEAU</div></div>
     <div class="go-stat"><div class="go-sv">${G.maxComboThisRun}</div><div class="go-sl">MAX COMBO</div></div>`;
   document.getElementById('go-rec').textContent=isRec?'🏆 NOUVEAU RECORD !':scores[0]?.score>0?`Meilleur : ${scores[0].score.toLocaleString('fr-FR')}`:'';
-  document.getElementById('go-new-ach').textContent=newAchThisRun.length?`🎖 ${newAchThisRun.join(' · ')}`:'';
+  document.getElementById('go-new-ach').textContent=newAchThisRun.length?`🎖 ${newAchThisRun.join(' · ')}`:''
+  // Historique rapide
+  const goHist = document.getElementById('go-history');
+  if(goHist){
+    const runs = loadData('pulse_run_history_v1',[]).slice(0,3);
+    goHist.innerHTML = runs.length>1 ? '<div style="font-size:6px;letter-spacing:.2em;color:var(--dim);margin-top:8px;margin-bottom:4px;">3 DERNIERS RUNS</div>'+
+      runs.slice(1).map(r=>`<div style="font-size:7px;color:var(--txt2);letter-spacing:.08em;">${r.date} · V.${r.wave} · ${r.score.toLocaleString()}pts · ${r.kills} kills</div>`).join('') : '';
+  };
   document.getElementById('go-upgs').textContent=G.player.upgrades.length?G.player.upgrades.join(' · '):'';
   document.getElementById('go-coins').textContent=`🪙 +${coinsEarned} pieces`;
   document.getElementById('go-bp-xp').textContent=`⭐ +${bpXpGained} XP`;
@@ -7072,7 +7119,7 @@ function vibGp(strong=0.5,weak=0.2,dur=80){
     if(gp?.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble',{startDelay:0,duration:dur,weakMagnitude:weak,strongMagnitude:strong});
   }catch(e){}
 }
-function spawnFx(x,y,col,n=4){ if(G.particles.length>=150) return; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2,s=1.5+Math.random()*2.5; G.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:1.5+Math.random()*2,col,life:12+Math.random()*7,maxLife:19,alpha:1}); } }
+function spawnFx(x,y,col,n=4){ if(G.particles.length>=100) return; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2,s=1.5+Math.random()*2.5; G.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:1.5+Math.random()*2,col,life:12+Math.random()*7,maxLife:19,alpha:1}); } }
 function spawnDeathFx(x,y,col){
   for(let i=0;i<28;i++){
     const a=i/28*Math.PI*2, speed=1.8+Math.random()*6.5;
