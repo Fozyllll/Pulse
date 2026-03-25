@@ -1209,6 +1209,7 @@ body.touch #minimap{display:none;}
         <button class="online-tab active" id="ol-tab-browse" onclick="olSetTab('browse')">PARTIES PUBLIQUES</button>
         <button class="online-tab" id="ol-tab-create" onclick="olSetTab('create')">CRÉER</button>
         <button class="online-tab" id="ol-tab-join" onclick="olSetTab('join')">CODE</button>
+        <button class="online-tab" id="ol-tab-duel" onclick="olSetTab('duel')" style="border-color:var(--c2);color:var(--c2);">⚔ DUEL</button>
       </div>
 
       <!-- BROWSE -->
@@ -1246,6 +1247,26 @@ body.touch #minimap{display:none;}
         <button class="btn btn-p" id="ol-create-btn" onclick="olCreate()"><span>🎮 CRÉER LA ROOM</span></button>
         <button class="btn btn-p" id="ol-start-btn" style="display:none;" onclick="olStart()"><span>▶ LANCER</span></button>
         <button class="btn btn-s" id="ol-leave-btn" style="display:none;" onclick="olLeave()"><span>✕ QUITTER</span></button>
+      </div>
+
+      <!-- DUEL PvP -->
+      <div id="ol-duel-sec" style="display:none;flex-direction:column;gap:8px;">
+        <div style="text-align:center;padding:8px;border:1px solid rgba(255,26,110,.3);background:rgba(255,26,110,.04);margin-bottom:4px;">
+          <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:.15em;color:var(--c2);">⚔ MODE DUEL</div>
+          <div style="font-size:7px;color:var(--txt2);margin-top:4px;letter-spacing:.08em;">1v1 PvP · Tes balles blessent ladversaire · Dernier en vie gagne</div>
+        </div>
+        <input class="online-room-name" id="ol-duel-name-input" maxlength="20" placeholder="NOM DU DUEL" oninput="this.value=this.value.toUpperCase()">
+        <div style="font-size:7px;letter-spacing:.12em;color:var(--txt2);">Duree : 90 secondes · Arena fermee · PV : 100</div>
+        <div class="online-status" id="ol-duel-status"></div>
+        <div class="online-lobby-players" id="ol-duel-players" style="display:none;"></div>
+        <button class="btn btn-p" id="ol-duel-create-btn" onclick="duelCreate()" style="background:transparent;border-color:var(--c2);color:var(--c2);"><span>⚔ CREER LE DUEL</span></button>
+        <button class="btn btn-p" id="ol-duel-start-btn" style="display:none;border-color:var(--c2);color:var(--c2);" onclick="duelStart()"><span>▶ LANCER LE DUEL</span></button>
+        <button class="btn btn-s" id="ol-duel-leave-btn" style="display:none;" onclick="duelLeave()"><span>✕ QUITTER</span></button>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;">
+          <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:6px;">REJOINDRE UN DUEL PAR CODE</div>
+          <input class="online-room-name" id="ol-duel-code-input" maxlength="6" placeholder="CODE (6 CHIFFRES)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <button class="btn btn-s" style="margin-top:6px;border-color:var(--c2);color:var(--c2);" onclick="duelJoin()"><span>⚔ REJOINDRE</span></button>
+        </div>
       </div>
 
       <!-- JOIN BY CODE -->
@@ -6058,7 +6079,7 @@ function gameOver(){
   cancelAnimationFrame(animId); clearTimeout(cdTm);
   const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
   const m=Math.floor(elapsed/60), s=elapsed%60;
-  const modeLabel = currentMode==='daily'?'Defi':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arene':'Arene'):currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo Classique':'Classique';
+  const modeLabel = currentMode==='daily'?'Defi':currentMode==='duel'?'Duel PvP':currentMode==='chrono'?(_duoActive?'Duo Chrono':'Chrono'):currentMode==='arena'?(_duoActive?'Duo Arene':'Arene'):currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo Classique':'Classique';
   const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel};
   addToHistory(entry);
   if(currentMode==='daily') saveDailyScore(G.score);
@@ -8275,6 +8296,8 @@ function olInit(){
 
 function olSetTab(tab){
   olTab=tab;
+  const duelSec=document.getElementById('ol-duel-sec');
+  if(duelSec) duelSec.style.display=tab==='duel'?'flex':'none';
   ['browse','create','join'].forEach(t=>{
     document.getElementById('ol-tab-'+t).classList.toggle('active',t===tab);
     const sec=document.getElementById('ol-'+t+'-sec');
@@ -8504,7 +8527,242 @@ function olUpdateHud(){
   }
 }
 
+
+// ═══════════════════════════════════════════════════════
+//  MODE DUEL PvP
+// ═══════════════════════════════════════════════════════
+let duelChannel = null;
+let duelCode = null;
+let duelIsHost = false;
+let duelOpponent = null; // {uid, name, hp, x, y, score}
+let duelMyUid = null;
+let duelTimer = null;
+let duelTimeLeft = 90;
+let duelActive = false;
+let duelMyHp = 100;
+const DUEL_MAX_HP = 100;
+const DUEL_DURATION = 90;
+
+function duelStatus(msg, cls){
+  const el=document.getElementById('ol-duel-status');
+  if(el){ el.textContent=msg; el.className='online-status '+(cls||''); }
+}
+
+function duelRenderLobby(){
+  const el=document.getElementById('ol-duel-players');
+  if(!el) return;
+  el.style.display='flex';
+  el.innerHTML='';
+  // Moi
+  const me=document.createElement('div'); me.className='online-player-row';
+  me.innerHTML=`<div class="online-player-dot on"></div><div class="online-player-name">${olGetName()}</div><div class="online-player-tag">VOUS</div>`;
+  el.appendChild(me);
+  // Adversaire
+  if(duelOpponent){
+    const opp=document.createElement('div'); opp.className='online-player-row';
+    opp.innerHTML=`<div class="online-player-dot on" style="background:var(--c2);box-shadow:0 0 8px var(--c2);"></div><div class="online-player-name" style="color:var(--c2);">${duelOpponent.name||'?'}</div><div class="online-player-tag" style="color:var(--c2);">ADVERSAIRE</div>`;
+    el.appendChild(opp);
+  } else {
+    const wait=document.createElement('div'); wait.className='online-player-row';
+    wait.innerHTML=`<div class="online-player-dot empty"></div><div class="online-player-name" style="color:var(--dim);">En attente...</div>`;
+    el.appendChild(wait);
+  }
+}
+
+async function duelCreate(){
+  if(!SB){ duelStatus('Connexion requise.','err'); return; }
+  duelMyUid = currentUser?.id || ('d_'+Math.random().toString(36).slice(2,9));
+  duelCode = olGenCode();
+  duelIsHost = true;
+  duelOpponent = null;
+  duelStatus('Duel cree ! Code: '+duelCode,'ok');
+  document.getElementById('ol-duel-create-btn').style.display='none';
+  document.getElementById('ol-duel-leave-btn').style.display='block';
+  await duelSubscribe(duelCode);
+  duelSend({t:'duel_join', uid:duelMyUid, name:olGetName()});
+  duelRenderLobby();
+}
+
+async function duelJoin(){
+  const code=(document.getElementById('ol-duel-code-input').value||'').trim();
+  if(code.length<6){ duelStatus('Code invalide.','err'); return; }
+  if(!SB){ duelStatus('Connexion requise.','err'); return; }
+  duelMyUid = currentUser?.id || ('d_'+Math.random().toString(36).slice(2,9));
+  duelCode = code;
+  duelIsHost = false;
+  duelStatus('Connexion au duel...','wait');
+  await duelSubscribe(code);
+  duelSend({t:'duel_join', uid:duelMyUid, name:olGetName()});
+  document.getElementById('ol-duel-leave-btn').style.display='block';
+  duelRenderLobby();
+}
+
+async function duelSubscribe(code){
+  if(duelChannel){ try{duelChannel.unsubscribe();}catch(e){} }
+  duelChannel = SB.channel('pulse_duel_'+code, {config:{broadcast:{self:false}}});
+  duelChannel.on('broadcast',{event:'duel'},({payload})=>duelHandle(payload)).subscribe();
+}
+
+function duelSend(payload){
+  if(!duelChannel) return;
+  try{ duelChannel.send({type:'broadcast',event:'duel',payload}); }catch(e){}
+}
+
+function duelHandle(data){
+  if(!data||!data.t||data.uid===duelMyUid) return;
+  if(data.t==='duel_join'){
+    duelOpponent={uid:data.uid, name:data.name||'?', hp:DUEL_MAX_HP, x:0, y:0, score:0};
+    duelRenderLobby();
+    duelStatus('Adversaire trouve: '+data.name+' !','ok');
+    // Repondre pour que lhote sache quon est la
+    duelSend({t:'duel_join', uid:duelMyUid, name:olGetName()});
+    if(duelIsHost){
+      document.getElementById('ol-duel-start-btn').style.display='block';
+    }
+    return;
+  }
+  if(data.t==='duel_start' && !duelActive){
+    duelActive=true;
+    duelLaunch();
+    return;
+  }
+  if(data.t==='duel_pos' && duelOpponent){
+    duelOpponent.hp=data.hp;
+    duelOpponent.x=data.x;
+    duelOpponent.y=data.y;
+    duelOpponent.score=data.score||0;
+    duelUpdateHud();
+    return;
+  }
+  if(data.t==='duel_hit'){
+    // Ladversaire nous a touche
+    if(G&&G.running&&duelActive){
+      const dmg=data.dmg||10;
+      G.player.hp=Math.max(0,G.player.hp-dmg);
+      updateHPBar();
+      flashDmg();
+      if(G.player.hp<=0){
+        duelSend({t:'duel_dead',uid:duelMyUid});
+        duelEnd(false);
+      }
+    }
+    return;
+  }
+  if(data.t==='duel_dead'){
+    duelEnd(true);
+    return;
+  }
+}
+
+function duelStart(){
+  if(!duelIsHost) return;
+  if(!duelOpponent){ duelStatus('Attends un adversaire !','err'); return; }
+  duelActive=true;
+  duelSend({t:'duel_start',uid:duelMyUid});
+  duelLaunch();
+}
+
+function duelLaunch(){
+  duelMyHp=DUEL_MAX_HP;
+  duelTimeLeft=DUEL_DURATION;
+  currentMode='duel';
+  startGame();
+  document.getElementById('online-hud').classList.add('on');
+  duelUpdateHud();
+  // Timer 90s
+  if(duelTimer) clearInterval(duelTimer);
+  duelTimer=setInterval(()=>{
+    duelTimeLeft--;
+    duelUpdateHud();
+    if(duelTimeLeft<=0){
+      clearInterval(duelTimer); duelTimer=null;
+      // Fin du temps — celui avec le plus de score/HP gagne
+      duelEnd(G.player.hp >= (duelOpponent?.hp||0));
+    }
+  },1000);
+  // Sync position toutes les 50ms
+  if(duelSyncInt) clearInterval(duelSyncInt);
+  duelSyncInt=setInterval(duelSyncPosition,50);
+}
+let duelSyncInt=null;
+
+function duelSyncPosition(){
+  if(!G||!G.running||!duelActive) return;
+  duelSend({t:'duel_pos',uid:duelMyUid,hp:Math.round(G.player.hp),x:Math.round(G.player.x),y:Math.round(G.player.y),score:G.score});
+}
+
+function duelUpdateHud(){
+  const hud=document.getElementById('online-hud'); if(!hud) return;
+  const oppHpPct=duelOpponent?Math.max(0,Math.min(100,(duelOpponent.hp/DUEL_MAX_HP)*100)):0;
+  hud.innerHTML=`
+    <div style="background:rgba(3,3,10,.9);border:1px solid rgba(255,26,110,.4);padding:6px 10px;min-width:140px;">
+      <div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.12em;color:var(--c2);margin-bottom:4px;">⚔ DUEL · ${duelTimeLeft}s</div>
+      ${duelOpponent?`
+        <div style="font-size:7px;color:var(--txt2);margin-bottom:2px;">${(duelOpponent.name||'?').substring(0,12)}</div>
+        <div style="height:4px;background:var(--dim);border-radius:2px;overflow:hidden;width:100%;">
+          <div style="height:100%;width:${oppHpPct}%;background:var(--c2);border-radius:2px;transition:width .2s;"></div>
+        </div>
+        <div style="font-size:6px;color:var(--c2);margin-top:2px;">${Math.round(duelOpponent.hp||0)} PV</div>
+      `:'<div style="font-size:7px;color:var(--dim);">En attente...</div>'}
+    </div>`;
+}
+
+// Detecter si une balle touche ladversaire en mode duel
+function duelCheckBulletHit(bx, by, dmg){
+  if(!duelActive||!duelOpponent||!duelOpponent.x) return false;
+  const dx=bx-duelOpponent.x, dy=by-duelOpponent.y;
+  if(Math.hypot(dx,dy)<16){
+    duelSend({t:'duel_hit',uid:duelMyUid,dmg:dmg||10});
+    duelOpponent.hp=Math.max(0,duelOpponent.hp-(dmg||10));
+    duelUpdateHud();
+    return true;
+  }
+  return false;
+}
+
+function duelEnd(won){
+  duelActive=false;
+  if(duelTimer){ clearInterval(duelTimer); duelTimer=null; }
+  if(duelSyncInt){ clearInterval(duelSyncInt); duelSyncInt=null; }
+  const msg=won?'⚔ VICTOIRE !':'💀 DEFAITE...';
+  const col=won?'var(--c1)':'var(--c2)';
+  showPopup(msg, col, 3000);
+  setTimeout(()=>{ if(G&&G.running){ G.running=false; showGameOver(); } },1500);
+}
+
+function duelLeave(){
+  duelActive=false;
+  if(duelTimer){ clearInterval(duelTimer); duelTimer=null; }
+  if(duelSyncInt){ clearInterval(duelSyncInt); duelSyncInt=null; }
+  if(duelChannel){ try{duelChannel.unsubscribe();}catch(e){} duelChannel=null; }
+  duelOpponent=null; duelCode=null; duelIsHost=false;
+  document.getElementById('ol-duel-players').style.display='none';
+  document.getElementById('ol-duel-create-btn').style.display='block';
+  document.getElementById('ol-duel-start-btn').style.display='none';
+  document.getElementById('ol-duel-leave-btn').style.display='none';
+  document.getElementById('online-hud').classList.remove('on');
+  duelStatus('','');
+}
+
 function olDrawPeers(){
+  // Mode duel : dessiner ladversaire
+  if(currentMode==='duel'&&duelActive&&duelOpponent&&duelOpponent.x){
+    const ctx=gCtx;
+    ctx.save();
+    ctx.globalAlpha=0.8;
+    ctx.shadowColor='#ff1a6e'; ctx.shadowBlur=12;
+    ctx.strokeStyle='#ff1a6e'; ctx.lineWidth=2;
+    const r=12;
+    ctx.beginPath();
+    for(let i=0;i<6;i++){ const a=i/6*Math.PI*2-Math.PI/2; i===0?ctx.moveTo(duelOpponent.x+Math.cos(a)*r,duelOpponent.y+Math.sin(a)*r):ctx.lineTo(duelOpponent.x+Math.cos(a)*r,duelOpponent.y+Math.sin(a)*r); }
+    ctx.closePath(); ctx.stroke();
+    // Nom
+    ctx.globalAlpha=0.9; ctx.shadowBlur=0;
+    ctx.fillStyle='#ff1a6e'; ctx.font='bold 9px Orbitron,monospace'; ctx.textAlign='center';
+    ctx.fillText((duelOpponent.name||'?').substring(0,8), duelOpponent.x, duelOpponent.y-18);
+    ctx.restore();
+    return;
+  }
   if(currentMode!=='online'||!olChannel) return;
   const ctx=gCtx, now=Date.now();
   ctx.save();
