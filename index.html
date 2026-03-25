@@ -1410,6 +1410,7 @@ body.touch #minimap{display:none;}
       <button class="btn btn-s" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
       <button class="btn btn-s" style="min-width:0;" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
+      <button class="btn btn-s" style="min-width:0;position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint">
@@ -1489,6 +1490,17 @@ body.touch #minimap{display:none;}
       <div id="gpmap-list"></div>
     </div>
     
+  </div>
+</div>
+
+<div class="scr" id="s-notif">
+  <div class="scr-inner" style="align-items:center;width:100%;">
+    <div class="scr-h">🔔 NOTIFICATIONS</div>
+    <div style="display:flex;justify-content:flex-end;width:min(520px,96vw);margin-bottom:6px;">
+      <button onclick="clearAllNotifs()" style="font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;padding:4px 10px;border:1px solid var(--border);color:var(--dim);background:none;cursor:pointer;">🗑 TOUT EFFACER</button>
+    </div>
+    <div id="notif-list" style="width:min(520px,96vw);display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow-y:auto;"></div>
+    <button class="btn btn-s" style="margin-top:14px;" onclick="show('s-title')"><span>← RETOUR</span></button>
   </div>
 </div>
 
@@ -2358,6 +2370,13 @@ async function afterLogin(isNewAccount=false){
   }
   updateCoinsHUD();
   updateUserBar();
+  updateNotifBadge();
+  // Notif mise à jour si nouvelle version
+  const lastSeenVer = loadData('pulse_last_seen_ver','0');
+  if(lastSeenVer !== LAST_UPDATE_VERSION){
+    pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', UPDATE_NOTES.slice(0,3).join(' · '), 'VOIR', null);
+    saveData('pulse_last_seen_ver', LAST_UPDATE_VERSION);
+  }
   maybeShowOnboard(isNewAccount);
 }
 
@@ -3739,13 +3758,92 @@ let achDone    = loadData('pulse_ach_v2',      {});
 let achSeen    = loadData('pulse_ach_seen_v1', {}); // succès vus dans l'écran succès
 const LAST_UPDATE_VERSION = '27.0';
 const UPDATE_NOTES = [
+  '🎰 Emplacements reliques achetables — commence avec 1, achète jusqu'à 3',
+  '🔔 Système de notifications — succès, cadeaux, amis, mises à jour',
+  '🎮 Latence manette Bluetooth réduite (~2ms polling)',
+  '🧱 Correction clignotement d'écran avec les murs',
   '🌌 4 nouveaux skins exclusifs pass premium (VOID, SOLAIRE, GLITCH, COSMIQUE)',
-  '⭐ Pass saisonnier dual-track FREE/PREMIUM (style Brawl Stars)',
+  '⭐ Pass saisonnier dual-track FREE/PREMIUM',
   '🔊 Bruitages améliorés (tir, dash, bombe, menus)',
-  '🖱️ Curseur custom visible partout sur desktop',
-  '🔁 Synchronisation cloud : reliques, défi du jour, pass premium',
   '👥 Système amis + profils publics',
 ];
+const LAST_UPDATE_VERSION = 'v28';
+
+// ═══════════════════════════════════════════════════════
+//  SYSTÈME DE NOTIFICATIONS
+// ═══════════════════════════════════════════════════════
+function loadNotifs(){ return loadData('pulse_notifs_v1',[]); }
+function saveNotifs(n){ saveData('pulse_notifs_v1',n); }
+
+function pushNotif(type, title, body, action=null, actionFn=null){
+  const notifs = loadNotifs();
+  notifs.unshift({ id: Date.now()+'_'+Math.random().toString(36).slice(2), type, title, body, action, actionFn: actionFn?actionFn.toString():null, ts: Date.now(), read: false });
+  // Garder max 50 notifs
+  if(notifs.length>50) notifs.length=50;
+  saveNotifs(notifs);
+  updateNotifBadge();
+}
+
+function updateNotifBadge(){
+  const notifs = loadNotifs();
+  const unread = notifs.filter(n=>!n.read).length;
+  setBadge('btn-notif-badge', unread);
+}
+
+function clearAllNotifs(){
+  saveNotifs([]);
+  updateNotifBadge();
+  renderNotifs();
+}
+
+function markAllRead(){
+  const notifs = loadNotifs();
+  notifs.forEach(n=>n.read=true);
+  saveNotifs(notifs);
+  updateNotifBadge();
+}
+
+function renderNotifs(){
+  markAllRead();
+  const list = document.getElementById('notif-list');
+  if(!list) return;
+  const notifs = loadNotifs();
+  if(!notifs.length){
+    list.innerHTML='<div style="text-align:center;color:var(--dim);font-size:9px;letter-spacing:.15em;padding:30px;">Aucune notification</div>';
+    return;
+  }
+  const icons = { ach:'🎖', gift:'🎁', friend:'👥', update:'🆕', bp:'⭐', admin:'📢', coins:'🪙', relic:'✨' };
+  const colors = { ach:'var(--c3)', gift:'var(--c2)', friend:'var(--c1)', update:'var(--c1)', bp:'var(--c3)', admin:'var(--c2)', coins:'var(--c3)', relic:'var(--c3)' };
+  list.innerHTML = notifs.map(n=>{
+    const ico = icons[n.type]||'🔔';
+    const col = colors[n.type]||'var(--c1)';
+    const ago = _notifAgo(n.ts);
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">
+      <span style="font-size:18px;min-width:24px;">${ico}</span>
+      <div style="flex:1;">
+        <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;color:${col};margin-bottom:2px;">${n.title}</div>
+        <div style="font-size:8px;color:var(--txt2);line-height:1.4;">${n.body}</div>
+        <div style="font-size:6px;color:var(--dim);margin-top:4px;letter-spacing:.1em;">${ago}</div>
+      </div>
+      ${n.action?`<button onclick="delNotif('${n.id}')" style="font-size:7px;padding:3px 8px;border:1px solid ${col};color:${col};background:transparent;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:.08em;white-space:nowrap;">${n.action}</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function delNotif(id){
+  const notifs = loadNotifs().filter(n=>n.id!==id);
+  saveNotifs(notifs);
+  renderNotifs();
+}
+
+function _notifAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'À l'instant';
+  if(s<3600) return Math.floor(s/60)+'min';
+  if(s<86400) return Math.floor(s/3600)+'h';
+  return Math.floor(s/86400)+'j';
+}
+
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
 let newAchThisRun = [];
@@ -6094,6 +6192,7 @@ function checkAch(id,val){
     }
     showAchToast(def);
     sfxAch();
+    pushNotif('ach', '🎖 SUCCÈS DÉBLOQUÉ', def.n+(def.reward?' · +'+def.reward+'🪙':''));
   }
 }
 
@@ -6729,7 +6828,7 @@ const BACK_MAP = {
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
   's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
-  's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth',
+  's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
 };
 let _backBtn=null;
 function _initBackBtn(){
