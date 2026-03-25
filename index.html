@@ -2432,6 +2432,7 @@ async function afterLogin(isNewAccount=false){
   updateCoinsHUD();
   updateUserBar();
   updateNotifBadge();
+  initAdminBroadcastListener();
   // Notif mise a jour si nouvelle version
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   if(lastSeenVer !== LAST_UPDATE_VERSION){
@@ -9081,6 +9082,60 @@ function adminStatus(msg, cls){
   if(el){ el.textContent=msg; el.className='admin-status '+(cls||''); }
 }
 
+// ── Admin Broadcast ──
+const ADMIN_CHANNEL = 'pulse_admin_broadcast';
+let _adminBcChannel = null;
+
+function adminInitBroadcast(){
+  if(!SB||!isAdmin()) return;
+  if(_adminBcChannel) return;
+  _adminBcChannel = SB.channel(ADMIN_CHANNEL, {config:{broadcast:{self:true}}});
+  _adminBcChannel.subscribe();
+}
+
+async function adminBroadcast(){
+  if(!isAdmin()){ alert('Acces refuse.'); return; }
+  const txt = document.getElementById('admin-broadcast-txt')?.value?.trim();
+  if(!txt){ document.getElementById('admin-broadcast-status').textContent='Message vide.'; return; }
+  const statusEl = document.getElementById('admin-broadcast-status');
+  statusEl.textContent='Diffusion...'; statusEl.className='admin-status wait';
+  try {
+    // Sauvegarder dans tous les profils via une table de messages (ou juste via Realtime)
+    if(!_adminBcChannel) adminInitBroadcast();
+    await _adminBcChannel.send({
+      type:'broadcast', event:'admin_msg',
+      payload:{ txt, ts:Date.now(), from: userPseudo||'Admin' }
+    });
+    // Aussi sauvegarder dans un champ de la DB pour les joueurs hors ligne
+    // On met a jour admin_msgs dans le profil de chaque joueur (batch via RPC si dispo, sinon on skip)
+    statusEl.textContent='✓ Message diffuse a tous les joueurs connectes !';
+    statusEl.className='admin-status ok';
+    document.getElementById('admin-broadcast-txt').value='';
+    pushNotif('admin','📢 Message envoye',txt);
+  } catch(e){
+    statusEl.textContent='Erreur: '+e.message;
+    statusEl.className='admin-status err';
+  }
+}
+
+async function adminBroadcastTest(){
+  if(!isAdmin()) return;
+  const txt = document.getElementById('admin-broadcast-txt')?.value?.trim()||'Test message admin';
+  pushNotif('admin','📢 TEST ADMIN',txt);
+  showPopup('Test notif envoye !','#00f5d4');
+}
+
+// ── Ecouter les messages admin en temps reel (pour tous les joueurs) ──
+function initAdminBroadcastListener(){
+  if(!SB) return;
+  const ch = SB.channel(ADMIN_CHANNEL, {config:{broadcast:{self:false}}});
+  ch.on('broadcast',{event:'admin_msg'},({payload})=>{
+    if(!payload||!payload.txt) return;
+    pushNotif('admin','📢 MESSAGE DE LADMIN', payload.txt);
+    showPopup('📢 '+payload.txt.substring(0,40),'#ff1a6e',4000);
+  }).subscribe();
+}
+
 
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE RELIQUES
@@ -10605,6 +10660,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         <button class="admin-btn warn" onclick="adminLoadAll()">TOUS</button>
       </div>
       <div class="admin-status" id="admin-search-status"></div>
+
+      <!-- Broadcast message -->
+      <div style="margin-top:16px;border-top:1px solid rgba(255,26,110,.2);padding-top:14px;">
+        <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.22em;color:var(--c2);margin-bottom:10px;">📢 MESSAGE A TOUS LES JOUEURS</div>
+        <textarea id="admin-broadcast-txt" placeholder="Message a diffuser a tous les joueurs connectes..." style="width:100%;height:70px;background:var(--dim2);border:1px solid rgba(255,26,110,.3);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:11px;padding:8px 10px;outline:none;resize:none;box-sizing:border-box;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button class="admin-btn save" onclick="adminBroadcast()" style="border-color:var(--c2);color:var(--c2);">📡 DIFFUSER</button>
+          <button class="admin-btn warn" onclick="adminBroadcastTest()" style="font-size:7px;">TEST (moi seulement)</button>
+        </div>
+        <div class="admin-status" id="admin-broadcast-status"></div>
+      </div>
 
       <!-- Results -->
       <div id="admin-results"></div>
