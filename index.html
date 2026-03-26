@@ -9175,9 +9175,181 @@ async function adminLoadDetailStats(){
   } catch(e){ if(st){ st.textContent='Erreur réseau.'; st.className='admin-status err'; } }
 }
 
-function adminForceMaintenanceMode(){
+// ═══════════════════════════════════════════════════════
+//  MAINTENANCE MODE
+// ═══════════════════════════════════════════════════════
+let _maintActive = false;
+let _maintCountdownInterval = null;
+const MAINT_CHANNEL = 'pulse_maintenance';
+let _maintChannel = null;
+
+// Called once at app init — all players listen for maintenance events
+function initMaintenanceListener(){
+  if(!SB) return;
+  _maintChannel = SB.channel(MAINT_CHANNEL, {config:{broadcast:{self:false}}});
+  _maintChannel.on('broadcast',{event:'maintenance'},({payload})=>{
+    if(!payload) return;
+    if(payload.active){
+      _showMaintenanceScreen(payload.msg||'', payload.duration||0);
+    } else {
+      _hideMaintenanceScreen();
+    }
+  }).subscribe();
+}
+
+function _showMaintenanceScreen(msg, durationMin){
+  const scr = document.getElementById('maintenance-screen');
+  if(!scr) return;
+  // Stop any running game
+  if(typeof G !== 'undefined' && G && G.running){ G.running=false; }
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.body.classList.remove('game-active');
+  // Set message
+  const msgEl = document.getElementById('maint-msg');
+  if(msgEl) msgEl.textContent = msg || 'Le serveur est en cours de maintenance. Merci de patienter.';
+  const verEl = document.getElementById('maint-version');
+  if(verEl) verEl.textContent = typeof VERSION !== 'undefined' ? VERSION : '';
+  // Countdown
+  clearInterval(_maintCountdownInterval);
+  const cdWrap = document.getElementById('maint-countdown-wrap');
+  const cdEl   = document.getElementById('maint-countdown');
+  if(durationMin > 0 && cdWrap && cdEl){
+    cdWrap.style.display = 'block';
+    let remaining = durationMin * 60;
+    const tick = ()=>{
+      if(remaining <= 0){ clearInterval(_maintCountdownInterval); cdEl.textContent='00:00'; return; }
+      const m = Math.floor(remaining/60);
+      const s = remaining % 60;
+      cdEl.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      remaining--;
+    };
+    tick();
+    _maintCountdownInterval = setInterval(tick, 1000);
+  } else if(cdWrap){
+    cdWrap.style.display = 'none';
+  }
+  scr.style.display = 'flex';
+  _maintActive = true;
+}
+
+function _hideMaintenanceScreen(){
+  clearInterval(_maintCountdownInterval);
+  const scr = document.getElementById('maintenance-screen');
+  if(scr) scr.style.display = 'none';
+  _maintActive = false;
+  // Send player back to title
+  show('s-title');
+  showPopup('✅ Serveur de retour en ligne !','#00f5d4');
+}
+
+async function adminForceMaintenanceMode(){
   if(!isAdmin()) return;
-  showPopup('⚠ Non implémenté','#ffbe0b');
+  // Build modal
+  const msg     = document.getElementById('admin-maint-msg')?.value?.trim()    || '';
+  const dur      = parseInt(document.getElementById('admin-maint-dur')?.value)   || 0;
+  const activate = !_maintActive;
+  const statusEl = document.getElementById('admin-maint-status');
+  if(statusEl){ statusEl.textContent = activate ? 'Activation...' : 'Désactivation...'; statusEl.className='admin-status wait'; }
+  try{
+    if(!_adminBcChannel) adminInitBroadcast();
+    // Broadcast to all players via realtime
+    const maintBc = SB.channel(MAINT_CHANNEL, {config:{broadcast:{self:true}}});
+    await maintBc.subscribe(async (status)=>{
+      if(status !== 'SUBSCRIBED') return;
+      await maintBc.send({
+        type:'broadcast', event:'maintenance',
+        payload:{ active: activate, msg: msg||'Maintenance en cours. Merci de patienter.', duration: dur }
+      });
+      // Admin themselves sees the result too
+      if(activate){
+        _showMaintenanceScreen(msg||'Maintenance en cours. Merci de patienter.', dur);
+      } else {
+        _hideMaintenanceScreen();
+      }
+      if(statusEl){
+        statusEl.textContent = activate ? '🔒 Maintenance activée — tous les joueurs bloqués.' : '✅ Maintenance désactivée — joueurs relâchés.';
+        statusEl.className = 'admin-status '+(activate?'err':'ok');
+      }
+      // Update button label
+      const btn = document.getElementById('admin-maint-btn');
+      if(btn) btn.textContent = activate ? '🔓 DÉSACTIVER MAINTENANCE' : '🔒 ACTIVER MAINTENANCE';
+    });
+  } catch(e){
+    if(statusEl){ statusEl.textContent='Erreur : '+e.message; statusEl.className='admin-status err'; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADMIN — KICK ALL PLAYERS
+// ═══════════════════════════════════════════════════════
+async function adminKickAll(){
+  if(!isAdmin()) return;
+  const reason = document.getElementById('admin-kick-reason')?.value?.trim() || 'Déconnexion forcée par l\'admin.';
+  const statusEl = document.getElementById('admin-kick-status');
+  if(statusEl){ statusEl.textContent='Envoi...'; statusEl.className='admin-status wait'; }
+  try{
+    if(!_adminBcChannel) adminInitBroadcast();
+    await _adminBcChannel.send({
+      type:'broadcast', event:'admin_kick',
+      payload:{ reason, ts: Date.now() }
+    });
+    if(statusEl){ statusEl.textContent='✓ Signal de déconnexion envoyé à tous les joueurs connectés.'; statusEl.className='admin-status ok'; }
+  } catch(e){
+    if(statusEl){ statusEl.textContent='Erreur : '+e.message; statusEl.className='admin-status err'; }
+  }
+}
+
+// Listen for kick signal (all players)
+function initKickListener(){
+  if(!SB||!_adminBcChannel) return;
+  // The broadcast listener is already set up in initAdminBroadcastListener
+  // We handle 'admin_kick' there
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADMIN — RESET DAILY LEADERBOARD
+// ═══════════════════════════════════════════════════════
+async function adminResetDailyLB(){
+  if(!isAdmin()) return;
+  const statusEl = document.getElementById('admin-daily-status');
+  if(!confirm('Remettre à zéro le classement du jour de TOUS les joueurs ?')) return;
+  if(statusEl){ statusEl.textContent='Réinitialisation...'; statusEl.className='admin-status wait'; }
+  try{
+    // Reset daily_score for all profiles
+    const {error} = await SB.from('profiles').update({ daily_score: null }).neq('id','00000000-0000-0000-0000-000000000000');
+    if(error) throw error;
+    if(statusEl){ statusEl.textContent='✓ Classement journalier remis à zéro.'; statusEl.className='admin-status ok'; }
+    showPopup('🗑 Daily LB réinitialisé','#ffbe0b');
+  } catch(e){
+    if(statusEl){ statusEl.textContent='Erreur : '+e.message; statusEl.className='admin-status err'; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADMIN — GIVE COINS TO ALL PLAYERS
+// ═══════════════════════════════════════════════════════
+async function adminGiveCoinsAll(){
+  if(!isAdmin()) return;
+  const amount = parseInt(document.getElementById('admin-coins-all-amount')?.value);
+  const statusEl = document.getElementById('admin-coins-all-status');
+  if(!amount || amount<=0 || amount>100000){ if(statusEl){statusEl.textContent='Montant invalide (1–100000).';statusEl.className='admin-status err';} return; }
+  if(!confirm(`Donner ${amount} 🪙 à TOUS les joueurs ?`)) return;
+  if(statusEl){ statusEl.textContent='En cours...'; statusEl.className='admin-status wait'; }
+  try{
+    // Fetch all profiles coins
+    const {data, error} = await SB.from('profiles').select('id,coins');
+    if(error) throw error;
+    // Batch update
+    let done=0;
+    for(const p of data){
+      await SB.from('profiles').update({coins:(p.coins||0)+amount}).eq('id',p.id);
+      done++;
+    }
+    if(statusEl){ statusEl.textContent=`✓ ${amount} 🪙 donnés à ${done} joueurs.`; statusEl.className='admin-status ok'; }
+    showPopup(`🪙 +${amount} pour tous !`,'#ffbe0b');
+  } catch(e){
+    if(statusEl){ statusEl.textContent='Erreur : '+e.message; statusEl.className='admin-status err'; }
+  }
 }
 
 function adminClearAllNotifs(){
@@ -11164,6 +11336,42 @@ if('serviceWorker' in navigator){
     <div class="sdm-equip-hint" id="sdm-equip-section"></div>
   </div>
 </div>
+
+<!-- ═══ MAINTENANCE SCREEN ═══ -->
+<div id="maintenance-screen" style="
+  display:none;position:fixed;inset:0;z-index:99999;
+  background:#03030a;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;
+">
+  <div style="text-align:center;max-width:380px;padding:32px 24px;">
+    <!-- Animated icon -->
+    <div id="maint-icon" style="font-size:56px;margin-bottom:20px;animation:maint-pulse 2s ease-in-out infinite;">🔧</div>
+    <div style="font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(18px,5vw,26px);
+      letter-spacing:.15em;color:#ff1a6e;text-shadow:0 0 30px rgba(255,26,110,.4);margin-bottom:8px;">
+      MAINTENANCE
+    </div>
+    <div style="font-size:8px;letter-spacing:.3em;color:#7abfa0;margin-bottom:24px;">PULSE · SERVEUR TEMPORAIREMENT HORS LIGNE</div>
+    <div id="maint-msg" style="
+      background:rgba(255,26,110,.06);border:1px solid rgba(255,26,110,.2);
+      padding:14px 18px;font-size:11px;color:#b0ddc8;line-height:1.8;
+      letter-spacing:.05em;margin-bottom:20px;min-height:40px;
+    ">Le serveur est en cours de maintenance. Merci de patienter.</div>
+    <!-- Countdown -->
+    <div id="maint-countdown-wrap" style="display:none;margin-bottom:20px;">
+      <div style="font-size:7px;letter-spacing:.3em;color:#7abfa0;margin-bottom:6px;">RETOUR ESTIMÉ DANS</div>
+      <div id="maint-countdown" style="font-family:'Orbitron',monospace;font-size:28px;font-weight:700;color:#00f5d4;text-shadow:0 0 20px rgba(0,245,212,.4);">--:--</div>
+    </div>
+    <!-- Animated bar -->
+    <div style="width:100%;height:2px;background:rgba(255,26,110,.1);overflow:hidden;margin-bottom:20px;">
+      <div style="height:100%;background:linear-gradient(90deg,transparent,#ff1a6e,transparent);animation:maint-scan 2s linear infinite;"></div>
+    </div>
+    <div style="font-size:8px;color:#2e5244;letter-spacing:.15em;">v<span id="maint-version"></span></div>
+  </div>
+</div>
+<style>
+@keyframes maint-pulse{0%,100%{transform:scale(1) rotate(0deg);}50%{transform:scale(1.12) rotate(-8deg);}}
+@keyframes maint-scan{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
+</style>
 
 </body>
 </html>
