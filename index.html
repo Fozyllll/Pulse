@@ -432,6 +432,29 @@ body.game-active.touch #mob { display:flex !important; }
 
 /* Aim right — LANDSCAPE */
 #aim-zone{position:absolute;bottom:0;right:0;width:50%;height:65%;pointer-events:all;touch-action:none;}
+
+/* ── JOYSTICKS FLOTTANTS PAYSAGE (quand rotation verrouillee sur portrait) ──
+   Si physiquement en paysage mais CSS pense portrait : joysticks sur toute la surface */
+body.force-landscape #joy-zone{
+  position:fixed!important;
+  bottom:0!important; left:0!important;
+  width:50%!important; height:100%!important;
+  z-index:200!important;
+}
+body.force-landscape #aim-zone{
+  position:fixed!important;
+  bottom:0!important; right:0!important;
+  width:50%!important; height:100%!important;
+  z-index:200!important;
+}
+body.force-landscape #mob-btns{
+  position:fixed!important;
+  right:clamp(10px,3vmin,20px)!important;
+  bottom:clamp(80px,20vmin,140px)!important;
+  flex-direction:column!important;
+  z-index:201!important;
+}
+body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 #aim-ring{position:absolute;bottom:clamp(20px,5vmin,40px);right:clamp(14px,4vmin,26px);
   width:clamp(58px,14vmin,80px);height:clamp(58px,14vmin,80px);
   border-radius:50%;border:1.5px solid rgba(255,26,110,.2);background:rgba(255,26,110,.04);
@@ -1549,6 +1572,7 @@ body.touch #minimap{display:none;}
   <div class="scr-inner" style="align-items:center;">
     <div class="pause-h">PAUSE</div>
     <div class="pause-stats" id="pause-stats"></div>
+    <div id="pause-tip" style="font-size:7px;color:var(--dim);letter-spacing:.12em;text-align:center;max-width:280px;line-height:1.7;margin-top:4px;font-style:italic;"></div>
 
     <!-- Active run relics -->
     <div id="pause-relics" style="display:none;width:min(420px,92vw);margin:6px 0;">
@@ -2260,7 +2284,27 @@ async function hardReload(){
   btn.textContent = '⏳ Nettoyage…';
   btn.style.pointerEvents = 'none';
   try {
-    if('serviceWorker' in navigator){
+    // Detecter et appliquer le mode paysage force si necessaire
+function applyOrientationFix(){
+  if(!isMobile) return;
+  const physically = isPhysicallyLandscape();
+  if(physically){
+    // Physiquement en paysage : supprimer les overrides portrait CSS
+    document.body.classList.add('force-landscape');
+    document.body.classList.remove('force-portrait');
+  } else {
+    document.body.classList.remove('force-landscape');
+  }
+  setupCanvas();
+}
+
+window.addEventListener('resize', ()=>{ applyOrientationFix(); if(G&&G.running) setupCanvas(); });
+window.addEventListener('orientationchange', ()=>{ setTimeout(applyOrientationFix, 300); });
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', ()=>{ applyOrientationFix(); });
+}
+
+if('serviceWorker' in navigator){
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
     }
@@ -4231,7 +4275,8 @@ function setupCanvas(){
   // Sur iOS Safari, visualViewport donne la vraie hauteur sans les barres
   const sw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
   const sh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const isPortrait=sh>sw;
+  // Utilise la detection physique — ignore le verrouillage de rotation OS
+  const isPortrait = isMobile && !isPhysicallyLandscape();
 
   if(isPortrait && isMobile){
     // Portrait mobile: game in top 62% of real viewport
@@ -4257,7 +4302,7 @@ function setupCanvas(){
   bCtx=bc.getContext('2d',{alpha:false,desynchronized:true}); 
   gCtx=gc.getContext('2d',{alpha:true,desynchronized:true});
   bgStars=[];
-  for(let i=0;i<230;i++) bgStars.push({x:Math.random()*W, y:Math.random()*H, r:.25+Math.random()*1.4, a:.04+Math.random()*.35, bs:.0015+Math.random()*.008, ph:Math.random()*Math.PI*2});
+  const starCount = settings.lowQuality ? 80 : (isMobile ? 150 : 230); for(let i=0;i<starCount;i++) bgStars.push({x:Math.random()*W, y:Math.random()*H, r:.25+Math.random()*1.4, a:.04+Math.random()*.35, bs:.0015+Math.random()*.008, ph:Math.random()*Math.PI*2});
   // Reposition player if game running
   if(G&&G.player){
     G.player.x=Math.max(G.player.r,Math.min(W-G.player.r,G.player.x));
@@ -5296,7 +5341,7 @@ function hitEnemy(e,b){
   G.shotsHit=(G.shotsHit||0)+1;
   // Floating damage number
   const dmgCol=b.isLaser?'#ffee00':b.big?'#ffbe0b':b.overcharged?'#ffe000':'#fff';
-  if(G.floats) G.floats.push({x:e.x+(Math.random()-.5)*12,y:e.y-e.r,txt:Math.round(dmg),col:dmgCol,life:36,maxLife:36,vy:-1.4});
+  if(G.floats&&G.floats.length<40) G.floats.push({x:e.x+(Math.random()-.5)*12,y:e.y-e.r,txt:Math.round(dmg),col:dmgCol,life:36,maxLife:36,vy:-1.4});
   // Afterburn
   if(b.afterburn&&b.afterburn>0){
     // Add or refresh burn trail
@@ -5981,7 +6026,7 @@ function loop(now){
   const delta=now-_lastLoopTime;
   if(delta<_FRAME_MS-2) return; // skip frame, come back next rAF
   _lastLoopTime=now;
-  drawBg(now*.001);
+  if(frame%2===0||!G||!G.running) drawBg(now*.001); // fond: 30fps suffisant
   update(now);
   draw();
 }
@@ -6154,6 +6199,8 @@ function togglePause(){
     }
 
     show('s-pause');
+  const _tip = document.getElementById('pause-tip');
+  if(_tip && TIPS && TIPS.length) _tip.textContent = '💡 ' + TIPS[Math.floor(Math.random()*TIPS.length)];
   } else {
     show('__none__');
   }
@@ -10493,8 +10540,30 @@ function obPollGamepad(){
   gpPrev._obA=nowA; gpPrev._obR=nowR; gpPrev._obL=nowL; gpPrev._obB=nowB;
 }
 
+function tryLockLandscape(){
+  // Tenter de forcer le paysage sur mobile
+  try {
+    if(screen.orientation&&screen.orientation.lock){
+      screen.orientation.lock('landscape').catch(()=>{});
+    } else if(screen.lockOrientation){
+      screen.lockOrientation('landscape');
+    } else if(screen.mozLockOrientation){
+      screen.mozLockOrientation('landscape');
+    }
+  } catch(e){}
+}
+
+// Detecter si lappareil est physiquement en paysage (meme si lOS croit etre en portrait)
+function isPhysicallyLandscape(){
+  const sw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const sh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  // Si largeur > hauteur, on est vraiment en paysage
+  return sw > sh * 1.1;
+}
+
 function detectDevice(){
   isMobile=window.matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1;
+  if(isMobile) tryLockLandscape();
   document.body.classList.toggle('touch',isMobile);
   if(isMobile){
     const isPortrait=(window.visualViewport?.height||window.innerHeight)>(window.visualViewport?.width||window.innerWidth);
@@ -10529,6 +10598,7 @@ if(window.visualViewport){
 
 document.addEventListener('DOMContentLoaded',()=>{
   detectDevice();
+  applyOrientationFix();
   setupCanvas();
   drawBg(0);
   renderSettings();
