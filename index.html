@@ -338,6 +338,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .uc:focus,.cc:focus{outline:2px solid var(--c1);transform:translateY(-3px);}
 .uc.gp-selected{outline:2px solid var(--c1);transform:translateY(-4px);box-shadow:0 6px 26px rgba(0,245,212,.22);}
 .cc.gp-selected{outline:2px solid var(--c2);transform:translateY(-4px);box-shadow:0 6px 26px rgba(255,26,110,.22);}
+.relic-card.gp-selected{outline:2px solid var(--c3);transform:translateY(-4px);box-shadow:0 8px 28px rgba(255,190,11,.35);}
+.hub-btn.gp-selected{outline:2px solid var(--c1);box-shadow:0 0 18px rgba(0,245,212,.3);filter:brightness(1.15);}
 .upg-reroll{font-size:9px;letter-spacing:.15em;color:var(--txt2);text-align:center;margin-top:8px;cursor:pointer;opacity:.6;padding:6px 16px;border:1px solid transparent;transition:all .15s;}
 .upg-reroll:hover{opacity:1;color:var(--c1);border-color:rgba(0,245,212,.2);}
 
@@ -1645,14 +1647,14 @@ body.touch #minimap{display:none;}
 
     <!-- Secondary grid -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(290px,86vw);margin-top:10px;">
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
-      <button class="btn btn-s" style="min-width:0;position:relative;" id="btn-ach" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span><span class="notif-badge" id="btn-ach-badge" style="display:none;">!</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
-      <button class="btn btn-s" style="min-width:0;" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
-      <button class="btn btn-s" style="min-width:0;position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;position:relative;" id="btn-ach" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span><span class="notif-badge" id="btn-ach-badge" style="display:none;">!</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="openInventory()"><span>🎨 SKINS</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
+      <button class="btn btn-s hub-btn" style="min-width:0;position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint">
@@ -2668,6 +2670,8 @@ async function afterLogin(isNewAccount=false){
   updateUserBar();
   updateNotifBadge();
   initAdminBroadcastListener();
+  initMaintenanceListener();
+  initFriendRequestListener();
   // Notif mise a jour si nouvelle version
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   if(lastSeenVer !== LAST_UPDATE_VERSION){
@@ -2914,10 +2918,46 @@ function addFriend(friendObj){
   if(!friends.some(f=>f.id===friendObj.id)){
     friends.push({id:friendObj.id, pseudo:friendObj.pseudo, skin:friendObj.skin, addedAt:Date.now()});
     saveData('pulse_friends_v1',friends);
-    if(currentUser&&SB) saveCloudProfile({friends});
-    showPopup(`✓ ${friendObj.pseudo} ajoute en ami !`,'#00f5d4');
+    if(currentUser&&SB){
+      saveCloudProfile({friends});
+      // Notify the friend via Supabase Realtime on their personal channel
+      _broadcastFriendRequest(friendObj);
+    }
+    showPopup(`✓ ${friendObj.pseudo} ajouté en ami !`,'#00f5d4');
     renderProfile(_viewingProfile);
   }
+}
+
+// Broadcast a friend request to the target user's personal channel
+function _broadcastFriendRequest(targetFriendObj){
+  if(!SB||!currentUser) return;
+  const fromInfo = {
+    id: currentUser.id,
+    pseudo: userPseudo||currentUser.email||'Joueur',
+    skin: equippedSkin||'default'
+  };
+  // Each user listens on 'pulse_fr_<their_user_id>'
+  const ch = SB.channel('pulse_fr_'+targetFriendObj.id, {config:{broadcast:{self:false}}});
+  ch.subscribe(status=>{
+    if(status!=='SUBSCRIBED') return;
+    ch.send({ type:'broadcast', event:'friend_request', payload: fromInfo });
+    // Unsubscribe quickly — fire and forget
+    setTimeout(()=>{ try{ SB.removeChannel(ch); }catch(e){} }, 3000);
+  });
+}
+
+// Listen for incoming friend requests on this user's personal channel
+function initFriendRequestListener(){
+  if(!SB||!currentUser) return;
+  const ch = SB.channel('pulse_fr_'+currentUser.id, {config:{broadcast:{self:false}}});
+  ch.on('broadcast',{event:'friend_request'},({payload})=>{
+    if(!payload||!payload.id) return;
+    // Don't notify if already friend
+    const friends = loadData('pulse_friends_v1',[]);
+    if(friends.some(f=>f.id===payload.id)) return;
+    sendFriendRequestNotif(payload);
+    showPopup(`👤 ${payload.pseudo||'Joueur'} t'a ajouté !`,'#00f5d4',4000);
+  }).subscribe();
 }
 
 function removeFriend(friendId){
@@ -4094,10 +4134,21 @@ const LAST_UPDATE_VERSION = 'v28';
 function loadNotifs(){ return loadData('pulse_notifs_v1',[]); }
 function saveNotifs(n){ saveData('pulse_notifs_v1',n); }
 
-function pushNotif(type, title, body, action=null, actionFn=null){
+// action      : label du bouton affiché (ex. '+ AJOUTER')
+// actionData  : objet JSON sérialisable associé à l'action (ex. {friendId, pseudo, skin})
+// actionType  : type d'action ('add_friend', 'dismiss', …) pour le handler
+function pushNotif(type, title, body, action=null, actionFn=null, actionData=null, actionType=null){
   const notifs = loadNotifs();
-  notifs.unshift({ id: Date.now()+'_'+Math.random().toString(36).slice(2), type, title, body, action, actionFn: actionFn?actionFn.toString():null, ts: Date.now(), read: false });
-  // Garder max 50 notifs
+  notifs.unshift({
+    id: Date.now()+'_'+Math.random().toString(36).slice(2),
+    type, title, body,
+    action,           // label bouton
+    actionData,       // payload JSON pour le handler
+    actionType,       // type de handler
+    actionFn: actionFn?actionFn.toString():null,
+    ts: Date.now(),
+    read: false
+  });
   if(notifs.length>50) notifs.length=50;
   saveNotifs(notifs);
   updateNotifBadge();
@@ -4131,22 +4182,49 @@ function renderNotifs(){
     list.innerHTML='<div style="text-align:center;color:var(--dim);font-size:9px;letter-spacing:.15em;padding:30px;">Aucune notification</div>';
     return;
   }
-  const icons = { ach:'🎖', gift:'🎁', friend:'👥', update:'🆕', bp:'⭐', admin:'📢', coins:'🪙', relic:'✨' };
-  const colors = { ach:'var(--c3)', gift:'var(--c2)', friend:'var(--c1)', update:'var(--c1)', bp:'var(--c3)', admin:'var(--c2)', coins:'var(--c3)', relic:'var(--c3)' };
+  const icons  = { ach:'🎖', gift:'🎁', friend_request:'👤', friend:'👥', update:'🆕', bp:'⭐', admin:'📢', coins:'🪙', relic:'✨' };
+  const colors = { ach:'var(--c3)', gift:'var(--c2)', friend_request:'var(--c1)', friend:'var(--c1)', update:'var(--c1)', bp:'var(--c3)', admin:'var(--c2)', coins:'var(--c3)', relic:'var(--c3)' };
   list.innerHTML = notifs.map(n=>{
     const ico = icons[n.type]||'🔔';
     const col = colors[n.type]||'var(--c1)';
     const ago = _notifAgo(n.ts);
-    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);background:var(--dim2);">
-      <span style="font-size:18px;min-width:24px;">${ico}</span>
-      <div style="flex:1;">
-        <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;color:${col};margin-bottom:2px;">${n.title}</div>
-        <div style="font-size:8px;color:var(--txt2);line-height:1.4;">${n.body}</div>
-        <div style="font-size:6px;color:var(--dim);margin-top:4px;letter-spacing:.1em;">${ago}</div>
+    // Build action buttons
+    let actionHtml = '';
+    if(n.actionType==='add_friend' && n.actionData){
+      // Check if already friend
+      const friends = loadData('pulse_friends_v1',[]);
+      const alreadyFriend = friends.some(f=>f.id===n.actionData.id);
+      if(alreadyFriend){
+        actionHtml = `<span style="font-size:7px;color:var(--c1);letter-spacing:.1em;white-space:nowrap;">✓ AMI</span>`;
+      } else {
+        const safeData = JSON.stringify(n.actionData).replace(/'/g,"\\'");
+        actionHtml = `<button onclick="notifAddFriend('${n.id}','${safeData}')" style="font-size:7px;padding:5px 10px;border:1px solid var(--c1);color:var(--c1);background:rgba(0,245,212,.08);cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:.08em;white-space:nowrap;transition:all .15s;" onmouseover="this.style.background='var(--c1)';this.style.color='var(--bg)'" onmouseout="this.style.background='rgba(0,245,212,.08)';this.style.color='var(--c1)'">+ AJOUTER</button>`;
+      }
+    } else if(n.action){
+      actionHtml = `<button onclick="delNotif('${n.id}')" style="font-size:7px;padding:3px 8px;border:1px solid ${col};color:${col};background:transparent;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:.08em;white-space:nowrap;">${n.action}</button>`;
+    }
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid ${n.type==='friend_request'?'rgba(0,245,212,.25)':'var(--border)'};background:${n.type==='friend_request'?'rgba(0,245,212,.03)':'var(--dim2)'};position:relative;">
+      <span style="font-size:20px;min-width:26px;line-height:1.3;">${ico}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;color:${col};margin-bottom:3px;">${n.title}</div>
+        <div style="font-size:8px;color:var(--txt2);line-height:1.5;">${n.body}</div>
+        <div style="font-size:6px;color:var(--dim);margin-top:5px;letter-spacing:.1em;">${ago}</div>
       </div>
-      ${n.action?`<button onclick="delNotif('${n.id}')" style="font-size:7px;padding:3px 8px;border:1px solid ${col};color:${col};background:transparent;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:.08em;white-space:nowrap;">${n.action}</button>`:''}
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        ${actionHtml}
+        <button onclick="delNotif('${n.id}')" style="font-size:6px;padding:2px 6px;border:1px solid var(--border);color:var(--dim);background:transparent;cursor:pointer;letter-spacing:.05em;" title="Supprimer">✕</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+// Handler: add friend from notification button
+function notifAddFriend(notifId, dataStr){
+  try{
+    const friendObj = JSON.parse(dataStr);
+    addFriend(friendObj);
+    renderNotifs(); // refresh to show "✓ AMI" state
+  } catch(e){ console.warn('notifAddFriend error', e); }
 }
 
 function delNotif(id){
@@ -4158,9 +4236,26 @@ function delNotif(id){
 function _notifAgo(ts){
   const s=Math.floor((Date.now()-ts)/1000);
   if(s<60) return 'Maintenant';
-  if(s<3600) return Math.floor(s/60)+'min';
+  if(s<3600) return Math.floor(s/60)+' min';
   if(s<86400) return Math.floor(s/3600)+'h';
   return Math.floor(s/86400)+'j';
+}
+
+// ── Send a friend request notification (called when someone adds you) ──
+// In a real multiplayer setup this would go through Supabase realtime.
+// Here we push a local notif immediately (same device demo) and broadcast via Supabase if connected.
+function sendFriendRequestNotif(fromUser){
+  // fromUser = { id, pseudo, skin }
+  if(!fromUser||!fromUser.pseudo) return;
+  pushNotif(
+    'friend_request',
+    '👤 DEMANDE D\'AMI',
+    `${fromUser.pseudo} t'a ajouté en ami. Veux-tu l'ajouter ?`,
+    '+ AJOUTER',
+    null,
+    { id: fromUser.id, pseudo: fromUser.pseudo, skin: fromUser.skin||'default' },
+    'add_friend'
+  );
 }
 
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
@@ -6557,7 +6652,10 @@ function checkAch(id,val){
     }
     showAchToast(def);
     sfxAch();
-    pushNotif('ach', '🎖 SUCCES DEBLOQUE', def.n+(def.reward?' · +'+def.reward+'🪙':''));
+    const achBody = def.reward && def.reward>0
+      ? `${def.ico} ${def.n} · Récompense : +${def.reward} 🪙 pièces encaissées !`
+      : `${def.ico} ${def.n}`;
+    pushNotif('ach', '🎖 SUCCÈS DÉBLOQUÉ', achBody);
     updateNotifBadge();
   }
 }
@@ -7241,6 +7339,8 @@ function show(id){
   // These screens overlay the running game — keep game-active so HUD stays visible
   const inGameOverlays=['s-upg','s-curse','s-pause','__none__'];
   if(!inGameOverlays.includes(id)) document.body.classList.remove('game-active');
+  // Reset hub navigation index when returning to title
+  if(id==='s-title') gpHubIdx=0;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -9181,17 +9281,34 @@ async function adminLoadDetailStats(){
 let _maintActive = false;
 let _maintCountdownInterval = null;
 const MAINT_CHANNEL = 'pulse_maintenance';
+const MAINT_STORAGE_KEY = 'pulse_maint_active_v1';
 let _maintChannel = null;
+
+// Helper: seuls les admins passent à travers la maintenance
+function _maintCanBypass(){
+  return isAdmin();
+}
 
 // Called once at app init — all players listen for maintenance events
 function initMaintenanceListener(){
   if(!SB) return;
+
+  // ── Restore persistent maintenance state on page reload ──
+  const saved = loadData(MAINT_STORAGE_KEY, null);
+  if(saved && saved.active && !_maintCanBypass()){
+    _showMaintenanceScreen(saved.msg||'', saved.duration||0, saved.startedAt||Date.now());
+  }
+
   _maintChannel = SB.channel(MAINT_CHANNEL, {config:{broadcast:{self:false}}});
   _maintChannel.on('broadcast',{event:'maintenance'},({payload})=>{
     if(!payload) return;
     if(payload.active){
-      _showMaintenanceScreen(payload.msg||'', payload.duration||0);
+      saveData(MAINT_STORAGE_KEY, {active:true, msg:payload.msg||'', duration:payload.duration||0, startedAt:Date.now()});
+      if(!_maintCanBypass()){
+        _showMaintenanceScreen(payload.msg||'', payload.duration||0, Date.now());
+      }
     } else {
+      saveData(MAINT_STORAGE_KEY, {active:false});
       _hideMaintenanceScreen();
     }
   }).subscribe();
@@ -9260,14 +9377,16 @@ async function adminForceMaintenanceMode(){
         type:'broadcast', event:'maintenance',
         payload:{ active: activate, msg: msg||'Maintenance en cours. Merci de patienter.', duration: dur }
       });
-      // Admin themselves sees the result too
+      // Admin lui-même n'est jamais bloqué
       if(activate){
-        _showMaintenanceScreen(msg||'Maintenance en cours. Merci de patienter.', dur);
+        saveData(MAINT_STORAGE_KEY, {active:true, msg:msg||'Maintenance en cours. Merci de patienter.', duration:dur, startedAt:Date.now()});
       } else {
+        saveData(MAINT_STORAGE_KEY, {active:false});
         _hideMaintenanceScreen();
       }
+      _maintActive = activate;
       if(statusEl){
-        statusEl.textContent = activate ? '🔒 Maintenance activée — tous les joueurs bloqués.' : '✅ Maintenance désactivée — joueurs relâchés.';
+        statusEl.textContent = activate ? '🔒 Maintenance activée — seuls les admins peuvent jouer.' : '✅ Maintenance désactivée — joueurs relâchés.';
         statusEl.className = 'admin-status '+(activate?'err':'ok');
       }
       // Update button label
@@ -9769,6 +9888,7 @@ function offerRelic(){
     container.appendChild(div);
   });
   document.getElementById('relic-offer').classList.add('on');
+  gpCardIdx=0; // reset gamepad selection index for relic offer
 }
 
 function pickRelic(r){
@@ -10832,31 +10952,72 @@ function pollGamepad(){
 }
 
 let gpCardIdx=0;
+let gpHubIdx=0; // index for hub grid navigation
 function gpNavigateCards(wasConfirm,nowConfirm){
-  // Works regardless of whether G is running — covers menus too
+  // ── 1. Relic offer overlay ──
+  const relicOffer=document.getElementById('relic-offer');
+  if(relicOffer?.classList.contains('on')){
+    const cards=[...relicOffer.querySelectorAll('.relic-card')];
+    if(cards.length){
+      gpCardIdx=Math.max(0,Math.min(gpCardIdx,cards.length-1));
+      cards.forEach((c,i)=>c.classList.toggle('gp-selected',i===gpCardIdx));
+      const lx=gpSnapAxisRaw(0), now=Date.now();
+      if(!gpPrev._navCd||now>gpPrev._navCd){
+        const goRight=lx>0.45||gpSnapPressed(gpMap.RIGHT)||gpSnapPressed(gpMap.DOWN);
+        const goLeft =lx<-0.45||gpSnapPressed(gpMap.LEFT)||gpSnapPressed(gpMap.UP);
+        if(goRight){ gpCardIdx=Math.min(gpCardIdx+1,cards.length-1); gpPrev._navCd=now+180; }
+        else if(goLeft){ gpCardIdx=Math.max(gpCardIdx-1,0); gpPrev._navCd=now+180; }
+      }
+      const nowStart=gpSnapPressed(gpMap.START);
+      if((nowConfirm&&!wasConfirm)||(nowStart&&!gpPrev._navStart)){ cards[gpCardIdx]?.click(); }
+      gpPrev._navStart=nowStart;
+      return;
+    }
+  }
+
+  // ── 2. Upgrade / curse screens ──
   const upg=document.getElementById('s-upg'), curse=document.getElementById('s-curse');
   const activeScreen=upg?.classList.contains('on')?upg:curse?.classList.contains('on')?curse:null;
-  if(!activeScreen) return;
-  const cards=[...activeScreen.querySelectorAll('.uc,.cc')]; if(!cards.length) return;
-  gpCardIdx=Math.max(0,Math.min(gpCardIdx,cards.length-1));
-  cards.forEach((card,i)=>card.classList.toggle('gp-selected',i===gpCardIdx));
-  const lx=gpSnapAxisRaw(0), now=Date.now();
-  // Navigate with left stick OR d-pad
-  if(!gpPrev._navCd||now>gpPrev._navCd){
-    const goRight=lx>0.45||gpSnapPressed(gpMap.RIGHT)||gpSnapPressed(gpMap.DOWN);
-    const goLeft =lx<-0.45||gpSnapPressed(gpMap.LEFT)||gpSnapPressed(gpMap.UP);
-    if(goRight){ gpCardIdx=Math.min(gpCardIdx+1,cards.length-1); gpPrev._navCd=now+180; }
-    else if(goLeft){ gpCardIdx=Math.max(gpCardIdx-1,0); gpPrev._navCd=now+180; }
+  if(activeScreen){
+    const cards=[...activeScreen.querySelectorAll('.uc,.cc')]; if(!cards.length) return;
+    gpCardIdx=Math.max(0,Math.min(gpCardIdx,cards.length-1));
+    cards.forEach((card,i)=>card.classList.toggle('gp-selected',i===gpCardIdx));
+    const lx=gpSnapAxisRaw(0), now=Date.now();
+    if(!gpPrev._navCd||now>gpPrev._navCd){
+      const goRight=lx>0.45||gpSnapPressed(gpMap.RIGHT)||gpSnapPressed(gpMap.DOWN);
+      const goLeft =lx<-0.45||gpSnapPressed(gpMap.LEFT)||gpSnapPressed(gpMap.UP);
+      if(goRight){ gpCardIdx=Math.min(gpCardIdx+1,cards.length-1); gpPrev._navCd=now+180; }
+      else if(goLeft){ gpCardIdx=Math.max(gpCardIdx-1,0); gpPrev._navCd=now+180; }
+    }
+    const nowStart=gpSnapPressed(gpMap.START);
+    if((nowConfirm&&!wasConfirm)||(nowStart&&!gpPrev._navStart)){ cards[gpCardIdx]?.click(); }
+    gpPrev._navStart=nowStart;
+    return;
   }
-  // Confirm with DASH button OR START button (edge: nowConfirm was just pressed)
-  const nowStart=gpSnapPressed(gpMap.START);
-  if((nowConfirm&&!wasConfirm)||(nowStart&&!gpPrev._navStart)){
-    cards[gpCardIdx]?.click();
-  }
-  gpPrev._navStart=nowStart;
-  // Also support LB/RB for scrolling through 3 cards quickly
-  if(!gpPrev._navCd||now>gpPrev._navCd){
-    // Already handled above
+
+  // ── 3. Hub menu grid (title screen) ──
+  const titleScr=document.getElementById('s-title');
+  if(titleScr?.classList.contains('on')){
+    const hubBtns=[...titleScr.querySelectorAll('.hub-btn')];
+    if(hubBtns.length){
+      const cols=2; // 2-column grid
+      gpHubIdx=Math.max(0,Math.min(gpHubIdx,hubBtns.length-1));
+      hubBtns.forEach((b,i)=>b.classList.toggle('gp-selected',i===gpHubIdx));
+      const lx=gpSnapAxisRaw(0), ly=gpSnapAxisRaw(1), now=Date.now();
+      if(!gpPrev._navCd||now>gpPrev._navCd){
+        const goRight=lx>0.45||gpSnapPressed(gpMap.RIGHT);
+        const goLeft =lx<-0.45||gpSnapPressed(gpMap.LEFT);
+        const goDown =ly>0.45||gpSnapPressed(gpMap.DOWN);
+        const goUp   =ly<-0.45||gpSnapPressed(gpMap.UP);
+        if(goRight&&(gpHubIdx%cols)<cols-1){ gpHubIdx++; gpPrev._navCd=now+160; }
+        else if(goLeft&&(gpHubIdx%cols)>0){ gpHubIdx--; gpPrev._navCd=now+160; }
+        else if(goDown&&gpHubIdx+cols<hubBtns.length){ gpHubIdx+=cols; gpPrev._navCd=now+160; }
+        else if(goUp&&gpHubIdx-cols>=0){ gpHubIdx-=cols; gpPrev._navCd=now+160; }
+      }
+      const nowStart=gpSnapPressed(gpMap.START);
+      if((nowConfirm&&!wasConfirm)||(nowStart&&!gpPrev._navStart)){ hubBtns[gpHubIdx]?.click(); }
+      gpPrev._navStart=nowStart;
+    }
   }
 }
 
