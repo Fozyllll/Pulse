@@ -144,8 +144,14 @@ body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
   margin:auto;
 }
 /* Screens that should stay visually centered when there's room */
-#s-title .scr-inner,#s-go .scr-inner,#s-pause .scr-inner,#s-auth .auth-box{
+#s-go .scr-inner,#s-pause .scr-inner,#s-auth .auth-box{
   margin:auto;
+}
+/* Title: always scrollable, never block with margin:auto */
+#s-title .scr-inner{
+  margin:0 auto;
+  justify-content:flex-start;
+  padding-top:max(18px, env(safe-area-inset-top, 18px));
 }
 
 /* BUTTONS */
@@ -768,7 +774,7 @@ body.touch #minimap{display:none;}
 #title-particles{
   position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.6;
 }
-#s-title .scr-inner{position:relative;z-index:1;}
+/* duplicate removed */
 
 /* Streak modal */
 #streak-modal-overlay{
@@ -9506,40 +9512,53 @@ function _hideMaintenanceScreen(){
 
 async function adminForceMaintenanceMode(){
   if(!isAdmin()) return;
-  // Build modal
-  const msg     = document.getElementById('admin-maint-msg')?.value?.trim()    || '';
+  const msg      = document.getElementById('admin-maint-msg')?.value?.trim()    || '';
   const dur      = parseInt(document.getElementById('admin-maint-dur')?.value)   || 0;
   const activate = !_maintActive;
   const statusEl = document.getElementById('admin-maint-status');
   if(statusEl){ statusEl.textContent = activate ? 'Activation...' : 'Désactivation...'; statusEl.className='admin-status wait'; }
   try{
     if(!_adminBcChannel) adminInitBroadcast();
-    // Broadcast to all players via realtime
-    const maintBc = SB.channel(MAINT_CHANNEL, {config:{broadcast:{self:true}}});
+    // ── Persist immediately so other non-admin sessions get blocked on reload ──
+    if(activate){
+      saveData(MAINT_STORAGE_KEY, {active:true, msg:msg||'Maintenance en cours. Merci de patienter.', duration:dur, startedAt:Date.now()});
+    } else {
+      saveData(MAINT_STORAGE_KEY, {active:false});
+    }
+    _maintActive = activate;
+    _renderMaintAdminStatus();
+
+    // Broadcast to ALL connected players in real-time (different channel to avoid self-block)
+    const maintBc = SB.channel(MAINT_CHANNEL, {config:{broadcast:{self:false}}});
     await maintBc.subscribe(async (status)=>{
       if(status !== 'SUBSCRIBED') return;
       await maintBc.send({
         type:'broadcast', event:'maintenance',
         payload:{ active: activate, msg: msg||'Maintenance en cours. Merci de patienter.', duration: dur }
       });
-      // Admin lui-même n'est jamais bloqué
-      if(activate){
-        saveData(MAINT_STORAGE_KEY, {active:true, msg:msg||'Maintenance en cours. Merci de patienter.', duration:dur, startedAt:Date.now()});
-      } else {
-        saveData(MAINT_STORAGE_KEY, {active:false});
-        _hideMaintenanceScreen();
-      }
-      _maintActive = activate;
       if(statusEl){
-        statusEl.textContent = activate ? '🔒 Maintenance activée — seuls les admins peuvent jouer.' : '✅ Maintenance désactivée — joueurs relâchés.';
+        statusEl.textContent = activate ? '🔒 Maintenance activée — joueurs bloqués.' : '✅ Maintenance désactivée — joueurs relâchés.';
         statusEl.className = 'admin-status '+(activate?'err':'ok');
       }
-      // Update button label
-      const btn = document.getElementById('admin-maint-btn');
-      if(btn) btn.textContent = activate ? '🔓 DÉSACTIVER MAINTENANCE' : '🔒 ACTIVER MAINTENANCE';
     });
   } catch(e){
     if(statusEl){ statusEl.textContent='Erreur : '+e.message; statusEl.className='admin-status err'; }
+  }
+}
+
+// Visual indicator of maintenance state for admins
+function _renderMaintAdminStatus(){
+  const ind = document.getElementById('admin-maint-indicator');
+  const btn = document.getElementById('admin-maint-btn');
+  if(!ind) return;
+  if(_maintActive){
+    ind.textContent = '🔴 MAINTENANCE ACTIVE';
+    ind.style.cssText += ';color:var(--c2);border-color:rgba(255,26,110,.5);background:rgba(255,26,110,.08);';
+    if(btn) btn.textContent = '🔓 DÉSACTIVER MAINTENANCE';
+  } else {
+    ind.textContent = '🟢 SERVEUR EN LIGNE';
+    ind.style.cssText += ';color:var(--c1);border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.04);';
+    if(btn) btn.textContent = '🔒 ACTIVER MAINTENANCE';
   }
 }
 
@@ -9631,6 +9650,10 @@ function openAdmin(){
   if(!isAdmin()){ showPopup('⛔ ACCES REFUSE','#ff1a6e'); return; }
   show('s-admin');
   adminLoadGlobalStats();
+  // Restore maintenance state from localStorage so indicator is correct
+  const saved = loadData(MAINT_STORAGE_KEY, null);
+  if(saved && saved.active) _maintActive = true;
+  _renderMaintAdminStatus();
 }
 
 async function adminLoadGlobalStats(){
@@ -12155,10 +12178,17 @@ function triggerEasterEgg(id){
         <div class="admin-status" id="admin-broadcast-status"></div>
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,26,110,.15);">
           <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c3);margin-bottom:10px;">⚠ ACTIONS GLOBALES DANGEREUSES</div>
+          <!-- Maintenance status indicator -->
+          <div id="admin-maint-indicator" style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;padding:8px 14px;border:1px solid;margin-bottom:10px;text-align:center;transition:all .2s;">🟢 SERVEUR EN LIGNE</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            <input id="admin-maint-msg" placeholder="Message de maintenance (optionnel)" style="flex:1;min-width:180px;background:rgba(10,3,6,.9);border:1px solid rgba(255,26,110,.25);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 10px;outline:none;">
+            <input id="admin-maint-dur" type="number" min="0" placeholder="Durée (min)" style="width:90px;background:rgba(10,3,6,.9);border:1px solid rgba(255,26,110,.25);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 10px;outline:none;">
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="admin-btn danger" onclick="adminForceMaintenanceMode()" style="font-size:7px;">🔒 MODE MAINTENANCE</button>
+            <button id="admin-maint-btn" class="admin-btn danger" onclick="adminForceMaintenanceMode()" style="font-size:7px;">🔒 ACTIVER MAINTENANCE</button>
             <button class="admin-btn warn" onclick="adminClearAllNotifs()" style="font-size:7px;">🔔 RESET NOTIFS GLOBALES</button>
           </div>
+          <div class="admin-status" id="admin-maint-status"></div>
           <div style="font-size:7px;color:var(--dim);margin-top:8px;letter-spacing:.08em;">Ces actions affectent tous les joueurs — utiliser avec précaution.</div>
         </div>
       </div>
