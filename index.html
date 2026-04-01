@@ -343,6 +343,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .uc:focus,.cc:focus{outline:2px solid var(--c1);transform:translateY(-3px);}
 .uc.gp-selected{outline:2px solid var(--c1);transform:translateY(-4px);box-shadow:0 6px 26px rgba(0,245,212,.22);}
 .cc.gp-selected{outline:2px solid var(--c2);transform:translateY(-4px);box-shadow:0 6px 26px rgba(255,26,110,.22);}
+/* Gamepad focus on standard menu buttons */
+.btn.gp-selected,
+button.gp-selected,
+[onclick].gp-selected,
+.toggle.gp-selected,
+.skin-card.gp-selected,
+.mode-card.gp-selected,
+.relic-card.gp-selected,
+.shop-item-card.gp-selected,
+.lb-row.gp-selected{
+  outline:2px solid var(--c1);
+  outline-offset:2px;
+  box-shadow:0 0 18px rgba(0,245,212,.28);
+  position:relative;
+  z-index:1;
+}
 .upg-reroll{font-size:9px;letter-spacing:.15em;color:var(--txt2);text-align:center;margin-top:8px;cursor:pointer;opacity:.6;padding:6px 16px;border:1px solid transparent;transition:all .15s;}
 .upg-reroll:hover{opacity:1;color:var(--c1);border-color:rgba(0,245,212,.2);}
 
@@ -841,8 +857,34 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
   border:1px solid rgba(255,190,11,.15);border-top:none;
   box-shadow:0 4px 16px rgba(0,0,0,.4);
 }
-#coins-hud .coin-ico{font-size:13px;}
+#coins-hud .coin-ico{font-size:13px;display:none;}
 #coins-hud .coin-val{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--c3);letter-spacing:.1em;transition:transform .2s,color .2s;}
+#coins-hud .coin-val::before{
+  content:'◈ ';
+  font-size:11px;
+  color:var(--c3);
+  text-shadow:0 0 8px rgba(255,190,11,.8),0 0 18px rgba(255,190,11,.4);
+}
+
+/* ═══ COIN ICON (neon gold, no realistic emoji) ═══ */
+.coin-ico-neo{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ffe066,#ffbe0b 55%,#c87e00);
+  border:1.5px solid #ffbe0b;
+  box-shadow:0 0 7px rgba(255,190,11,.7),inset 0 1px 2px rgba(255,255,200,.5);
+  font-size:8px;font-family:'Orbitron',monospace;font-weight:900;color:#7a4800;
+  line-height:1;flex-shrink:0;
+}
+.coin-ico-neo::after{content:'◈';}
+.coin-big-neo{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ffe066,#ffbe0b 55%,#c87e00);
+  border:2.5px solid #ffbe0b;
+  box-shadow:0 0 18px rgba(255,190,11,.8),0 0 36px rgba(255,190,11,.3),inset 0 2px 4px rgba(255,255,200,.5);
+  font-size:16px;font-family:'Orbitron',monospace;font-weight:900;color:#7a4800;
+}
 #coins-earned{position:fixed;top:46px;left:50%;transform:translateX(-50%);z-index:802;font-family:'Orbitron',monospace;font-size:11px;color:var(--c3);letter-spacing:.15em;opacity:0;pointer-events:none;text-shadow:0 0 10px var(--c3);}
 #coins-earned.pop{animation:coinPop 2.2s ease forwards;}
 @keyframes coinPop{0%{opacity:0;transform:translateX(-50%) translateY(0);}15%{opacity:1;}70%{opacity:1;transform:translateX(-50%) translateY(-8px);}100%{opacity:0;transform:translateX(-50%) translateY(-14px);}}
@@ -1373,8 +1415,8 @@ body.touch #minimap{display:none;}
 .relic-card-rarity{font-size:7px;letter-spacing:.22em;padding:1px 6px;margin-top:-2px;font-family:'Orbitron',monospace;}
 .relic-card-price{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;color:var(--c3);margin-top:2px;}
 /* Active relics HUD */
-#relic-hud{position:fixed;bottom:clamp(80px,18vmin,110px);right:clamp(8px,2vw,14px);z-index:104;display:flex;flex-direction:column;gap:3px;pointer-events:none;}
-.relic-hud-item{display:flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(3,3,10,.85);border:1px solid rgba(255,190,11,.25);font-size:7px;letter-spacing:.1em;color:var(--c3);box-shadow:0 2px 8px rgba(0,0,0,.4);}
+#relic-hud{position:fixed;bottom:clamp(60px,14vmin,86px);right:clamp(6px,1.5vw,10px);z-index:104;display:flex;flex-direction:column;gap:2px;pointer-events:none;opacity:.72;}
+.relic-hud-item{display:flex;align-items:center;gap:4px;padding:2px 6px;background:rgba(3,3,10,.75);border:1px solid rgba(255,190,11,.18);font-size:6px;letter-spacing:.08em;color:var(--c3);box-shadow:0 1px 5px rgba(0,0,0,.3);}
 
 /* ═══ STATS DÉTAILLÉES ═══ */
 .go-detail-stats{width:min(500px,94vw);margin:8px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
@@ -1471,19 +1513,19 @@ body.touch #minimap{display:none;}
 }
 
 /* ── ENHANCED COMBO COUNTER ── */
-#combo-wrap{position:fixed;right:clamp(10px,3vw,20px);bottom:clamp(70px,15vw,95px);z-index:100;pointer-events:none;text-align:right;display:none;}
+#combo-wrap{position:fixed;right:clamp(6px,2vw,12px);bottom:clamp(60px,13vw,80px);z-index:100;pointer-events:none;text-align:right;display:none;opacity:.82;}
 body.game-active #combo-wrap{display:block;}
 #combo-inner{
   position:relative;transition:opacity .2s;
 }
 #combo-inner.dead{opacity:0;}
 #combo-ring{
-  position:absolute;right:-6px;top:50%;transform:translateY(-50%);
-  width:80px;height:80px;pointer-events:none;
+  position:absolute;right:-4px;top:50%;transform:translateY(-50%);
+  width:54px;height:54px;pointer-events:none;
 }
 #cval-new{
   font-family:'Orbitron',monospace;font-weight:900;
-  font-size:clamp(42px,10vw,66px);line-height:1;
+  font-size:clamp(28px,6.5vw,44px);line-height:1;
   background:linear-gradient(135deg,var(--c3),#ff9f1c,var(--c3));
   background-size:200% 200%;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
@@ -11559,7 +11601,9 @@ function pollGamepad(){
   if(nSEL&&!gpPrev.SEL&&document.getElementById('s-go').classList.contains('on')) show('s-title');
 
   gpNavigateCards(gpPrev.DASH,nDASH);
-  gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,LT:nLT,RT:nRT,_navCd:gpPrev._navCd};
+  gpNavigateMenus(nDASH,gpPrev.DASH,nSTART,gpPrev.START);
+  gpScrollMenus();
+  gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,LT:nLT,RT:nRT,_navCd:gpPrev._navCd,_menuFocusIdx:gpPrev._menuFocusIdx,_menuNavCd:gpPrev._menuNavCd,_scrollCd:gpPrev._scrollCd,_navStart:gpPrev._navStart};
 }
 
 let gpCardIdx=0;
@@ -11590,6 +11634,126 @@ function gpNavigateCards(wasConfirm,nowConfirm){
     // Already handled above
   }
 }
+
+// ═══════════════════════════════════════════════════════
+//  GAMEPAD MENU NAVIGATION (all screens)
+// ═══════════════════════════════════════════════════════
+
+// Screens where the card-picker (s-upg / s-curse) takes over — skip general nav
+const GP_CARD_SCREENS = ['s-upg','s-curse'];
+// Screens that are overlays on top of the game — don't scroll
+const GP_NO_SCROLL_SCREENS = ['s-upg','s-curse','s-pause'];
+// All navigable menu screens
+const GP_MENU_SCREENS = [
+  's-title','s-go','s-pause','s-shop','s-lb','s-settings',
+  's-stats','s-ach','s-mode','s-relics','s-inventory','s-bp',
+  's-keybinds','s-gpmap','s-ob','s-admin','s-gifts'
+];
+
+function _getActiveMenuScreen(){
+  for(const id of GP_MENU_SCREENS){
+    const el=document.getElementById(id);
+    if(el&&el.classList.contains('on')) return el;
+  }
+  return null;
+}
+
+function _getMenuFocusables(scr){
+  return [...scr.querySelectorAll(
+    'button:not([disabled]):not([style*="display:none"]), [onclick]:not([disabled]), .toggle, .skin-card, .mode-card, .relic-card, .shop-item-card, .lb-row, .uc, .cc'
+  )].filter(el=>{
+    const s=window.getComputedStyle(el);
+    return s.display!=='none' && s.visibility!=='hidden' && s.opacity!=='0';
+  });
+}
+
+function gpNavigateMenus(nowConfirm, wasConfirm, nowStart, wasStart){
+  // Don't run on card-picker screens — gpNavigateCards handles those
+  const activeScr=_getActiveMenuScreen();
+  if(!activeScr) return;
+  if(GP_CARD_SCREENS.some(id=>activeScr.id===id)) return;
+  // Don't run during active gameplay
+  if(G&&G.running&&!G.paused) return;
+
+  const focusables=_getMenuFocusables(activeScr);
+  if(!focusables.length) return;
+
+  let idx=gpPrev._menuFocusIdx||0;
+  idx=Math.max(0,Math.min(idx,focusables.length-1));
+
+  // Highlight current
+  focusables.forEach((el,i)=>{
+    el.classList.toggle('gp-selected', i===idx);
+    if(i===idx) el.setAttribute('data-gp-focus','1');
+    else el.removeAttribute('data-gp-focus');
+  });
+
+  const now=Date.now();
+  const ly=gpSnapAxisRaw(1);
+  const goDown = ly>0.45 || gpSnapPressed(gpMap.DOWN);
+  const goUp   = ly<-0.45 || gpSnapPressed(gpMap.UP);
+  // Horizontal (for grids like shop, skins)
+  const lx=gpSnapAxisRaw(0);
+  const goRight= lx>0.45 || gpSnapPressed(gpMap.RIGHT);
+  const goLeft = lx<-0.45 || gpSnapPressed(gpMap.LEFT);
+
+  if(!gpPrev._menuNavCd||now>gpPrev._menuNavCd){
+    if(goDown||goRight){ idx=Math.min(idx+1,focusables.length-1); gpPrev._menuNavCd=now+140; }
+    else if(goUp||goLeft){ idx=Math.max(idx-1,0); gpPrev._menuNavCd=now+140; }
+    // Auto-scroll focused element into view
+    focusables[idx]?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+  gpPrev._menuFocusIdx=idx;
+
+  // Confirm: DASH (A) or START
+  if((nowConfirm&&!wasConfirm)||(nowStart&&!wasStart)){
+    focusables[idx]?.click();
+    gpPrev._menuFocusIdx=idx;
+  }
+
+  // B button (SELECT / back) — go back if BACK_MAP has entry
+  const nSEL=gpSnapPressed(gpMap.SELECT);
+  if(nSEL&&!gpPrev._gpSEL2){
+    const backId=BACK_MAP[activeScr.id];
+    if(backId) show(backId);
+  }
+  gpPrev._gpSEL2=nSEL;
+}
+
+function gpScrollMenus(){
+  // Smooth scroll for screens without focusable items, or when stick is pushed hard
+  const activeScr=_getActiveMenuScreen();
+  if(!activeScr) return;
+  if(GP_NO_SCROLL_SCREENS.some(id=>activeScr.id===id)) return;
+  if(G&&G.running&&!G.paused) return;
+
+  const ly=gpSnapAxisRaw(1);
+  // Only scroll when no nav item is being moved between (dead zone for scroll only)
+  if(Math.abs(ly)<0.7) return;
+
+  const now=Date.now();
+  if(gpPrev._scrollCd&&now<gpPrev._scrollCd) return;
+
+  const speed=6;
+  activeScr.scrollTop+=ly*speed;
+  gpPrev._scrollCd=now+16; // ~60fps throttle
+}
+
+// Reset menu focus index when changing screens
+const _origShow=window.show;
+// Patch show() to reset menu nav index on screen change
+(function(){
+  const orig=show;
+  window.show=function(id){
+    gpPrev._menuFocusIdx=0;
+    // Remove gp-selected from all focusables on all screens
+    document.querySelectorAll('[data-gp-focus]').forEach(el=>{
+      el.removeAttribute('data-gp-focus');
+      el.classList.remove('gp-selected');
+    });
+    orig(id);
+  };
+})();
 
 // ═══════════════════════════════════════════════════════
 //  ONBOARDING TUTORIAL
