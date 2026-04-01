@@ -2515,7 +2515,8 @@ body.game-active #speedrun-timer{display:block;}
 
     <div class="btn-col" style="width:min(260px,82vw);margin-top:12px;gap:8px;">
       <button class="btn btn-p" style="font-size:clamp(11px,2.8vmin,14px);" onclick="togglePause()"><span>▶ REPRENDRE</span></button>
-      <button class="btn btn-s" onclick="pulseConfirm('Quitter la partie en cours ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ MENU PRINCIPAL</span></button>
+      <button class="btn btn-g" onclick="saveAndQuit()"><span>💾 SAUVEGARDER ET QUITTER</span></button>
+      <button class="btn btn-s" onclick="pulseConfirm('Quitter sans sauvegarder ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ QUITTER SANS SAUVEGARDER</span></button>
     </div>
     <div style="font-size:7px;color:rgba(0,245,212,.3);margin-top:10px;letter-spacing:.15em;">P / ESC = reprendre</div>
   </div>
@@ -3372,7 +3373,12 @@ async function afterLogin(isNewAccount=false){
         saveData('pulse_eq_relics_v1',profile.equipped_relics);
       }
       if(profile.premium_pass){
-        hasPremiumPass=profile.premium_pass;
+        // Ne restaurer le premium pass que s'il correspond à la saison courante
+        if(profile.premium_pass.season === BP_SEASON_CURRENT){
+          hasPremiumPass=profile.premium_pass;
+        } else {
+          hasPremiumPass={season:BP_SEASON_CURRENT,owned:false};
+        }
         saveData('pulse_premium_v1',hasPremiumPass);
       }
       if(profile.daily_score){
@@ -5466,6 +5472,8 @@ function showBanner(num,sub,tip=''){
   tipEl.style.color=isBossWave?'rgba(255,26,110,.6)':isLateGame?'rgba(255,107,26,.5)':'var(--dim)';
   b.classList.add('show');
   setTimeout(()=>b.classList.remove('show'), isBossWave?2800:2200);
+  // Masquer l'ancien banner si le nouveau (wbanner-new) est présent pour éviter le doublon
+  if(document.getElementById('wbanner-new')) b.style.display='none';
 
   // ── Enhanced cinematic banner ──
   const nbNum = document.getElementById('wb-num-new');
@@ -7257,8 +7265,47 @@ function togglePause(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  GAME OVER
+//  SAVE AND QUIT — sauvegarde les stats et retourne au menu
 // ═══════════════════════════════════════════════════════
+function saveAndQuit(){
+  if(!G) { show('s-title'); return; }
+  pulseConfirm('Sauvegarder les stats de cette partie et quitter ?').then(ok=>{
+    if(!ok) return;
+    // Enregistrer les stats comme une vraie partie terminée
+    const elapsed=Math.floor((Date.now()-G.startTime)/1e3);
+    const m=Math.floor(elapsed/60), s=elapsed%60;
+    const modeLabel = currentMode==='daily'?'Defi':currentMode==='duel'?'Duel PvP':currentMode==='chrono'?'Chrono':currentMode==='arena'?'Arene':currentMode==='hardcore'?'💀 HARDCORE':_duoActive?'Duo':'Classique';
+    const entry={score:G.score,wave:G.wave,kills:G.totalKills,level:G.player.level,time:`${m}:${s.toString().padStart(2,'0')}`,date:new Date().toLocaleDateString('fr-FR'),mode:modeLabel+' (quitté)'};
+    addToHistory(entry);
+    scores.push(entry); scores.sort((a,b)=>b.score-a.score); scores=scores.slice(0,5);
+    saveScores();
+    // Stats globales
+    gStats.totalKills+=G.totalKills; gStats.gamesPlayed++;
+    gStats.totalScore+=G.score; gStats.totalTime+=elapsed;
+    gStats.maxWave=Math.max(gStats.maxWave||0,G.wave);
+    gStats.maxScore=Math.max(gStats.maxScore||0,G.score);
+    gStats.maxCombo=Math.max(gStats.maxCombo||0,G.maxComboThisRun||0);
+    gStats.maxLevel=Math.max(gStats.maxLevel||0,G.player.level);
+    saveGStats();
+    // Pièces & XP BP
+    const coinsBonus = 1+(getPermaLvl('p_coins')*0.15);
+    const coinsEarned = Math.round(calcCoinsEarned(G.score,G.wave,G.totalKills)*coinsBonus);
+    awardCoins(coinsEarned);
+    grantBpXp(G.score,G.wave,G.totalKills);
+    // Cloud sync
+    if(currentUser&&SB) saveCloudProfile({coins,stats:gStats,scores:scores.slice(0,20)});
+    // Retour menu
+    cancelAnimationFrame(animId); clearTimeout(cdTm);
+    G=null;
+    document.body.classList.remove('game-active');
+    const gw=document.getElementById('game-wrap');
+    if(gw) gw.style.opacity='0';
+    showToast('💾 Partie sauvegardée · +'+coinsEarned+' pièces', 'success');
+    show('s-title');
+    renderTitleBest();
+  });
+}
+
 function gameOver(){
   // Relic: bullet nova on death
   if(G&&G.player&&G.player.bulletNova){
@@ -7435,7 +7482,7 @@ function showAchToast(def){
   const rewardEl=document.getElementById('at-reward');
   if(rewardEl) rewardEl.textContent=def.reward?'+'+def.reward+' 💴':'';
   t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
-  setTimeout(()=>showPopup('🎖 '+def.n,'#ffbe0b'),150);
+  // Ne pas appeler showPopup() ici — le toast en bas suffit et le popup central gêne pendant le jeu
 }
 function renderAch(){
   saveData('pulse_ach_unseen_v1',[]);
@@ -8563,7 +8610,10 @@ if(battlePass.season !== BP_SEASON_CURRENT){
 
 const PREMIUM_PASS_COST = 1500;
 let hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
-if(hasPremiumPass.season !== BP_SEASON_CURRENT) hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
+if(hasPremiumPass.season !== BP_SEASON_CURRENT){
+  hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
+  saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
+}
 
 function saveBP(){
   saveData('pulse_bp_v2', battlePass);
@@ -12342,12 +12392,19 @@ if(_origShowUpgrades){
         const id = card.dataset?.upgId || card.getAttribute('data-upg-id');
         if(!id) return;
 
-        // Add NEW badge if not owned yet
-        if(!existing.has(id) && !card.querySelector('.uc-new-badge')){
+        // Add NEW badge only for upgrades the player has literally never seen in any run
+        const seenUpgrades = loadData('pulse_seen_upgrades_v1', []);
+        if(!seenUpgrades.includes(id) && !card.querySelector('.uc-new-badge')){
           const badge = document.createElement('div');
           badge.className = 'uc-new-badge';
           badge.textContent = 'NEW';
           card.appendChild(badge);
+        }
+        // Mark upgrade as seen when it appears on screen
+        const seenUpgradesNow = loadData('pulse_seen_upgrades_v1', []);
+        if(!seenUpgradesNow.includes(id)){
+          seenUpgradesNow.push(id);
+          saveData('pulse_seen_upgrades_v1', seenUpgradesNow);
         }
 
         // Synergy hints
