@@ -762,6 +762,10 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 .curse-skip{font-size:9px;letter-spacing:.18em;color:var(--txt2);text-align:center;margin-top:12px;cursor:pointer;opacity:.5;padding:8px 18px;border:1px solid transparent;transition:all .15s;}
 .curse-skip:hover{opacity:1;color:var(--txt);border-color:var(--border);}
 
+/* Admin notif clear modal */
+#admin-notif-clear-modal{ display:none; }
+#admin-notif-clear-modal.on{ display:flex; }
+
 /* Watermark */
 #watermark{position:fixed;bottom:6px;right:10px;font-size:7px;letter-spacing:.18em;color:rgba(0,245,212,.15);pointer-events:none;z-index:1;font-family:'Share Tech Mono',monospace;}
 
@@ -2544,7 +2548,7 @@ body.game-active #speedrun-timer{display:block;}
     <div class="upg-sub">VAGUE TERMINÉE · CHOISIS TON BONUS</div>
     <div class="upg-wave" id="upg-wave"></div>
     <div class="upg-grid" id="upg-grid"></div>
-    <div class="upg-reroll" id="upg-reroll">🔄 Relancer les choix (1 relance restante)</div>
+    <div class="upg-reroll" id="upg-reroll">🔄 Relancer les choix (1 relance restante) <span style="font-size:7px;opacity:.5;letter-spacing:.1em;">[R]</span></div>
   </div>
 </div>
 
@@ -2695,6 +2699,7 @@ body.game-active #speedrun-timer{display:block;}
     <div class="btn-col" style="width:min(280px,86vw);margin-top:12px;gap:8px;">
       <button class="btn btn-p" style="font-size:clamp(11px,2.8vmin,14px);" onclick="currentMode==='arena'?startMode('arena'):startGame()"><span id="go-replay-lbl">↺ REJOUER</span></button>
       <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
+      <button class="btn btn-s" id="go-share-btn" onclick="shareScore()" style="display:none;"><span>📤 PARTAGER MON SCORE</span></button>
       <button class="btn btn-s" onclick="show('s-title')"><span>MENU PRINCIPAL</span></button>
     </div>
   </div>
@@ -2711,7 +2716,7 @@ body.game-active #speedrun-timer{display:block;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v28.0</div>
+<div id="watermark">PULSE v29.2</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -6023,6 +6028,17 @@ function update(now){
     _dom['mb-spec'].classList.toggle('ready', p.specCharge>=p.specMax);
     const dashPct=p.dashTimer>0?1-Math.max(0,p.dashTimer/p.dashCd):1;
     _dom['bfcd'].style.width=(dashPct*100)+'%';
+    // Dash ready: flash the bar green when it just recharged
+    const dashReady = p.dashTimer<=0 && p.dashChargesLeft>0;
+    _dom['bfcd'].style.background = dashReady
+      ? 'linear-gradient(90deg,#00c890,var(--c1))'
+      : 'linear-gradient(90deg,#0072aa,var(--c5))';
+    if(dashReady && !_dom['bfcd']._wasReady){
+      _dom['bfcd'].parentElement.style.boxShadow='0 0 8px rgba(0,245,212,.55)';
+      setTimeout(()=>{ if(_dom['bfcd']) _dom['bfcd'].parentElement.style.boxShadow=''; }, 350);
+      vib(12); // subtle haptic
+    }
+    _dom['bfcd']._wasReady = dashReady;
   }
 
   if(G.freeze>0) G.freeze--;
@@ -6386,7 +6402,11 @@ function update(now){
   }
     _dom['hv-kills'].textContent=G.totalKills;
     const enemyCount=G.enemies.filter(e=>!e.dead).length;
-    if(_dom['hv-enemies']) _dom['hv-enemies'].textContent=enemyCount+(G.waveActive&&G.spawnIdx<G.spawnPool.length?'+':'');
+    if(_dom['hv-enemies']){
+      _dom['hv-enemies'].textContent=enemyCount+(G.waveActive&&G.spawnIdx<G.spawnPool.length?'+':'');
+      // Colorize: green=safe, yellow=caution, red=danger
+      _dom['hv-enemies'].style.color = enemyCount>=15?'var(--c2)': enemyCount>=8?'var(--c3)':'var(--c6)';
+    }
     // Objective HUD
     const objEl=document.getElementById('hud-objective');
     if(objEl){
@@ -7336,6 +7356,9 @@ function togglePause(){
     const hpPct = p.hp/p.maxHp*100;
     const hpCol = hpPct<25?'var(--c2)':hpPct<50?'#ff9f1c':'var(--c1)';
     const acc = G.shotsFired>0 ? Math.round(G.shotsHit/G.shotsFired*100) : 0;
+    const accCol = acc>=70?'var(--c1)':acc>=40?'var(--c3)':'var(--c2)';
+    const elapsed2 = G.elapsed ? Math.max(1, Math.floor(G.elapsed/1000)) : 1;
+    const dps = elapsed2 > 0 ? Math.round((G.score||0) / elapsed2) : 0;
     document.getElementById('pause-stats').innerHTML=`
       <div class="pst"><div class="pst-v" style="color:var(--c1)">${G.wave}</div><div class="pst-l">VAGUE</div></div>
       <div class="pst"><div class="pst-v" style="color:var(--c3)">${G.score.toLocaleString('fr-FR')}</div><div class="pst-l">SCORE</div></div>
@@ -7344,7 +7367,8 @@ function togglePause(){
       <div class="pst"><div class="pst-v" style="color:var(--c5)">${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}</div><div class="pst-l">TEMPS</div></div>
       <div class="pst"><div class="pst-v" style="color:var(--c4)">×${(1+Math.min(G.combo,58)*.12).toFixed(1)}</div><div class="pst-l">COMBO</div></div>
       <div class="pst"><div class="pst-v" style="color:var(--c3)">NIV.${p.level||1}</div><div class="pst-l">NIVEAU</div></div>
-      <div class="pst"><div class="pst-v" style="color:var(--c5)">${acc}%</div><div class="pst-l">PRÉCISION</div></div>`;
+      <div class="pst"><div class="pst-v" style="color:${accCol}">${acc}%</div><div class="pst-l">PRÉCISION</div></div>
+      <div class="pst"><div class="pst-v" style="color:var(--c6)">${dps.toLocaleString('fr-FR')}</div><div class="pst-l">SC/SEC</div></div>`;
 
     // Active run relics
     const relicsEl=document.getElementById('pause-relics');
@@ -7568,6 +7592,9 @@ function gameOver(){
   }, 500);
 
   show('s-go');
+  // Show share button if Web Share API available
+  const shareBtn = document.getElementById('go-share-btn');
+  if(shareBtn) shareBtn.style.display = navigator.share ? 'flex' : 'none';
   // Hide game canvas so it doesnt bleed through
   const _gw=document.getElementById('game-wrap');
   if(_gw) _gw.style.opacity='0';
@@ -7575,6 +7602,20 @@ function gameOver(){
   vib([100,50,100,50,200]); vibGp(1.0,1.0,400);
   if(currentMode==='online'&&olChannel) olSend({t:'death',uid:olMyUid,name:olGetName()});
   newAchThisRun=[];
+}
+
+function shareScore(){
+  if(!G) return;
+  const score = G.score||0;
+  const wave = G.wave||0;
+  const kills = G.totalKills||0;
+  const pseudo = getPseudo();
+  const text = `🎮 PULSE — ${pseudo}\n🏆 Score: ${score.toLocaleString('fr-FR')}\n🌊 Vague: ${wave} · 💀 Kills: ${kills}\nPeut-tu battre mon score ?`;
+  if(navigator.share){
+    navigator.share({ title:'PULSE', text }).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(text).then(()=>showPopup('Score copié !','#00f5d4'));
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -8472,6 +8513,22 @@ document.addEventListener('keydown',e=>{
   // Never intercept if remap listeners are active (handled in capture phase)
   if(kbRemapTarget) return;
   if(G){ G.keys[e.key]=true; }
+
+  // R key: reroll sur l'écran d'upgrades
+  if((e.key==='r'||e.key==='R') && document.getElementById('s-upg')?.classList.contains('on')){
+    e.preventDefault();
+    const rerollEl = document.getElementById('upg-reroll');
+    if(rerollEl && rerollEl.style.display!=='none' && rerollsLeft>0){
+      rerollsLeft--;
+      rerollEl.style.display='none';
+      renderUpgradeChoices();
+      showPopup('🔄 Relance !','#00f5d4',900);
+    } else {
+      showPopup('Plus de relance','#ff1a6e',900);
+    }
+    return;
+  }
+
   if(!G||!G.running) return;
   const action = kbCheckAction(e.key) || (e.code==='Space'?'dash':null);
   if(action==='dash'  &&!G.paused){ e.preventDefault(); doDash(); }
@@ -10227,7 +10284,7 @@ function olDrawPeers(){
 // ═══════════════════════════════════════════════════════
 // ── Admin Tab Switch ──
 function adminTabSwitch(tab){
-  ['players','stats','broadcast'].forEach(t=>{
+  ['players','stats','broadcast','logs'].forEach(t=>{
     const panel = document.getElementById('admin-tab-'+t);
     const btn = document.getElementById('atab-'+t);
     if(panel) panel.style.display = t===tab?'block':'none';
@@ -10240,6 +10297,77 @@ function adminTabSwitch(tab){
     }
   });
   if(tab==='stats') adminLoadDetailStats();
+  if(tab==='logs') adminRenderLogs();
+}
+
+// ── Admin Logs ──
+const ADMIN_LOG_KEY = 'pulse_admin_logs_v1';
+const ADMIN_LOG_MAX = 100;
+
+function adminLog(action, detail=''){
+  if(!isAdmin()) return;
+  const logs = loadData(ADMIN_LOG_KEY, []);
+  logs.unshift({ ts: Date.now(), action, detail, by: userPseudo||currentUser?.email||'?' });
+  if(logs.length > ADMIN_LOG_MAX) logs.length = ADMIN_LOG_MAX;
+  saveData(ADMIN_LOG_KEY, logs);
+}
+
+function adminRenderLogs(){
+  const list = document.getElementById('admin-logs-list');
+  if(!list) return;
+  const logs = loadData(ADMIN_LOG_KEY, []);
+  if(!logs.length){
+    list.innerHTML='<div style="color:var(--dim);font-size:8px;letter-spacing:.2em;padding:20px;text-align:center;">Aucun log enregistré</div>';
+    return;
+  }
+  const actionColors = { save:'var(--c1)', reset:'var(--c2)', give:'var(--c3)', broadcast:'var(--c4)', fix:'var(--c5)', export:'var(--c6)' };
+  list.innerHTML = logs.map(l=>{
+    const d = new Date(l.ts);
+    const dt = d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const col = Object.entries(actionColors).find(([k])=>l.action.toLowerCase().includes(k))?.[1]||'var(--txt2)';
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--border);background:rgba(7,18,12,.7);font-size:8px;">
+      <span style="color:var(--dim);white-space:nowrap;letter-spacing:.05em;flex-shrink:0;">${dt}</span>
+      <span style="color:${col};letter-spacing:.1em;flex-shrink:0;">${l.action}</span>
+      <span style="color:var(--txt2);opacity:.8;word-break:break-word;">${l.detail}</span>
+    </div>`;
+  }).join('');
+}
+
+function adminClearLogs(){
+  saveData(ADMIN_LOG_KEY, []);
+  adminRenderLogs();
+  showPopup('Logs effacés','#ffbe0b');
+}
+
+// ── Export CSV ──
+async function adminExportCSV(){
+  if(!isAdmin()||!SB) return;
+  const statusEl = document.getElementById('admin-stats-status');
+  if(statusEl){ statusEl.textContent='Export en cours…'; statusEl.className='admin-status wait'; }
+  try {
+    const {data, error} = await SB.from('profiles').select('id,pseudo,coins,stats,battle_pass,scores');
+    if(error||!data){ if(statusEl){statusEl.textContent='Erreur: '+(error?.message||'?');statusEl.className='admin-status err';} return; }
+    const header = ['ID','Pseudo','Pieces','Parties','Kills','MeilleurScore','VagueMax','NiveauBP'];
+    const rows = data.map(p=>[
+      p.id,
+      p.pseudo||'',
+      p.coins||0,
+      p.stats?.gamesPlayed||0,
+      p.stats?.totalKills||0,
+      p.stats?.maxScore||0,
+      p.stats?.maxWave||0,
+      p.battle_pass?.level||0
+    ]);
+    const csv = [header, ...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='pulse_joueurs_'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    adminLog('export', `${data.length} joueurs exportés`);
+    if(statusEl){ statusEl.textContent=`✓ ${data.length} joueurs exportés en CSV.`; statusEl.className='admin-status ok'; }
+  } catch(e){ if(statusEl){ statusEl.textContent='Erreur: '+e.message; statusEl.className='admin-status err'; } }
 }
 
 async function adminLoadDetailStats(){
@@ -10270,12 +10398,58 @@ async function adminLoadDetailStats(){
 
 function adminForceMaintenanceMode(){
   if(!isAdmin()) return;
-  showPopup('⚠ Non implémenté','#ffbe0b');
+  pulseConfirm('Activer le mode maintenance ? Tous les joueurs verront un message d\'interruption.').then(ok=>{
+    if(!ok) return;
+    if(!_adminBcChannel) adminInitBroadcast();
+    _adminBcChannel.send({
+      type:'broadcast', event:'admin_msg',
+      payload:{ txt:'⚠️ MAINTENANCE EN COURS — Le jeu sera de retour très bientôt. Merci de votre patience !', ts:Date.now(), from:'Admin', maintenance:true }
+    }).then(()=>showPopup('⚠ Message maintenance diffusé','#ffbe0b'));
+  });
 }
 
 function adminClearAllNotifs(){
   if(!isAdmin()) return;
-  showPopup('🔔 Non implémenté','#ffbe0b');
+  // Afficher la modale de suppression sélective
+  const modal = document.getElementById('admin-notif-clear-modal');
+  if(modal) modal.classList.add('on');
+}
+
+function adminCloseNotifModal(){
+  const modal = document.getElementById('admin-notif-clear-modal');
+  if(modal) modal.classList.remove('on');
+}
+
+async function adminClearNotifsByType(){
+  if(!isAdmin()) return;
+  const checks = document.querySelectorAll('#admin-notif-type-list input[type=checkbox]');
+  const typesToClear = Array.from(checks).filter(c=>c.checked).map(c=>c.value);
+  const clearAll = document.getElementById('admin-notif-clear-all-check')?.checked;
+
+  if(!typesToClear.length && !clearAll){
+    showPopup('Sélectionne au moins un type.','#ff1a6e'); return;
+  }
+
+  const statusEl = document.getElementById('admin-notif-clear-status');
+  statusEl.textContent='Diffusion...'; statusEl.className='admin-status wait';
+
+  try {
+    if(!_adminBcChannel) adminInitBroadcast();
+    await _adminBcChannel.send({
+      type:'broadcast', event:'admin_clear_notifs',
+      payload:{ types: clearAll ? 'all' : typesToClear, ts:Date.now() }
+    });
+    // Aussi marquer dans la DB un champ global (optionnel) via un timestamp
+    const clearKey = clearAll ? 'all' : typesToClear.join(',');
+    statusEl.textContent=`✓ Suppression de notifs "${clearKey}" diffusée à tous les joueurs connectés.`;
+    statusEl.className='admin-status ok';
+    // Effacer les nôtres aussi
+    if(clearAll){ clearAllNotifs(); }
+    else { const notifs=loadNotifs().filter(n=>!typesToClear.includes(n.type)); saveNotifs(notifs); updateNotifBadge(); }
+    setTimeout(adminCloseNotifModal, 1800);
+  } catch(e){
+    statusEl.textContent='Erreur: '+e.message; statusEl.className='admin-status err';
+  }
 }
 
 //  ADMIN PANEL
@@ -10420,6 +10594,14 @@ function adminPlayerCard(p){
         <div class="admin-field-lbl">💥 PUISSANCE+ (0-5)</div>
         <input class="admin-field-input" id="adm-pdmg-${p.id}" type="number" value="${perma.p_dmg||0}" min="0" max="5">
       </div>
+      <div class="admin-field">
+        <div class="admin-field-lbl">🎮 PARTIES JOUÉES</div>
+        <input class="admin-field-input" id="adm-games-${p.id}" type="number" value="${stats.gamesPlayed||0}" min="0" max="99999">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-lbl">🏆 MEILLEUR SCORE</div>
+        <input class="admin-field-input" id="adm-maxscore-${p.id}" type="number" value="${stats.maxScore||0}" min="0">
+      </div>
     </div>
 
     <details style="margin-top:10px;">
@@ -10475,6 +10657,8 @@ async function adminSave(playerId){
   const bpLevel = parseInt(document.getElementById('adm-bp-'+playerId).value)||0;
   const phpLvl = parseInt(document.getElementById('adm-php-'+playerId).value)||0;
   const pdmgLvl = parseInt(document.getElementById('adm-pdmg-'+playerId).value)||0;
+  const gamesPlayedNew = parseInt(document.getElementById('adm-games-'+playerId)?.value)||0;
+  const maxScoreNew = parseInt(document.getElementById('adm-maxscore-'+playerId)?.value)||0;
 
   // Collect skins from pills
   const skinPills = document.querySelectorAll('#adm-skins-'+playerId+' .admin-skin-pill');
@@ -10491,14 +10675,23 @@ async function adminSave(playerId){
   }).filter(Boolean);
 
   // Get current profile for merge
-  const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades').eq('id',playerId).single();
+  const {data:cur} = await SB.from('profiles').select('battle_pass,perma_upgrades,stats').eq('id',playerId).single();
   const bp = Object.assign({level:0,xp:0,season:1,claimed:{}}, cur?.battle_pass||{}, {level:bpLevel, xp:0});
   const perma = Object.assign({}, cur?.perma_upgrades||{}, {p_hp:phpLvl, p_dmg:pdmgLvl});
+  // Merge stats — keep existing fields, override gamesPlayed & maxScore
+  const statsUpdate = Object.assign({}, cur?.stats||{}, {gamesPlayed:gamesPlayedNew, maxScore:maxScoreNew});
+
+  // Coherence warning: if gamesPlayed==0 but maxScore>0 or coins>0, flag it
+  if(gamesPlayedNew === 0 && (maxScoreNew > 0 || coins > 0)){
+    statusEl.textContent = '⚠ Incohérence détectée : 0 parties mais score/pièces > 0. Vérifiez les champs.';
+    statusEl.className = 'admin-status wait';
+    await new Promise(r => setTimeout(r, 1800));
+  }
 
   try {
     // Sauvegarder en deux passes pour eviter lerreur de cache Supabase sur battle_pass
     const {error:e1} = await SB.from('profiles').update({
-      coins, owned_skins:ownedSkins, perma_upgrades:perma, unlocked_relics:unlockedRelics
+      coins, owned_skins:ownedSkins, perma_upgrades:perma, unlocked_relics:unlockedRelics, stats:statsUpdate
     }).eq('id', playerId);
 
     if(e1){ statusEl.textContent='Erreur: '+e1.message; statusEl.className='admin-status err'; return; }
@@ -10515,6 +10708,7 @@ async function adminSave(playerId){
     } else {
       statusEl.textContent='✓ Tout sauvegarde !';
       statusEl.className='admin-status ok';
+      adminLog('save', `ID:${playerId.substring(0,12)} coins:${coins} games:${gamesPlayedNew} score:${maxScoreNew}`);
     }
   } catch(e){ statusEl.textContent='Erreur reseau.'; statusEl.className='admin-status err'; }
 }
@@ -10524,6 +10718,7 @@ async function adminGiveAllSkins(playerId){
   pills.forEach(p=>p.classList.add('owned'));
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Tous les skins selectionnes — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+  adminLog('give', `Tous skins → ID:${playerId.substring(0,12)}`);
 }
 
 function adminMaxPerma(playerId){
@@ -10531,6 +10726,7 @@ function adminMaxPerma(playerId){
   document.getElementById('adm-pdmg-'+playerId).value=5;
   const statusEl = document.getElementById('adm-status-'+playerId);
   statusEl.textContent='Ameliorations max — clique Sauvegarder pour appliquer.'; statusEl.className='admin-status wait';
+  adminLog('give', `Max perma → ID:${playerId.substring(0,12)}`);
 }
 
 async function adminReset(playerId){
@@ -10550,12 +10746,51 @@ async function adminReset(playerId){
     // Reset battle_pass separement
     await SB.from('profiles').update({ battle_pass:{level:0,xp:0,season:1,claimed:{}} }).eq('id', playerId);
     statusEl.textContent='✓ Joueur reinitialise.'; statusEl.className='admin-status ok';
+    adminLog('reset', `RESET COMPLET → ID:${playerId.substring(0,12)}`);
   } catch(e){ statusEl.textContent='Erreur reseau.'; statusEl.className='admin-status err'; }
 }
 
 function adminStatus(msg, cls){
   const el = document.getElementById('admin-search-status');
   if(el){ el.textContent=msg; el.className='admin-status '+(cls||''); }
+}
+
+// ── Corriger les incohérences de stats ──
+async function adminFixInconsistencies(){
+  if(!isAdmin()||!SB) return;
+  const statusEl = document.getElementById('admin-fix-status');
+  if(statusEl){ statusEl.textContent='Analyse en cours…'; statusEl.className='admin-status wait'; }
+  try {
+    const {data:players, error} = await SB.from('profiles').select('id,pseudo,coins,scores,stats');
+    if(error||!players){ if(statusEl){statusEl.textContent='Erreur: '+(error?.message||'?');statusEl.className='admin-status err';} return; }
+    let fixed = 0;
+    for(const p of players){
+      const stats = p.stats||{};
+      const scores = p.scores||[];
+      let needsFix = false;
+      const patch = {};
+
+      // Recalculate maxScore from scores array if inconsistent
+      if(scores.length > 0){
+        const realMaxScore = scores.reduce((m,s)=>Math.max(m,s.score||0),0);
+        const realGames = scores.length;
+        if((stats.gamesPlayed||0) < realGames){ patch['stats.gamesPlayed'] = realGames; needsFix=true; }
+        if((stats.maxScore||0) < realMaxScore){ patch['stats.maxScore'] = realMaxScore; needsFix=true; }
+      }
+      // If gamesPlayed=0 but coins>0 or maxScore>0, it's likely a manual edit issue
+      // We flag but don't auto-fix these (admin must decide)
+
+      if(needsFix){
+        const newStats = Object.assign({}, stats, {
+          gamesPlayed: patch['stats.gamesPlayed'] || stats.gamesPlayed || 0,
+          maxScore: patch['stats.maxScore'] || stats.maxScore || 0
+        });
+        await SB.from('profiles').update({stats:newStats}).eq('id',p.id);
+        fixed++;
+      }
+    }
+    if(statusEl){ statusEl.textContent=`✓ ${fixed} profil(s) corrigé(s) sur ${players.length} analysés.`; statusEl.className='admin-status ok'; }
+  } catch(e){ if(statusEl){ statusEl.textContent='Erreur: '+e.message; statusEl.className='admin-status err'; } }
 }
 
 // ── Admin Broadcast ──
@@ -10586,6 +10821,7 @@ async function adminBroadcast(){
     // On met a jour admin_msgs dans le profil de chaque joueur (batch via RPC si dispo, sinon on skip)
     statusEl.textContent='✓ Message diffuse a tous les joueurs connectes !';
     statusEl.className='admin-status ok';
+    adminLog('broadcast', txt.substring(0,60));
     document.getElementById('admin-broadcast-txt').value='';
     pushNotif('admin','📢 Message envoye',txt);
   } catch(e){
@@ -10610,6 +10846,17 @@ function initAdminBroadcastListener(){
     pushNotif('admin','📢 MESSAGE DE LADMIN', payload.txt);
     showPopup('📢 '+payload.txt.substring(0,40),'#ff1a6e',4000);
   }).subscribe();
+  // Écoute suppression de notifs par l'admin
+  SB.channel(ADMIN_CHANNEL+'_ctrl', {config:{broadcast:{self:false}}})
+    .on('broadcast',{event:'admin_clear_notifs'},({payload})=>{
+      if(!payload) return;
+      if(payload.types==='all'){ clearAllNotifs(); showPopup('🔔 Notifs effacées par l\'admin','#ffbe0b'); }
+      else if(Array.isArray(payload.types)){
+        const notifs=loadNotifs().filter(n=>!payload.types.includes(n.type));
+        saveNotifs(notifs); updateNotifBadge();
+        if(typeof renderNotifs==='function'){ try{renderNotifs();}catch(e){} }
+      }
+    }).subscribe();
   // Auto-broadcast mise à jour si admin et nouvelle version non encore diffusée
   if(isAdmin()){
     const lastBroadcastVer = loadData('pulse_admin_broadcast_ver','0');
@@ -12763,10 +13010,11 @@ console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-wei
       </div>
 
       <!-- Tabs -->
-      <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,26,110,.2);margin-bottom:0;">
-        <button class="admin-tab-btn active" id="atab-players" onclick="adminTabSwitch('players')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid var(--c2);color:var(--c2);cursor:pointer;">👤 JOUEURS</button>
-        <button class="admin-tab-btn" id="atab-stats" onclick="adminTabSwitch('stats')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;transition:all .15s;">📊 STATS</button>
-        <button class="admin-tab-btn" id="atab-broadcast" onclick="adminTabSwitch('broadcast')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;transition:all .15s;">📡 BROADCAST</button>
+      <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,26,110,.2);margin-bottom:0;overflow-x:auto;">
+        <button class="admin-tab-btn active" id="atab-players" onclick="adminTabSwitch('players')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid var(--c2);color:var(--c2);cursor:pointer;white-space:nowrap;">👤 JOUEURS</button>
+        <button class="admin-tab-btn" id="atab-stats" onclick="adminTabSwitch('stats')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap;">📊 STATS</button>
+        <button class="admin-tab-btn" id="atab-broadcast" onclick="adminTabSwitch('broadcast')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap;">📡 BROADCAST</button>
+        <button class="admin-tab-btn" id="atab-logs" onclick="adminTabSwitch('logs')" style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap;">📋 LOGS</button>
       </div>
 
       <!-- TAB: JOUEURS -->
@@ -12819,6 +13067,9 @@ console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-wei
           </div>
         </div>
         <button class="admin-btn save" style="margin-top:14px;" onclick="adminLoadDetailStats()">↻ RAFRAÎCHIR</button>
+        <button class="admin-btn warn" style="margin-top:8px;" onclick="adminFixInconsistencies()">🔧 CORRIGER INCOHÉRENCES (stats/parties)</button>
+        <button class="admin-btn" style="margin-top:8px;border-color:rgba(0,187,249,.4);color:var(--c5);" onclick="adminExportCSV()">📥 EXPORTER JOUEURS (CSV)</button>
+        <div class="admin-status" id="admin-fix-status"></div>
         <div class="admin-status" id="admin-stats-status"></div>
       </div>
 
@@ -12844,7 +13095,16 @@ console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-wei
         </div>
       </div>
 
-    </div>
+      <!-- TAB: LOGS -->
+      <div id="admin-tab-logs" style="display:none;padding:16px 0;">
+        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.25em;color:var(--c5);margin-bottom:10px;">📋 JOURNAL DES ACTIONS ADMIN</div>
+        <div style="font-size:8px;color:var(--txt2);letter-spacing:.08em;margin-bottom:12px;line-height:1.7;">Historique local des actions effectuées depuis ce navigateur.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button class="admin-btn save" onclick="adminRenderLogs()">↻ RAFRAÎCHIR</button>
+          <button class="admin-btn danger" onclick="adminClearLogs()">🗑 EFFACER LOGS</button>
+        </div>
+        <div id="admin-logs-list" style="display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto;"></div>
+      </div>
   </div>
 </div>
 
@@ -12914,6 +13174,41 @@ if('serviceWorker' in navigator){
       <button class="btn btn-g" id="sdm-upgrade-btn" onclick="upgradeSkinPerk(_sdmCurrentSkin)"><span>⬆ AMÉLIORER</span></button>
     </div>
     <div class="sdm-equip-hint" id="sdm-equip-section"></div>
+  </div>
+</div>
+<!-- ADMIN NOTIF CLEAR MODAL -->
+<div id="admin-notif-clear-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(3,3,10,.92);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:rgba(7,18,12,.98);border:1px solid rgba(255,26,110,.4);padding:24px 20px;width:min(400px,92vw);max-height:85vh;overflow-y:auto;box-shadow:0 0 40px rgba(255,26,110,.15);">
+    <div style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:.2em;color:var(--c2);margin-bottom:6px;">🔔 SUPPRIMER DES NOTIFICATIONS</div>
+    <div style="font-size:8px;color:var(--txt2);letter-spacing:.1em;margin-bottom:16px;line-height:1.7;">Sélectionne les types de notifications à supprimer chez TOUS les joueurs connectés.</div>
+    <div id="admin-notif-type-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(255,26,110,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="admin" style="accent-color:var(--c2);width:14px;height:14px;"> 📢 ADMIN — Messages de l'administrateur
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(255,190,11,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="ach" style="accent-color:var(--c3);width:14px;height:14px;"> 🎖 ACH — Succès débloqués
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(0,245,212,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="update" style="accent-color:var(--c1);width:14px;height:14px;"> 🆕 UPDATE — Mises à jour du jeu
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(180,79,255,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="bp" style="accent-color:var(--c4);width:14px;height:14px;"> ⭐ BP — Passe de combat
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(255,26,110,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="gift" style="accent-color:var(--c2);width:14px;height:14px;"> 🎁 GIFT — Cadeaux reçus
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.12em;color:var(--txt);padding:8px 12px;border:1px solid var(--border);transition:border-color .15s;" onmouseover="this.style.borderColor='rgba(255,190,11,.4)'" onmouseout="this.style.borderColor='var(--border)'">
+        <input type="checkbox" value="coins" style="accent-color:var(--c3);width:14px;height:14px;"> 🪙 COINS — Notifications de pièces
+      </label>
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:9px;letter-spacing:.14em;color:var(--c2);padding:10px 12px;border:1px solid rgba(255,26,110,.35);background:rgba(255,26,110,.04);margin-bottom:14px;">
+      <input id="admin-notif-clear-all-check" type="checkbox" style="accent-color:var(--c2);width:14px;height:14px;" onchange="if(this.checked)document.querySelectorAll('#admin-notif-type-list input').forEach(c=>c.checked=false)"> 🗑 TOUT SUPPRIMER (toutes catégories)
+    </label>
+    <div class="admin-status" id="admin-notif-clear-status" style="margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="admin-btn save" onclick="adminClearNotifsByType()" style="flex:1;border-color:var(--c2);color:var(--c2);">✓ APPLIQUER</button>
+      <button class="admin-btn" onclick="adminCloseNotifModal()" style="flex:1;">ANNULER</button>
+    </div>
   </div>
 </div>
 
