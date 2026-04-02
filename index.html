@@ -12668,21 +12668,10 @@ if(_origWaveComplete){
 }
 
 // ── ACHIEVEMENT TOAST ────────────────────────────────────────────
-const _origCheckAch = typeof checkAch === 'function' ? checkAch : null;
-if(_origCheckAch){
-  window.checkAch = function(id, ...args){
-    const wasDone = achDone && achDone[id];
-    const result = _origCheckAch(id, ...args);
-    if(!wasDone && achDone && achDone[id]){
-      const def = ACH_DEFS && ACH_DEFS.find(a=>a.id===id);
-      if(def) showToast(`${def.ico} <strong>${def.n}</strong> débloqué !${def.reward?' +'+def.reward+'🪙':''}`, 'success', 4500);
-    }
-    return result;
-  };
-}
+// Note: showAchToast() est déjà appelé dans checkAch() — pas besoin d'override
 
 // ── CONSOLE BRANDING ────────────────────────────────────────────
-console.log('%c🎮 PULSE v29.0%c UI Enhanced Edition', 'font-size:18px;font-weight:bold;color:#00f5d4;', 'font-size:12px;color:#b44fff;');
+console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-weight:bold;color:#00f5d4;', 'font-size:12px;color:#b44fff;');
 
 </script>
 
