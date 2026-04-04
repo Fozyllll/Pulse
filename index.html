@@ -121,7 +121,9 @@ body.game-active #relic-hud { display:flex; }
   overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
-  padding-top:env(safe-area-inset-top);
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-left:env(safe-area-inset-left, 0px);
+  padding-right:env(safe-area-inset-right, 0px);
   touch-action:pan-y;
   background:var(--bg);
 }
@@ -342,7 +344,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 /* UPGRADES */
 #s-upg{background:radial-gradient(ellipse 80% 50% at 50% 0%,#071810,var(--bg) 55%);backdrop-filter:blur(10px);}
 @media (orientation:portrait){
-  #s-upg{height:62%;bottom:auto;overflow-y:auto;}
+  #s-upg{
+    bottom:38% !important;
+    height:auto !important;
+    overflow-y:auto;
+  }
 }
 .upg-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(18px,4.5vmin,32px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 24px rgba(0,245,212,.4);}
 .upg-sub{font-size:9px;letter-spacing:.4em;color:var(--txt2);margin-top:4px;text-align:center;}
@@ -468,9 +474,20 @@ button.gp-selected,
 /* HUD */
 #hud{
   position:fixed;top:0;left:0;right:0;z-index:100;pointer-events:none;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-left:env(safe-area-inset-left, 0px);
+  padding-right:env(safe-area-inset-right, 0px);
   background:linear-gradient(to bottom,rgba(3,3,10,.97) 0%,rgba(3,3,10,.6) 60%,transparent 100%);
 }
-#hud-top{display:flex;align-items:flex-start;padding:clamp(5px,1.5vmin,10px) clamp(8px,2.5vmin,16px);gap:clamp(5px,1.5vmin,14px);flex-wrap:nowrap;overflow:hidden;}
+#hud-top{display:flex;align-items:flex-start;padding:clamp(5px,1.5vmin,10px) clamp(8px,2.5vmin,16px);gap:clamp(4px,1.2vmin,10px);flex-wrap:nowrap;overflow:visible;}
+@media (orientation:portrait) and (max-width:440px){
+  #hud-top{flex-wrap:wrap;row-gap:1px;padding:4px 8px;}
+  #hud-sep{display:none;}
+  .hv{font-size:clamp(11px,3.8vw,15px);}
+  .hl{font-size:5.5px;}
+  .hw-hp{width:clamp(50px,20vw,80px);}
+  .hw-xp,.hw-sp,.hw-cd{width:clamp(34px,12vw,56px);}
+}
 .hb{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
 .hl{font-size:clamp(6px,1.3vmin,8px);letter-spacing:.24em;color:var(--txt2);white-space:nowrap;text-transform:uppercase;}
 .hv{font-family:'Orbitron',monospace;font-size:clamp(13px,3.2vmin,21px);font-weight:700;line-height:1;white-space:nowrap;}
@@ -604,7 +621,8 @@ button.gp-selected,
 body:not(.touch) #mob,
 body.touch:not(.game-active) #mob { display:none !important; }
 body.game-active.touch #mob { display:flex !important; }
-body:not(.game-active) #mob { display:none !important; }
+/* Also hide the portrait labels outside game */
+body:not(.game-active) #portrait-ctrl-bg { display:none !important; }
 
 /* Joy left — LANDSCAPE */
 #joy-zone{position:absolute;bottom:0;left:0;width:50%;height:58%;pointer-events:all;touch-action:none;}
@@ -716,7 +734,7 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
   pointer-events:none;
 }
 @media (orientation:portrait){
-  body.touch #portrait-ctrl-bg{
+  body.touch.game-active #portrait-ctrl-bg{
     display:block;
     height:38%;
   }
@@ -8353,7 +8371,12 @@ function show(id){
   if(_backBtn) _backBtn.style.display=(BACK_MAP[id]&&!noBack.includes(id))?'block':'none';
   // These screens overlay the running game — keep game-active so HUD stays visible
   const inGameOverlays=['s-upg','s-curse','s-pause','__none__'];
-  if(!inGameOverlays.includes(id)) document.body.classList.remove('game-active');
+  if(!inGameOverlays.includes(id)){
+    document.body.classList.remove('game-active');
+    // Force-hide portrait controls on any menu screen
+    const pcb=document.getElementById('portrait-ctrl-bg');
+    if(pcb) pcb.style.display='none';
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -8366,6 +8389,9 @@ function startGame(){
   if(gameWrap) gameWrap.style.opacity='1';
   show('__none__');
   document.body.classList.add('game-active');
+  // Restore portrait controls bg (may have been force-hidden by show())
+  const pcb=document.getElementById('portrait-ctrl-bg');
+  if(pcb) pcb.style.removeProperty('display');
   document.getElementById('wbanner').classList.remove('show');
   document.getElementById('kfeed').innerHTML='';
   document.getElementById('combo').classList.remove('on');
