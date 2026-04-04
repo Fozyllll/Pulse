@@ -341,6 +341,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 
 /* UPGRADES */
 #s-upg{background:radial-gradient(ellipse 80% 50% at 50% 0%,#071810,var(--bg) 55%);backdrop-filter:blur(10px);}
+@media (orientation:portrait){
+  #s-upg{height:62%;bottom:auto;overflow-y:auto;}
+}
 .upg-h{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(18px,4.5vmin,32px);letter-spacing:.14em;color:var(--c1);text-align:center;text-shadow:0 0 24px rgba(0,245,212,.4);}
 .upg-sub{font-size:9px;letter-spacing:.4em;color:var(--txt2);margin-top:4px;text-align:center;}
 .upg-wave{font-size:8px;letter-spacing:.2em;color:var(--dim);margin-top:2px;text-align:center;}
@@ -601,6 +604,7 @@ button.gp-selected,
 body:not(.touch) #mob,
 body.touch:not(.game-active) #mob { display:none !important; }
 body.game-active.touch #mob { display:flex !important; }
+body:not(.game-active) #mob { display:none !important; }
 
 /* Joy left — LANDSCAPE */
 #joy-zone{position:absolute;bottom:0;left:0;width:50%;height:58%;pointer-events:all;touch-action:none;}
@@ -7238,6 +7242,7 @@ _gpPollRaf=requestAnimationFrame(_gpMenuLoop);
 let rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
 
 function showUpgrades(){
+  if(document.getElementById('s-upg').classList.contains('on')) return;
   G.paused=true;
   rerollsLeft=G.rerollsLeft;
   G.rerollsLeft=0;
