@@ -474,14 +474,13 @@ button.gp-selected,
 /* HUD */
 #hud{
   position:fixed;top:0;left:0;right:0;z-index:100;pointer-events:none;
-  padding-top:env(safe-area-inset-top, 0px);
   padding-left:env(safe-area-inset-left, 0px);
   padding-right:env(safe-area-inset-right, 0px);
   background:linear-gradient(to bottom,rgba(3,3,10,.97) 0%,rgba(3,3,10,.6) 60%,transparent 100%);
 }
-#hud-top{display:flex;align-items:flex-start;padding:clamp(5px,1.5vmin,10px) clamp(8px,2.5vmin,16px);gap:clamp(4px,1.2vmin,10px);flex-wrap:nowrap;overflow:visible;}
+#hud-top{display:flex;align-items:flex-start;padding:max(clamp(5px,1.5vmin,10px),env(safe-area-inset-top,0px)) clamp(8px,2.5vmin,16px) clamp(5px,1.5vmin,10px);gap:clamp(4px,1.2vmin,10px);flex-wrap:nowrap;overflow:visible;}
 @media (orientation:portrait) and (max-width:440px){
-  #hud-top{flex-wrap:wrap;row-gap:1px;padding:4px 8px;}
+  #hud-top{flex-wrap:wrap;row-gap:1px;padding:max(4px,env(safe-area-inset-top,0px)) 8px 4px;}
   #hud-sep{display:none;}
   .hv{font-size:clamp(11px,3.8vw,15px);}
   .hl{font-size:5.5px;}
@@ -540,7 +539,7 @@ button.gp-selected,
 @keyframes cdPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.35);}40%{opacity:1;transform:translate(-50%,-50%) scale(1.12);}65%{opacity:.9;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-58%) scale(.9);}}
 
 /* Popup */
-#popup{position:fixed;top:37%;left:50%;transform:translate(-50%,-50%);z-index:110;font-family:'Orbitron',monospace;font-weight:700;
+#popup{position:fixed;top:calc(env(safe-area-inset-top, 0px) + clamp(56px,12vmin,90px));left:50%;transform:translate(-50%,-50%);z-index:110;font-family:'Orbitron',monospace;font-weight:700;
   font-size:clamp(14px,3.8vw,23px);letter-spacing:.16em;pointer-events:none;opacity:0;
   text-shadow:0 0 24px currentColor, 0 0 48px currentColor;white-space:nowrap;}
 #popup.show{animation:ppPop 1s cubic-bezier(.22,1,.36,1) forwards;}
@@ -1857,7 +1856,7 @@ body.game-active #combo-wrap{display:block;}
 
 /* ── NOTIFICATION TOAST ENHANCED ── */
 .notif-toast{
-  position:fixed;top:clamp(60px,14vw,80px);right:clamp(8px,2vw,16px);
+  position:fixed;top:max(clamp(60px,14vw,80px),calc(env(safe-area-inset-top,0px) + 52px));right:clamp(8px,2vw,16px);
   z-index:800;display:flex;flex-direction:column;gap:5px;
   pointer-events:none;
   width:min(240px,55vw);
@@ -5944,12 +5943,12 @@ function update(now){
     const waveScore=G.score-(G._waveStartScore||0);
     G._waveStartScore=G.score;
     const noHit=G.waveHitsReceived===0;
-    if(noHit){ gStats.noHitWaves=(gStats.noHitWaves||0)+1; checkAch('no_dmg_wave',gStats.noHitWaves); checkAch('no_hit_5',gStats.noHitWaves); saveGStats(); showPopup('🛡 VAGUE PARFAITE ! +'+(waveScore).toLocaleString()+'pts','#00f5d4'); showToast('🛡 VAGUE PARFAITE — Sans dégâts !', 'success', 3000); }
-    else { showPopup(`✓ VAGUE ${G.wave} — +${waveScore.toLocaleString()}pts`, '#00f5d4'); }
+    if(noHit){ gStats.noHitWaves=(gStats.noHitWaves||0)+1; checkAch('no_dmg_wave',gStats.noHitWaves); checkAch('no_hit_5',gStats.noHitWaves); saveGStats(); showToast('🛡 VAGUE PARFAITE — Sans dégâts ! +'+waveScore.toLocaleString()+'pts', 'success', 3000); }
+    else { showToast(`✓ VAGUE ${G.wave} — +${waveScore.toLocaleString()}pts`, 'success', 2500); }
     // Indicateur de difficulte toutes les 5 vagues
     if(G.wave>0 && G.wave%5===0){
       const danger = G.wave<=10?'⚠ VAGUE '+(G.wave)+' — DANGER':G.wave<=20?'🔥 VAGUE '+(G.wave)+' — EXTREME':'☠ VAGUE '+(G.wave)+' — CAUCHEMAR';
-      setTimeout(()=>{ if(G) showPopup(danger,'#ff1a6e',2500); },400);
+      setTimeout(()=>{ if(G) showToast(danger, 'danger', 3000); },400);
     }
   }
   if(!G.waveActive&&G.waveCooldown>0){ G.waveCooldown--; if(G.waveCooldown===0){
@@ -13137,6 +13136,7 @@ console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-wei
         <div id="admin-logs-list" style="display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto;"></div>
       </div>
   </div>
+</div>
 </div>
 
 
