@@ -2118,34 +2118,8 @@ body.game-active #speedrun-timer{display:block;}
 .btn-d:hover { box-shadow:0 0 30px rgba(255,26,110,.3),0 4px 14px rgba(255,26,110,.15); }
 .btn-s:hover { box-shadow:0 0 18px rgba(0,245,212,.1); }
 
-/* ── 5. ÉCRAN TITRE — grille secondaire 4 colonnes propres ── */
-.title-grid-secondary {
-  display:grid !important;
-  grid-template-columns:repeat(4,1fr) !important;
-  gap:5px !important;
-  width:min(500px,94vw) !important;
-  margin-top:10px !important;
-}
-@media(max-width:400px) {
-  .title-grid-secondary { grid-template-columns:repeat(2,1fr) !important; }
-}
-.title-sec-btn {
-  min-width:0 !important;
-  font-size:clamp(7px,1.8vw,9px) !important;
-  padding:10px 6px !important;
-  letter-spacing:.08em !important;
-  background:rgba(7,18,12,.55) !important;
-  border-color:rgba(0,245,212,.12) !important;
-  color:var(--dim) !important;
-  border-radius:var(--radius);
-}
-.title-sec-btn:hover {
-  background:rgba(0,245,212,.06) !important;
-  border-color:rgba(0,245,212,.35) !important;
-  color:var(--c1) !important;
-  box-shadow:0 2px 14px rgba(0,245,212,.1) !important;
-}
-.title-sec-btn span { gap:4px !important; flex-direction:column; font-size:inherit !important; }
+/* ── 5. ÉCRAN TITRE — grille secondaire 2 colonnes ── */
+.title-sec-btn span { gap:4px !important; flex-direction:row; font-size:inherit !important; }
 
 /* Bouton JOUER — shimmer animé */
 .title-play-btn {
@@ -3924,16 +3898,19 @@ async function afterLogin(isNewAccount=false){
       if(profile.scores?.length) scores=profile.scores;
       if(profile.stats) gStats=profile.stats;
       if(profile.ach) achDone=profile.ach;
-      // Load battle pass
+      // Load battle pass — fusionner local+cloud pour ne jamais perdre de claims
       if(profile.battle_pass && profile.battle_pass.season===BP_SEASON_CURRENT){
-        battlePass=Object.assign({level:0,xp:0,season:BP_SEASON_CURRENT,claimed:{}},profile.battle_pass);
-        saveData('pulse_bp_v2',battlePass);
+        const local = loadData('pulse_bp_v2',{level:0,xp:0,season:BP_SEASON_CURRENT,claimed:{}});
+        const cloud = profile.battle_pass;
+        const mergedLevel = Math.max(local.level||0, cloud.level||0);
+        const mergedXp = mergedLevel > (local.level||0) ? (cloud.xp||0) : (local.xp||0);
+        const mergedClaimed = Object.assign({}, local.claimed||{}, cloud.claimed||{});
+        battlePass = {level:mergedLevel, xp:mergedXp, season:BP_SEASON_CURRENT, claimed:mergedClaimed};
+        saveData('pulse_bp_v2', battlePass);
       }
       // Load control bindings
       if(profile.kb_bindings) { kbMap=profile.kb_bindings; saveData('pulse_kbmap_v1',kbMap); }
       if(profile.gp_bindings) { gpMap=profile.gp_bindings; saveData('pulse_gpmap_v1',gpMap); }
-      // Load battle pass (sync again in case)
-      if(profile.battle_pass) { battlePass=Object.assign({},battlePass,profile.battle_pass); }
       // ── CLOUD SYNC — reliques, premium pass, daily, reliques equipees ──
       if(profile.unlocked_relics?.length){
         const merged=[...new Set([...loadData('pulse_unlocked_relics_v1',[]),...profile.unlocked_relics])];
