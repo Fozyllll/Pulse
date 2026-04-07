@@ -528,8 +528,7 @@ button.gp-selected,
 /* Wave progress bar */
 #wave-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:101;pointer-events:none;background:transparent;}
 #wave-bar-fill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c4),var(--c2));width:0%;transition:width .3s;box-shadow:0 0 10px var(--c1),0 0 20px rgba(0,245,212,.3);}
-#wbanner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:120;text-align:center;pointer-events:none;opacity:0;transition:opacity .2s;}
-#wbanner.show{opacity:1;}
+#wbanner{display:none !important;} /* Remplacé par #wbanner-new */
 #wb-num{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(44px,13vw,92px);letter-spacing:.08em;line-height:1;color:var(--c1);text-shadow:0 0 40px var(--c1),0 0 80px rgba(0,245,212,.25),0 0 160px rgba(0,245,212,.1);}
 #wb-sub{font-size:9px;letter-spacing:.55em;color:var(--txt2);margin-top:-2px;}
 #wb-tip{font-size:8px;color:var(--dim);letter-spacing:.14em;margin-top:8px;}
@@ -541,16 +540,31 @@ button.gp-selected,
 @keyframes cdPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.35);}40%{opacity:1;transform:translate(-50%,-50%) scale(1.12);}65%{opacity:.9;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-58%) scale(.9);}}
 
 /* Popup */
-#popup{position:fixed;top:calc(env(safe-area-inset-top, 0px) + clamp(56px,12vmin,90px));left:50%;transform:translate(-50%,-50%);z-index:110;font-family:'Orbitron',monospace;font-weight:700;
-  font-size:clamp(14px,3.8vw,23px);letter-spacing:.16em;pointer-events:none;opacity:0;
-  text-shadow:0 0 24px currentColor, 0 0 48px currentColor;white-space:nowrap;}
+#popup{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:110;
+  font-family:'Orbitron',monospace;font-weight:700;
+  font-size:clamp(13px,3.5vw,21px);letter-spacing:.14em;
+  pointer-events:none;opacity:0;
+  text-shadow:0 0 24px currentColor, 0 0 48px currentColor;
+  white-space:nowrap;
+  /* Fond semi-transparent pour lisibilité */
+  background:rgba(3,3,14,.72);
+  border:1px solid currentColor;
+  padding:8px 22px 7px;
+  border-radius:3px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px rgba(0,0,0,.6);
+}
 #popup.show{animation:ppPop 1s cubic-bezier(.22,1,.36,1) forwards;}
 @keyframes ppPop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-4deg);}
-  18%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(1deg);}
-  35%{opacity:1;transform:translate(-50%,-50%) scale(.97) rotate(0deg);}
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4);}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1.06);}
+  35%{opacity:1;transform:translate(-50%,-50%) scale(.98);}
   65%{opacity:1;transform:translate(-50%,-50%) scale(1);}
-  100%{opacity:0;transform:translate(-50%,-70%) scale(.88);}
+  100%{opacity:0;transform:translate(-50%,-62%) scale(.92);}
 }
 
 /* Combo */
@@ -1621,30 +1635,70 @@ body.game-active #combo-wrap{display:block;}
 #combo-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--c3),#ff9f1c,#fff);transition:width .15s linear;width:100%;}
 
 /* ── WAVE BANNER ENHANCED ── */
+/* ═══ WAVE BANNER — compact en HAUT, ne bloque plus le jeu ═══ */
 #wbanner-new{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  z-index:120;text-align:center;pointer-events:none;
+  position:fixed;
+  top:clamp(48px,10vmin,68px);   /* sous le HUD */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:120;
+  text-align:center;
+  pointer-events:none;
   display:none;
+  /* Compact pill style */
+  background:rgba(3,3,14,.88);
+  border:1px solid rgba(0,245,212,.28);
+  border-radius:4px;
+  padding:10px 28px 8px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 32px rgba(0,0,0,.6),0 0 24px rgba(0,245,212,.1),inset 0 1px 0 rgba(0,245,212,.1);
+  min-width:min(280px,70vw);
 }
-#wbanner-new.show{display:block;animation:wbPop .9s cubic-bezier(.22,1,.36,1) both;}
-@keyframes wbPop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-6deg);}
-  25%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(1deg);}
-  50%{transform:translate(-50%,-50%) scale(.97) rotate(0deg);}
-  70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);}
-  100%{opacity:0;transform:translate(-50%,-65%) scale(.88);}
+#wbanner-new.show{
+  display:block;
+  animation:wbNewIn .4s cubic-bezier(.22,1,.36,1) both, wbNewOut .35s ease .7s forwards;
+}
+/* Durée totale ~1.05s — brève, non bloquante */
+@keyframes wbNewIn{
+  0%{opacity:0;transform:translateX(-50%) translateY(-18px) scale(.9);}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+}
+@keyframes wbNewOut{
+  0%{opacity:1;transform:translateX(-50%) translateY(0);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-12px);}
+}
+/* Ligne décorative en haut du banner */
+#wbanner-new::before{
+  content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--c1),var(--c4),transparent);
 }
 #wb-num-new{
   font-family:'Orbitron',monospace;font-weight:900;
-  font-size:clamp(52px,15vw,108px);letter-spacing:.06em;line-height:1;
-  background:linear-gradient(135deg,#fff 0%,var(--c1) 40%,var(--c4) 100%);
+  font-size:clamp(22px,5.5vw,36px);  /* beaucoup plus petit */
+  letter-spacing:.1em;line-height:1.1;
+  background:linear-gradient(135deg,#fff 0%,var(--c1) 50%,var(--c4) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 40px rgba(0,245,212,.5));
+  filter:drop-shadow(0 0 16px rgba(0,245,212,.5));
 }
-#wb-label-new{font-size:clamp(8px,2vw,11px);letter-spacing:.65em;color:var(--txt2);margin-top:4px;}
-#wb-divider{width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--c1),var(--c4),transparent);margin:10px auto;}
-#wb-tip-new{font-size:clamp(7px,1.6vw,9px);color:var(--dim);letter-spacing:.18em;line-height:1.8;}
-#wb-bonus{font-family:'Orbitron',monospace;font-size:clamp(9px,2vw,12px);letter-spacing:.15em;margin-top:6px;min-height:18px;}
+#wb-label-new{
+  font-size:clamp(6px,1.5vw,8px);letter-spacing:.5em;color:var(--txt2);
+  margin-top:1px;text-transform:uppercase;
+}
+#wb-divider{
+  width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,245,212,.3),transparent);
+  margin:5px 0;
+}
+#wb-tip-new{
+  font-size:clamp(6px,1.4vw,8px);color:var(--dim);
+  letter-spacing:.12em;line-height:1.6;
+  max-width:260px;margin:0 auto;
+}
+#wb-bonus{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(7px,1.6vw,9px);letter-spacing:.12em;
+  margin-top:3px;min-height:14px;
+}
 
 /* ── ENHANCED GAME OVER ── */
 .go-chart-wrap{
@@ -1861,19 +1915,21 @@ body.game-active #combo-wrap{display:block;}
   position:fixed;top:max(clamp(60px,14vw,80px),calc(env(safe-area-inset-top,0px) + 52px));right:clamp(8px,2vw,16px);
   z-index:800;display:flex;flex-direction:column;gap:5px;
   pointer-events:none;
-  width:min(240px,55vw);
+  width:min(260px,58vw);
 }
 .nt{
-  padding:9px 13px;border-left:3px solid var(--c1);
-  background:rgba(3,3,10,.97);backdrop-filter:blur(8px);
-  font-size:8px;letter-spacing:.1em;color:var(--txt);
+  padding:10px 14px;border-left:3px solid var(--c1);
+  background:rgba(3,5,12,.97);backdrop-filter:blur(12px);
+  font-size:clamp(8px,1.8vw,10px);letter-spacing:.08em;color:var(--txt);
   animation:ntIn .25s ease both, ntOut .3s 3.5s ease forwards;
-  border-right:1px solid rgba(0,245,212,.12);
+  border-right:1px solid rgba(0,245,212,.1);
   border-top:1px solid rgba(0,245,212,.05);
-  border-bottom:1px solid rgba(0,245,212,.05);
+  border-bottom:1px solid rgba(0,245,212,.04);
+  box-shadow:0 3px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03);
+  line-height:1.5;
 }
-.nt.warn{border-left-color:var(--c3);}
-.nt.danger{border-left-color:var(--c2);}
+.nt.warn{border-left-color:var(--c3);border-right-color:rgba(255,190,11,.08);}
+.nt.danger{border-left-color:var(--c2);border-right-color:rgba(255,26,110,.08);}
 .nt.success{border-left-color:var(--c1);}
 @keyframes ntIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
 @keyframes ntOut{to{opacity:0;transform:translateX(20px);}}
@@ -2021,6 +2077,436 @@ body.game-active #speedrun-timer{display:block;}
 #cursor-trail{position:fixed;inset:0;pointer-events:none;z-index:9997;}
 .ct{position:absolute;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);animation:ctFade .45s ease forwards;}
 @keyframes ctFade{from{opacity:.5;}to{opacity:0;transform:translate(-50%,-50%) scale(0);}}
+
+
+/* ╔═══════════════════════════════════════════════════════════╗
+   ║         PULSE v30 — AMÉLIORATIONS VISUELLES               ║
+   ╚═══════════════════════════════════════════════════════════╝ */
+
+/* ── 1. VARIABLES ENRICHIES ── */
+:root {
+  --radius: 3px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.45);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.55);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.65);
+  --glow-c1: 0 0 20px rgba(0,245,212,.25);
+  --glow-c2: 0 0 20px rgba(255,26,110,.25);
+  --glow-c3: 0 0 20px rgba(255,190,11,.25);
+  --glow-c4: 0 0 20px rgba(180,79,255,.25);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+}
+
+/* ── 2. SÉLECTION DE TEXTE ── */
+::selection { background:rgba(0,245,212,.22); color:#fff; }
+
+/* ── 3. SCROLLBARS COLORÉES ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:rgba(0,0,0,.3); }
+::-webkit-scrollbar-thumb { background:linear-gradient(180deg,var(--c1),var(--c4)); border-radius:4px; }
+::-webkit-scrollbar-thumb:hover { background:linear-gradient(180deg,#00ffde,#d080ff); }
+
+/* ── 4. BOUTONS — meilleur glow + transitions ── */
+.btn {
+  transition:all .18s var(--ease-out), box-shadow .22s ease;
+}
+.btn-p { box-shadow:0 0 14px rgba(0,245,212,.12),inset 0 1px 0 rgba(0,245,212,.08); }
+.btn-p:hover { box-shadow:0 0 36px rgba(0,245,212,.35),0 4px 20px rgba(0,245,212,.18),inset 0 1px 0 rgba(0,245,212,.12); }
+.btn-p:active { transform:scale(.96); }
+.btn-g { box-shadow:0 0 12px rgba(255,190,11,.1),inset 0 1px 0 rgba(255,190,11,.07); }
+.btn-g:hover { box-shadow:0 0 32px rgba(255,190,11,.32),0 4px 16px rgba(255,190,11,.16); }
+.btn-d { box-shadow:0 0 10px rgba(255,26,110,.1); }
+.btn-d:hover { box-shadow:0 0 30px rgba(255,26,110,.3),0 4px 14px rgba(255,26,110,.15); }
+.btn-s:hover { box-shadow:0 0 18px rgba(0,245,212,.1); }
+
+/* ── 5. ÉCRAN TITRE — grille secondaire 4 colonnes propres ── */
+.title-grid-secondary {
+  display:grid !important;
+  grid-template-columns:repeat(4,1fr) !important;
+  gap:5px !important;
+  width:min(500px,94vw) !important;
+  margin-top:10px !important;
+}
+@media(max-width:400px) {
+  .title-grid-secondary { grid-template-columns:repeat(2,1fr) !important; }
+}
+.title-sec-btn {
+  min-width:0 !important;
+  font-size:clamp(7px,1.8vw,9px) !important;
+  padding:10px 6px !important;
+  letter-spacing:.08em !important;
+  background:rgba(7,18,12,.55) !important;
+  border-color:rgba(0,245,212,.12) !important;
+  color:var(--dim) !important;
+  border-radius:var(--radius);
+}
+.title-sec-btn:hover {
+  background:rgba(0,245,212,.06) !important;
+  border-color:rgba(0,245,212,.35) !important;
+  color:var(--c1) !important;
+  box-shadow:0 2px 14px rgba(0,245,212,.1) !important;
+}
+.title-sec-btn span { gap:4px !important; flex-direction:column; font-size:inherit !important; }
+
+/* Bouton JOUER — shimmer animé */
+.title-play-btn {
+  font-size:clamp(14px,3.5vmin,18px) !important;
+  letter-spacing:.32em !important;
+  padding:20px 52px !important;
+  border-radius:var(--radius);
+}
+.title-play-btn::after {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);
+  transform:translateX(-200%);
+  animation:titleShimmer 2.5s ease-in-out infinite;
+}
+@keyframes titleShimmer { 0%{transform:translateX(-200%);} 50%,100%{transform:translateX(200%);} }
+
+/* Battle Pass button — violet distinct */
+.title-bp-btn {
+  border-color:rgba(180,79,255,.55) !important;
+  color:var(--c4) !important;
+  background:rgba(180,79,255,.05) !important;
+  box-shadow:0 0 18px rgba(180,79,255,.14) !important;
+}
+.title-bp-btn:hover {
+  box-shadow:0 0 36px rgba(180,79,255,.32) !important;
+}
+.title-bp-btn:hover span, .title-bp-btn:active span { color:var(--bg) !important; }
+.title-bp-btn::before { background:var(--c4) !important; }
+
+/* Pill utilisateur */
+.title-user-pill {
+  border-radius:20px;
+  padding:5px 16px;
+  font-size:8px;
+}
+
+/* Barre de stats titre */
+#title-live-stats {
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:var(--shadow-sm),inset 0 1px 0 rgba(0,245,212,.06);
+}
+.title-stat-cell:hover { background:rgba(0,245,212,.04); }
+.title-stat-v { letter-spacing:.04em; }
+
+/* ── 6. MODE SELECT — cards plus riches ── */
+.mode-card {
+  border-radius:var(--radius);
+  position:relative;
+  overflow:hidden;
+}
+.mode-card::after {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 20% 80%,rgba(255,255,255,.03),transparent 60%);
+  opacity:0;transition:opacity .22s;
+}
+.mode-card:hover::after { opacity:1; }
+.mode-card:hover { transform:translateY(-5px) !important; }
+.mode-card.c1:hover { box-shadow:0 10px 32px rgba(0,245,212,.18),0 2px 8px rgba(0,0,0,.4) !important; }
+.mode-card.c2:hover { box-shadow:0 10px 32px rgba(255,190,11,.18),0 2px 8px rgba(0,0,0,.4) !important; }
+.mode-card.c3:hover { box-shadow:0 10px 32px rgba(255,26,110,.18),0 2px 8px rgba(0,0,0,.4) !important; }
+.mode-card.c4:hover { box-shadow:0 10px 32px rgba(180,79,255,.18),0 2px 8px rgba(0,0,0,.4) !important; }
+.mode-icon { transition:transform .22s var(--ease-out); }
+.mode-card:hover .mode-icon { transform:scale(1.12) rotate(-3deg); }
+
+/* ── 7. GAME OVER — fond atmosphérique ── */
+#s-go {
+  background:
+    radial-gradient(ellipse 130% 60% at 50% 0%,rgba(255,26,110,.08) 0%,transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 100%,rgba(0,245,212,.05) 0%,transparent 50%),
+    var(--bg);
+}
+#s-go::before {
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,26,110,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,26,110,.015) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 10%,black,transparent);
+}
+#s-go .scr-inner { position:relative;z-index:1; }
+
+/* Stats Game Over — cards premium */
+.go-stat {
+  border-radius:var(--radius);
+  background:rgba(5,12,8,.96) !important;
+  position:relative;overflow:hidden;
+}
+.go-stat::before {
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--c1);opacity:0;transform:scaleX(0);transform-origin:center;
+  transition:all .25s var(--ease-out);
+}
+.go-stat:hover::before { opacity:1;transform:scaleX(1); }
+.go-stat:hover { border-color:rgba(0,245,212,.3) !important; background:rgba(0,245,212,.03) !important; }
+.go-sv { font-size:clamp(22px,5.5vw,34px) !important; text-shadow:0 0 16px rgba(0,245,212,.3); }
+
+/* Coins row Game Over */
+.go-coins-row {
+  border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(255,190,11,.05),rgba(180,79,255,.03)) !important;
+  border-color:rgba(255,190,11,.22) !important;
+  box-shadow:inset 0 1px 0 rgba(255,190,11,.1),var(--shadow-sm);
+}
+.go-coin-item { text-shadow:0 0 10px rgba(255,190,11,.3); }
+
+/* ── 8. ÉCRAN PAUSE — fond + layout ── */
+#s-pause {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 30%,rgba(0,245,212,.05) 0%,transparent 55%),
+    rgba(3,3,14,.96);
+  backdrop-filter:blur(16px);
+}
+.pause-h {
+  font-size:clamp(32px,9vw,56px) !important;
+  letter-spacing:.16em !important;
+  margin-bottom:4px;
+}
+
+/* ── 9. AUTH — plus élégante ── */
+.auth-box {
+  border-radius:var(--radius);
+  box-shadow:0 0 80px rgba(0,245,212,.07),0 32px 80px rgba(0,0,0,.75),inset 0 1px 0 rgba(0,245,212,.1) !important;
+}
+.auth-input {
+  border-radius:var(--radius);
+  transition:all .2s;
+}
+.auth-input:focus {
+  border-color:rgba(0,245,212,.55) !important;
+  box-shadow:0 0 0 2px rgba(0,245,212,.1),0 0 20px rgba(0,245,212,.07) !important;
+  background:rgba(0,245,212,.04) !important;
+}
+
+/* ── 10. LEADERBOARD — rows plus premium ── */
+.lb-row {
+  border-radius:var(--radius);
+  transition:all .18s var(--ease-out);
+}
+.lb-row:hover { transform:translateX(4px) !important; }
+.lb-row.crown {
+  box-shadow:0 0 20px rgba(255,190,11,.08),inset 0 1px 0 rgba(255,190,11,.08);
+}
+
+/* ── 11. ACHIEVEMENTS — cards plus vivantes ── */
+.ach-card {
+  border-radius:var(--radius);
+  transition:all .2s var(--ease-out);
+}
+.ach-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.ach-card.done {
+  box-shadow:0 0 16px rgba(255,190,11,.08),inset 0 1px 0 rgba(255,190,11,.06);
+}
+.ach-icon { transition:transform .3s var(--ease-out),filter .3s; }
+.ach-card:hover .ach-icon { transform:scale(1.15); }
+
+/* ── 12. SHOP — skin cards ── */
+.skin-card {
+  border-radius:var(--radius);
+  transition:all .18s var(--ease-out);
+}
+.skin-card:hover:not(.owned) {
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(0,245,212,.12),inset 0 1px 0 rgba(0,245,212,.08);
+  border-color:rgba(0,245,212,.3) !important;
+}
+.skin-card.equipped {
+  box-shadow:0 0 16px rgba(0,245,212,.15),inset 0 1px 0 rgba(0,245,212,.1);
+}
+.pup-card { border-radius:var(--radius); }
+.pup-card:hover:not(.maxed) {
+  transform:translateY(-3px) !important;
+  box-shadow:0 8px 28px rgba(180,79,255,.18),inset 0 1px 0 rgba(180,79,255,.08) !important;
+}
+
+/* ── 13. NOTIFICATIONS TOAST — plus lisibles ── */
+.notif-toast { width:min(270px,60vw) !important; }
+.nt {
+  border-radius:var(--radius);
+  font-size:clamp(8px,1.8vw,10px) !important;
+  box-shadow:0 4px 18px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03) !important;
+  line-height:1.55 !important;
+}
+
+/* ── 14. HUD IN-GAME — plus lisible ── */
+#hud {
+  backdrop-filter:blur(8px);
+  background:rgba(3,3,14,.78) !important;
+  box-shadow:0 2px 16px rgba(0,0,0,.5),inset 0 -1px 0 rgba(0,245,212,.07);
+}
+.hv1 { text-shadow:0 0 10px rgba(0,245,212,.5); }
+.hv2 { text-shadow:0 0 10px rgba(255,26,110,.4); }
+.hv3 { text-shadow:0 0 10px rgba(255,190,11,.4); }
+
+/* ── 15. UPGRADE CARDS — tilt + glow ── */
+.uc {
+  border-radius:var(--radius);
+  transition:all .18s var(--ease-out);
+}
+.uc:hover {
+  transform:translateY(-6px) !important;
+  box-shadow:0 12px 32px rgba(0,245,212,.16),0 4px 12px rgba(0,0,0,.4) !important;
+}
+.uc.rare:hover { box-shadow:0 12px 32px rgba(180,79,255,.2),0 4px 12px rgba(0,0,0,.4) !important; }
+.uc.leg:hover {
+  transform:translateY(-8px) !important;
+  box-shadow:0 14px 36px rgba(255,190,11,.24),0 4px 12px rgba(0,0,0,.4) !important;
+}
+
+/* ── 16. CURSE CARDS ── */
+.cc { border-radius:var(--radius); }
+.cc:hover { transform:translateY(-5px) !important; }
+
+/* ── 17. PROFIL TABS + SHOP TABS ── */
+.shop-tab, .lb-tab, .online-tab {
+  transition:all .16s;
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.shop-tab:hover, .lb-tab:hover, .online-tab:hover {
+  background:rgba(0,245,212,.04);
+}
+.shop-tab.active, .lb-tab.active, .online-tab.active {
+  background:rgba(0,245,212,.03);
+}
+
+/* ── 18. RELIC CARDS ── */
+.relic-card {
+  border-radius:var(--radius);
+  transition:all .18s var(--ease-out);
+}
+.relic-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 8px 28px rgba(0,245,212,.14);
+}
+
+/* ── 19. BATTLE PASS ROW ── */
+.bp-row { transition:background .15s; }
+.bp-row:hover { background:rgba(255,255,255,.025) !important; }
+.bp-bar { border-radius:6px !important; overflow:hidden; }
+.bp-bar-fill { border-radius:6px !important; }
+
+/* ── 20. ÉCRAN MODE SELECT — fond ── */
+#s-mode {
+  background:
+    radial-gradient(ellipse 110% 70% at 50% 0%,rgba(0,245,212,.05) 0%,transparent 50%),
+    var(--bg);
+}
+
+/* ── 21. MENUS GÉNÉRAUX — fonds enrichis ── */
+#s-lb  { background:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(0,245,212,.05),transparent 50%),var(--bg); }
+#s-ach { background:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(180,79,255,.05),transparent 50%),var(--bg); }
+#s-shop{ background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(255,190,11,.04),transparent 45%),var(--bg); }
+#s-profile { background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,187,249,.04),transparent 50%),var(--bg); }
+#s-relics  { background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,245,212,.04),transparent 50%),var(--bg); }
+#s-bp      { background:linear-gradient(160deg,#06041a 0%,#03030a 50%,#080312 100%); }
+
+/* ── 22. SCREENS — légère animation d'entrée ── */
+.scr.on { animation:scrFadeIn .2s var(--ease-out) both; }
+@keyframes scrFadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ── 23. SCORE SCREENS HEADERS ── */
+.scr-h {
+  text-shadow:0 0 32px rgba(0,245,212,.45),0 0 64px rgba(0,245,212,.15) !important;
+  letter-spacing:.16em !important;
+}
+
+/* ── 24. INPUTS GLOBAUX ── */
+input, select, textarea {
+  border-radius:var(--radius) !important;
+  transition:border-color .2s, box-shadow .2s, background .2s !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline:none !important;
+  border-color:rgba(0,245,212,.5) !important;
+  box-shadow:0 0 0 2px rgba(0,245,212,.09),0 0 16px rgba(0,245,212,.06) !important;
+  background:rgba(0,245,212,.03) !important;
+}
+
+/* ── 25. BOUTONS PAUSE/GO/MENU — padding plus généreux ── */
+#s-pause .btn, #s-go .btn {
+  border-radius:var(--radius);
+  min-width:min(240px,80vw) !important;
+}
+
+/* ── 26. COINS HUD — plus stylé ── */
+#coins-hud {
+  border-radius:0 0 10px 10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.45),inset 0 -1px 0 rgba(255,190,11,.08);
+}
+
+/* ── 27. WATERMARK ── */
+#watermark {
+  font-size:7px !important;
+  letter-spacing:.2em !important;
+  color:rgba(0,245,212,.12) !important;
+}
+
+/* ── 28. CONFIRM DIALOG — plus premium ── */
+.pc-box {
+  border-radius:var(--radius);
+  box-shadow:0 0 60px rgba(0,245,212,.08),0 24px 60px rgba(0,0,0,.7) !important;
+}
+.pc-ok { border-radius:var(--radius); }
+.pc-cancel { border-radius:var(--radius); }
+
+/* ── 29. SKIN DETAIL MODAL ── */
+.sdm-box { border-radius:var(--radius); }
+
+/* ── 30. ONBOARDING ── */
+.ob-card { border-radius:var(--radius); transition:box-shadow .18s; }
+.ob-card.highlight:hover { box-shadow:0 4px 16px rgba(0,245,212,.1); }
+.ob-btn-next, .ob-btn-back, .ob-btn-start { border-radius:var(--radius); }
+
+/* ── 31. PORTRAIT MOBILE — améliorer contrôles ── */
+#mob-btns .mb {
+  backdrop-filter:blur(6px);
+  box-shadow:0 4px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .08s,background .1s,box-shadow .1s;
+}
+#mb-spec.ready {
+  animation:specPulse 1s ease-in-out infinite !important;
+  box-shadow:0 0 28px rgba(180,79,255,.5),inset 0 0 8px rgba(180,79,255,.12) !important;
+}
+#mob-pause-btn {
+  border-radius:var(--radius) !important;
+  backdrop-filter:blur(8px);
+}
+
+/* ── 32. BOSS HUD — plus visible ── */
+#boss-hud {
+  background:rgba(3,3,14,.82);
+  border-radius:var(--radius);
+  padding:8px 12px;
+  box-shadow:0 4px 20px rgba(255,107,26,.12);
+}
+
+/* ── 33. DAILY CHALLENGE ── */
+.daily-lb-item { border-radius:var(--radius); }
+.daily-lb-item:hover { transform:translateX(2px); }
+
+/* ── 34. ROOM LIST (ONLINE) ── */
+.room-item { border-radius:var(--radius); }
+
+/* ── 35. WBANNER-NEW couleurs boss plus frappantes ── */
+#wbanner-new.boss-wave {
+  border-color:rgba(255,26,110,.45) !important;
+  box-shadow:0 4px 32px rgba(255,26,110,.2),0 0 24px rgba(255,26,110,.15),inset 0 1px 0 rgba(255,26,110,.1) !important;
+}
+
+/* ── 36. COMBO DISPLAY ── */
+#combo-wrap { filter:drop-shadow(0 0 8px rgba(255,190,11,.15)); }
+
+/* ── 37. DANGER EDGE ── */
+#danger-edge {
+  transition:opacity .3s;
+}
+
+/* ── FIN DES AMÉLIORATIONS v30 ── */
 
 </style>
 </head>
@@ -2413,7 +2899,7 @@ body.game-active #speedrun-timer{display:block;}
 
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver">v29.1</div>
+    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v30.0 · TWIN-STICK SURVIVOR</div>
 
     <div class="title-user-pill" id="title-user-pill"></div>
 
@@ -2442,7 +2928,7 @@ body.game-active #speedrun-timer{display:block;}
       <button class="btn btn-p title-play-btn" onclick="showModeSelect()">
         <span>▶ JOUER</span>
       </button>
-      <button class="btn btn-g" onclick="show('s-daily');initDailyChallenge()"><span>⚡ DÉFI DU JOUR</span></button>
+      <button class="btn btn-g" onclick="show('s-daily');initDailyChallenge()" style="position:relative;overflow:hidden;"><span>⚡ DÉFI DU JOUR</span></button>
       <button class="btn title-bp-btn" onclick="openBP()"><span>⭐ PASSE DE COMBAT</span></button>
     </div>
 
@@ -2458,10 +2944,9 @@ body.game-active #speedrun-timer{display:block;}
       <button class="btn btn-s title-sec-btn" style="position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
     </div>
 
-    <div class="ctrl-hint" id="ctrl-hint">
-      WASD / FLÈCHES = bouger &nbsp;|&nbsp; SOURIS = viser (tir automatique)<br>
-      ESPACE = dash &nbsp;|&nbsp; Q / Clic droit = bombe spéciale &nbsp;|&nbsp; P / ESC = pause<br>
-      🎮 MANETTE : stick G = bouger · stick D = viser · A = dash · B = bombe
+    <div class="ctrl-hint" id="ctrl-hint" style="border-radius:3px;border-color:rgba(0,245,212,.1);line-height:2;max-width:min(420px,90vw);">
+      <span style="color:var(--c1);opacity:.7;">WASD</span> bouger &nbsp;·&nbsp; <span style="color:var(--c1);opacity:.7;">SOURIS</span> viser &nbsp;·&nbsp; <span style="color:var(--c1);opacity:.7;">ESPACE</span> dash &nbsp;·&nbsp; <span style="color:var(--c1);opacity:.7;">Q</span> bombe<br>
+      <span style="color:var(--c4);opacity:.8;">🎮 MANETTE</span> : stick G = bouger · stick D = viser · A = dash · B = bombe
     </div>
   </div>
 </div>
@@ -2577,8 +3062,9 @@ body.game-active #speedrun-timer{display:block;}
 
 <div class="scr" id="s-pause">
   <div class="scr-inner" style="align-items:center;">
+    <div style="width:min(260px,80vw);height:1px;background:linear-gradient(90deg,transparent,var(--c1),transparent);margin-bottom:14px;opacity:.5;"></div>
     <div class="pause-h">PAUSE</div>
-    <div style="font-size:8px;letter-spacing:.4em;color:var(--txt2);margin-top:2px;margin-bottom:12px;">JEU EN PAUSE</div>
+    <div style="font-size:7px;letter-spacing:.5em;color:var(--txt2);margin-top:3px;margin-bottom:14px;opacity:.7;">JEU EN PAUSE</div>
     <div class="pause-stats" id="pause-stats"></div>
     <div id="pause-tip" style="font-size:7px;color:var(--dim);letter-spacing:.12em;text-align:center;max-width:300px;line-height:1.8;margin-top:6px;font-style:italic;padding:8px 14px;border:1px solid rgba(0,245,212,.07);background:rgba(0,245,212,.02);"></div>
 
@@ -2691,6 +3177,7 @@ body.game-active #speedrun-timer{display:block;}
 
 <div class="scr" id="s-go">
   <div class="scr-inner go-in" style="align-items:center;">
+    <div style="width:min(380px,90vw);height:2px;background:linear-gradient(90deg,transparent,var(--c2),var(--c4),transparent);margin-bottom:14px;opacity:.7;"></div>
     <div class="go-h lose" id="go-h">GAME OVER</div>
     <div class="go-sub" id="go-sub"></div>
     <div class="hdiv" style="margin:10px 0 6px;width:min(400px,90vw);"></div>
@@ -2739,7 +3226,7 @@ body.game-active #speedrun-timer{display:block;}
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v29.2</div>
+<div id="watermark">PULSE v30.0</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -2761,7 +3248,8 @@ body.game-active #speedrun-timer{display:block;}
 <!-- AUTH SCREEN -->
 <div class="scr on" id="s-auth">
   <div class="auth-box">
-    <div class="auth-title">PULSE</div>
+    <div class="auth-title" style="font-size:clamp(32px,9vw,52px);letter-spacing:.18em;text-shadow:0 0 40px rgba(0,245,212,.5),0 0 80px rgba(0,245,212,.2);">PULSE</div>
+    <div style="font-size:7px;letter-spacing:.4em;color:var(--txt2);text-align:center;margin-top:-8px;margin-bottom:4px;opacity:.6;">TWIN-STICK SURVIVOR</div>
 
     <div class="auth-sub" id="auth-mode-lbl">CONNEXION</div>
     <input class="auth-input" id="auth-email" type="text" placeholder="EMAIL OU PSEUDO" autocomplete="username" onkeydown="if(event.key==='Enter')doAuth()">
@@ -5519,7 +6007,7 @@ function startWave(){
     const obj=OBJECTIVES[w/3%OBJECTIVES.length|0];
     G._currentObjective=obj;
     if(obj.setup) obj.setup();
-    const tip='🎯 OBJECTIF : '+obj.desc+' → +'+obj.reward+'🪙';
+    const tip='🎯 '+obj.desc+' (+'+obj.reward+'🪙)';
     showBanner(`VAGUE ${w}`, isMini?'⚡ MINI-BOSS !': `${G.spawnPool.length} ENNEMIS`, tip);
     // Show objective in persistent HUD bar
     const objHud=document.getElementById('hud-objective');
@@ -5556,10 +6044,8 @@ function showBanner(num,sub,tip=''){
   const tipEl=document.getElementById('wb-tip');
   tipEl.textContent=tip;
   tipEl.style.color=isBossWave?'rgba(255,26,110,.6)':isLateGame?'rgba(255,107,26,.5)':'var(--dim)';
-  b.classList.add('show');
-  setTimeout(()=>b.classList.remove('show'), isBossWave?2800:2200);
-  // Masquer l'ancien banner si le nouveau (wbanner-new) est présent pour éviter le doublon
-  if(document.getElementById('wbanner-new')) b.style.display='none';
+  // wbanner-new remplace complètement l'ancien — ne jamais afficher b
+  b.style.display='none';
 
   // ── Enhanced cinematic banner ──
   const nbNum = document.getElementById('wb-num-new');
@@ -5585,20 +6071,28 @@ function showBanner(num,sub,tip=''){
     if(nbLabel) nbLabel.textContent = isBossWave ? 'VAGUE BOSS' : 'VAGUE';
     if(nbTip) nbTip.textContent = tip;
     if(nbBonus){
-      const bonuses = isBossWave
-        ? ['⚠ BOSS IMMINENT','RÉSISTEZ !']
-        : isLateGame
-        ? ['💀 DANGER EXTRÊME','UPGRADES MAX']
-        : isMidGame
-        ? ['🔥 INTENSITÉ MONTANTE','FOCUS !']
-        : [];
-      nbBonus.textContent = bonuses[Math.floor(Math.random()*bonuses.length)] || '';
-      nbBonus.style.color = wCol;
+      // Priorité : objectif actuel > message de difficulté
+      if(G && G._currentObjective && G._currentObjective.lbl){
+        nbBonus.textContent = '🎯 '+G._currentObjective.lbl;
+        nbBonus.style.color = '#ffbe0b';
+      } else {
+        const bonuses = isBossWave
+          ? ['⚠ BOSS IMMINENT','RÉSISTEZ !']
+          : isLateGame
+          ? ['💀 DANGER EXTRÊME','UPGRADES MAX']
+          : isMidGame
+          ? ['🔥 INTENSITÉ MONTANTE','FOCUS !']
+          : [];
+        nbBonus.textContent = bonuses[Math.floor(Math.random()*bonuses.length)] || '';
+        nbBonus.style.color = wCol;
+      }
     }
     nbNew.classList.remove('show');
+    nbNew.classList.remove('boss-wave');
     void nbNew.offsetWidth;
     nbNew.classList.add('show');
-    setTimeout(()=>nbNew.classList.remove('show'), isBossWave?2800:2400);
+    if(isBossWave) nbNew.classList.add('boss-wave');
+    setTimeout(()=>{ nbNew.classList.remove('show'); nbNew.classList.remove('boss-wave'); }, isBossWave?1800:1200);
   }
 }
 
@@ -5940,7 +6434,11 @@ function update(now){
     // Check mini-objective
     if(G._currentObjective){
       const obj=G._currentObjective;
-      if(obj.check&&obj.check()){ awardCoins(obj.reward); showPopup('✅ '+obj.lbl+' +'+obj.reward+'🪙','#00f5d4'); }
+      if(obj.check&&obj.check()){
+        awardCoins(obj.reward);
+        // Objectif réussi → toast en bas à droite, pas de popup bloquant au centre
+        showToast('✅ OBJECTIF : '+obj.lbl+' — +'+obj.reward+'🪙','success',3000,'#00f5d4');
+      }
       G._currentObjective=null;
     }
     // Wave score summary
@@ -5958,8 +6456,13 @@ function update(now){
   if(!G.waveActive&&G.waveCooldown>0){ G.waveCooldown--; if(G.waveCooldown===0){
     // Every 3 waves (but not on boss waves), offer a curse
     if(G.wave>=3 && G.wave%3===0 && G.wave%5!==0){
+      // Nettoyer le banner avant d'afficher la malédiction
+      const _nb=document.getElementById('wbanner-new');
+      if(_nb){ _nb.classList.remove('show'); }
       showCurses();
     } else {
+      const _nb=document.getElementById('wbanner-new');
+      if(_nb){ _nb.classList.remove('show'); }
       showUpgrades();
     }
   }}
@@ -7265,6 +7768,9 @@ let rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
 function showUpgrades(){
   if(document.getElementById('s-upg').classList.contains('on')) return;
   G.paused=true;
+  // Nettoyer le banner de vague
+  const _wnb=document.getElementById('wbanner-new');
+  if(_wnb) _wnb.classList.remove('show');
   rerollsLeft=G.rerollsLeft;
   G.rerollsLeft=0;
   gpCardIdx=0;
@@ -7724,6 +8230,9 @@ function renderAch(){
 // ═══════════════════════════════════════════════════════
 function showCurses(){
   if(!G||!G.running) return;
+  // Nettoyer le banner de vague
+  const _wnbc=document.getElementById('wbanner-new');
+  if(_wnbc) _wnbc.classList.remove('show');
   G.paused=true;
   gpCardIdx=0;
   const pool=[...CURSE_DEFS];
@@ -8466,18 +8975,24 @@ function startGame(){
 function flashEl(id){ const e=document.getElementById(id); e.classList.remove('on'); void e.offsetWidth; e.classList.add('on'); }
 function flashHeal(){ flashEl('heal-fx'); }
 function showPopup(txt,col='#00f5d4',duration=900){
-  // If game is not active, use toast instead to avoid phantom popup bug
+  // Si le jeu n'est pas actif → toast (évite phantom popup)
   if(!document.body.classList.contains('game-active')){
-    // Map color to toast type for correct styling
     const _type = col==='#ff1a6e'||col==='#ff3b3b'?'danger':col==='#ffbe0b'||col==='#ff9f1c'?'warn':'success';
     showToast(txt,_type,duration>1500?duration:2200,col); return;
   }
   const e=document.getElementById('popup');
   if(!e) return;
+  // Throttle : ne pas interrompre un popup "important" (combo×50+, niveau up, boss)
+  // Les popups fréquents/mineurs passent en toast si le popup central est déjà actif
+  const isMinor = txt.includes('VAGUE') || txt.includes('OBJECTIF') || txt.includes('+') && txt.length < 28;
+  if(isMinor && e.classList.contains('show')){
+    // popup déjà visible → toast discret
+    const _type = col==='#ff1a6e'?'danger':col==='#ffbe0b'||col==='#ff9f1c'?'warn':'success';
+    showToast(txt,_type,1800,col); return;
+  }
   e.textContent=txt; e.style.color=col;
   e.style.textShadow=`0 0 20px ${col}, 0 0 40px ${col}55`;
   e.classList.remove('show'); void e.offsetWidth; e.classList.add('show');
-  // Auto-clear class after animation so it doesn't linger
   clearTimeout(e._popTm);
   e._popTm=setTimeout(()=>{ if(e) e.classList.remove('show'); }, 1050);
 }
@@ -12973,7 +13488,7 @@ if(_origWaveComplete){
 // Note: showAchToast() est déjà appelé dans checkAch() — pas besoin d'override
 
 // ── CONSOLE BRANDING ────────────────────────────────────────────
-console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-weight:bold;color:#00f5d4;', 'font-size:12px;color:#b44fff;');
+console.log('%c🎮 PULSE v30.0%c Production Ready', 'font-size:18px;font-weight:bold;color:#00f5d4;text-shadow:0 0 10px #00f5d4;', 'font-size:12px;color:#b44fff;');
 
 </script>
 
@@ -13188,7 +13703,7 @@ console.log('%c🎮 PULSE v29.1%c UI Enhanced Edition', 'font-size:18px;font-wei
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     // Force update: unregister all old SWs then re-register fresh
-    const APP_VERSION = '28.0';
+    const APP_VERSION = '30.0';
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
@@ -13200,7 +13715,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=29',{scope:'/Pulse/'})
+    navigator.serviceWorker.register('sw.js?v=30',{scope:'/Pulse/'})
       .then(reg=>{ reg.update(); console.log('[SW] Enregistre v28'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
