@@ -4243,6 +4243,7 @@ function renderFriendsTab(el){
   setTimeout(function(){ var inp=document.getElementById('friend-search-input'); if(inp) inp.focus(); },100);
 }
 
+async function searchAndAddFriend(){
   const input = document.getElementById('friend-search-input');
   const resultsEl = document.getElementById('friend-search-results');
   if(!input || !resultsEl) return;
@@ -10935,8 +10936,8 @@ async function adminClearNotifsByType(){
   statusEl.textContent='Diffusion...'; statusEl.className='admin-status wait';
 
   try {
-    if(!_adminBcChannel) adminInitBroadcast();
-    await _adminBcChannel.send({
+    if(!_adminCtrlChannel) adminInitBroadcast();
+    await _adminCtrlChannel.send({
       type:'broadcast', event:'admin_clear_notifs',
       payload:{ types: clearAll ? 'all' : typesToClear, ts:Date.now() }
     });
@@ -11297,12 +11298,18 @@ async function adminFixInconsistencies(){
 // ── Admin Broadcast ──
 const ADMIN_CHANNEL = 'pulse_admin_broadcast';
 let _adminBcChannel = null;
+let _adminCtrlChannel = null;
 
 function adminInitBroadcast(){
   if(!SB||!isAdmin()) return;
-  if(_adminBcChannel) return;
-  _adminBcChannel = SB.channel(ADMIN_CHANNEL, {config:{broadcast:{self:true}}});
-  _adminBcChannel.subscribe();
+  if(!_adminBcChannel){
+    _adminBcChannel = SB.channel(ADMIN_CHANNEL, {config:{broadcast:{self:true}}});
+    _adminBcChannel.subscribe();
+  }
+  if(!_adminCtrlChannel){
+    _adminCtrlChannel = SB.channel(ADMIN_CHANNEL+'_ctrl', {config:{broadcast:{self:true}}});
+    _adminCtrlChannel.subscribe();
+  }
 }
 
 async function adminBroadcast(){
