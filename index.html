@@ -6,10 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
+<meta name="description" content="PULSE — Jeu d'action twin-stick. Survive des vagues d'ennemis, choisis tes upgrades, accumule des reliques. Solo, duo local ou multijoueur en ligne.">
 <title>PULSE</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+<meta name="apple-touch-fullscreen" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2873,7 +2876,7 @@ input:focus, select:focus, textarea:focus {
 
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v30.0 · TWIN-STICK SURVIVOR</div>
+    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v30.0</div>
 
     <div class="title-user-pill" id="title-user-pill"></div>
 
@@ -3200,7 +3203,7 @@ input:focus, select:focus, textarea:focus {
 </div>
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
-<div id="watermark">PULSE v30.0</div>
+<div id="watermark">PULSE v30.0 — TWIN-STICK SURVIVOR</div>
 <!-- MINIMAP -->
 <div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
@@ -3662,7 +3665,7 @@ input:focus, select:focus, textarea:focus {
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '27.0';
+const VERSION = '30.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -4240,53 +4243,6 @@ function renderFriendsTab(el){
   setTimeout(function(){ var inp=document.getElementById('friend-search-input'); if(inp) inp.focus(); },100);
 }
 
-async function searchAndAddFriend(){
-  const input=document.getElementById('friend-search-input');
-  const resultsEl=document.getElementById('friend-search-results');
-  if(!input||!resultsEl) return;
-  const query=input.value.trim();
-  if(!query){ resultsEl.innerHTML=''; return; }
-  if(!SB||!currentUser){
-    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Connexion requise.</div>';
-    return;
-  }
-  resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);">Recherche...</div>';
-  try{
-    const {data,error}=await SB.from('profiles')
-      .select('id,pseudo,equipped_skin,stats')
-      .ilike('pseudo','%'+query+'%')
-      .neq('id',currentUser.id)
-      .limit(6);
-    if(error||!data||!data.length){
-      resultsEl.innerHTML='<div style="font-size:7px;color:var(--dim);letter-spacing:.1em;">Aucun joueur trouve.</div>';
-      return;
-    }
-    const friends=loadData('pulse_friends_v1',[]);
-    let rhtml='<div style="display:flex;flex-direction:column;gap:4px;">';
-    data.forEach(function(p){
-      const already=friends.some(function(f){ return f.id===p.id; });
-      const safeJson=JSON.stringify({id:p.id,pseudo:p.pseudo||'?',skin:p.equipped_skin||'default'}).replace(/"/g,'&quot;');
-      rhtml+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid '+(already?'rgba(0,245,212,.3)':'var(--border)')+';background:var(--dim2);">'
-        +'<div style="flex:1;font-family:\'Orbitron\',monospace;font-size:9px;color:var(--c1);">'+(p.pseudo||'?')+'</div>'
-        +'<div style="font-size:7px;color:var(--txt2);">V.'+(p.stats&&p.stats.maxWave||0)+'</div>'
-        +(already
-          ?'<span style="font-size:7px;color:var(--c1);">Ami</span>'
-          :'<button class="btn btn-g" style="font-size:6px;padding:4px 8px;" onclick="addFriendFromSearch('+safeJson+')"><span>+ Ami</span></button>')
-        +'</div>';
-    });
-    rhtml+='</div>';
-    resultsEl.innerHTML=rhtml;
-  }catch(e){
-    resultsEl.innerHTML='<div style="font-size:7px;color:var(--c2);">Erreur.</div>';
-  }
-}
-
-function addFriendFromSearch(friendObj){
-  addFriend(friendObj);
-  const el=document.getElementById('profile-tab-content');
-  if(el) renderFriendsTab(el);
-}
-async function searchAndAddFriend(){
   const input = document.getElementById('friend-search-input');
   const resultsEl = document.getElementById('friend-search-results');
   if(!input || !resultsEl) return;
@@ -5400,7 +5356,7 @@ const UPDATE_NOTES = [
   '🎆 Boss kill — freeze frame + anneaux d\'explosion multiples',
   '📊 Score — animation pulse sur les gros gains de points',
 ];
-const LAST_UPDATE_VERSION = 'v29.1';
+const LAST_UPDATE_VERSION = 'v30.0';
 
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE NOTIFICATIONS
@@ -5480,7 +5436,7 @@ function _notifAgo(ts){
 }
 
 let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
-let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1 });
+let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
 let newAchThisRun = [];
 
 function saveScores(){
@@ -8106,7 +8062,7 @@ function gameOver(){
   show('s-go');
   // Show share button if Web Share API available
   const shareBtn = document.getElementById('go-share-btn');
-  if(shareBtn) shareBtn.style.display = navigator.share ? 'flex' : 'none';
+  if(shareBtn) shareBtn.style.display = (navigator.share || navigator.clipboard) ? 'flex' : 'none';
   // Hide game canvas so it doesnt bleed through
   const _gw=document.getElementById('game-wrap');
   if(_gw) _gw.style.opacity='0';
@@ -8398,6 +8354,7 @@ function renderSettings(){
     {lbl:'Afficher FPS',hint:'Compteur images/seconde',key:'showFps',type:'toggle'},
     {lbl:'Mode Eco',hint:'Reduit ombres/effets — ameliore perf. mobile',key:'lowQuality',type:'toggle'},
     {lbl:'Vitesse de jeu',hint:'',key:'gameSpeed',type:'speed'},
+    {lbl:'Effets de particules',hint:'Nombres flottants, effets visuels',key:'particles',type:'toggle'},
     {lbl:'Volume sons',hint:'',key:'sfxVol',type:'range',min:0,max:100},
   ];
   list.innerHTML = rows.map(r=>{
@@ -10769,7 +10726,7 @@ function duelEnd(won){
   const msg=won?'⚔ VICTOIRE !':'💀 DEFAITE...';
   const col=won?'var(--c1)':'var(--c2)';
   showPopup(msg, col, 3000);
-  setTimeout(()=>{ if(G&&G.running){ G.running=false; showGameOver(); } },1500);
+  setTimeout(()=>{ if(G&&G.running){ G.running=false; gameOver(); } },1500);
 }
 
 function duelLeave(){
@@ -13692,7 +13649,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=30',{scope:'/Pulse/'})
+    navigator.serviceWorker.register('sw.js?v=30.0')
       .then(reg=>{ reg.update(); console.log('[SW] Enregistre v28'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
