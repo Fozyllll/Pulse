@@ -1,7 +1,7 @@
 {
   "name": "PULSE — Twin-Stick Survivor",
   "short_name": "PULSE",
-  "description": "Jeu d'action twin-stick avec upgrades, reliques, passe de combat et multijoueur en ligne.",
+  "description": "Jeu d'action twin-stick avec upgrades, reliques, passe de combat et multijoueur en ligne. Survive des vagues d'ennemis sans fin, choisis tes améliorations, accumule des reliques.",
   "start_url": "index.html",
   "scope": "./",
   "display": "fullscreen",
@@ -9,7 +9,9 @@
   "background_color": "#03030a",
   "theme_color": "#00f5d4",
   "lang": "fr",
+  "dir": "ltr",
   "categories": ["games", "entertainment"],
+  "iarc_rating_id": "",
   "icons": [
     {
       "src": "icon-192.png",
@@ -47,11 +49,27 @@
     {
       "name": "Défi du Jour",
       "short_name": "Défi",
-      "description": "Défi quotidien",
+      "description": "Défi quotidien — un seul essai par jour",
       "url": "index.html#daily",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ],
-  "screenshots": [],
-  "prefer_related_applications": false
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PULSE — Gameplay en pleine action"
+    },
+    {
+      "src": "screenshot-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "PULSE — Interface mobile"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }

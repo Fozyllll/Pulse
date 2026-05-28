@@ -7,6 +7,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#03030a">
 <meta name="description" content="PULSE — Jeu d'action twin-stick. Survive des vagues d'ennemis, choisis tes upgrades, accumule des reliques. Solo, duo local ou multijoueur en ligne.">
+<meta property="og:title" content="PULSE — Twin-Stick Survivor">
+<meta property="og:description" content="Jeu d'action twin-stick gratuit. Survive des vagues d'ennemis, choisis tes upgrades, accumule des reliques. Solo, duo local ou multijoueur en ligne.">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PULSE — Twin-Stick Survivor">
+<meta name="twitter:description" content="Jeu d'action twin-stick gratuit. Survive des vagues d'ennemis, choisis tes upgrades.">
+<meta name="twitter:image" content="icon-512.png">
+<meta name="keywords" content="jeu, twin-stick, shooter, survivor, action, arcade, gratuit, PWA, multijoueur">
+<meta name="author" content="PULSE Game">
 <title>PULSE</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -2911,7 +2921,7 @@ input:focus, select:focus, textarea:focus {
 
     <!-- Secondary grid -->
     <div class="title-grid-secondary">
-      <button class="btn btn-s title-sec-btn" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
+      <button class="btn btn-s title-sec-btn" onclick="show('s-lb');renderLeaderboard();renderHistory()"><span>🏆 SCORES</span></button>
       <button class="btn btn-s title-sec-btn" style="position:relative;" id="btn-ach" onclick="show('s-ach');renderAch()"><span>🎖 SUCCÈS</span><span class="notif-badge" id="btn-ach-badge" style="display:none;">!</span></button>
       <button class="btn btn-s title-sec-btn" onclick="show('s-relics');renderRelicEquip()"><span>✨ RELIQUES</span></button>
       <button class="btn btn-s title-sec-btn" onclick="openShop()"><span>🛒 BOUTIQUE</span></button>
@@ -3060,7 +3070,7 @@ input:focus, select:focus, textarea:focus {
     <div class="btn-col" style="width:min(260px,82vw);margin-top:12px;gap:8px;">
       <button class="btn btn-p" style="font-size:clamp(11px,2.8vmin,14px);" onclick="togglePause()"><span>▶ REPRENDRE</span></button>
       <button class="btn btn-g" onclick="saveAndQuit()"><span>💾 SAUVEGARDER ET QUITTER</span></button>
-      <button class="btn btn-s" onclick="pulseConfirm('Quitter sans sauvegarder ?').then(ok=>{if(ok){show('s-title');cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;}})"><span>↩ QUITTER SANS SAUVEGARDER</span></button>
+      <button class="btn btn-s" onclick="pulseConfirm('Quitter sans sauvegarder ?').then(ok=>{if(ok){cancelAnimationFrame(animId);clearTimeout(cdTm);G=null;document.body.classList.remove('game-active');const gw=document.getElementById('game-wrap');if(gw)gw.style.opacity='0';show('s-title');renderTitleBest();}})"><span>↩ QUITTER SANS SAUVEGARDER</span></button>
     </div>
     <div style="font-size:7px;color:rgba(0,245,212,.3);margin-top:10px;letter-spacing:.15em;">P / ESC = reprendre</div>
   </div>
@@ -3185,8 +3195,8 @@ input:focus, select:focus, textarea:focus {
     </div>
     <div class="btn-col" style="width:min(280px,86vw);margin-top:12px;gap:8px;">
       <button class="btn btn-p" style="font-size:clamp(11px,2.8vmin,14px);" onclick="currentMode==='arena'?startMode('arena'):startGame()"><span id="go-replay-lbl">↺ REJOUER</span></button>
-      <button class="btn btn-g" onclick="show('s-lb')"><span>🏆 SCORES</span></button>
-      <button class="btn btn-s" id="go-share-btn" onclick="shareScore()" style="display:none;"><span>📤 PARTAGER MON SCORE</span></button>
+      <button class="btn btn-g" onclick="show('s-lb');renderLeaderboard();renderHistory()"><span>🏆 SCORES</span></button>
+      <button class="btn btn-s" id="go-share-btn" onclick="shareScore()"><span>📤 PARTAGER MON SCORE</span></button>
       <button class="btn btn-s" onclick="show('s-title')"><span>MENU PRINCIPAL</span></button>
     </div>
   </div>
@@ -4960,8 +4970,10 @@ function shopTab(tab, btnEl){
 }
 
 function renderShop(tab){
-  currentShopTab=tab;
-  document.getElementById('shop-coins-display').textContent=coins;
+  if(tab !== undefined) currentShopTab = tab;
+  if(!currentShopTab) currentShopTab = 'skins';
+  tab = currentShopTab;
+  document.getElementById('shop-coins-display').textContent=coins.toLocaleString('fr-FR');
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
   // Reset class for non-lottery tabs
@@ -7998,10 +8010,23 @@ function gameOver(){
     document.getElementById('go-sub').textContent=`Arene — Meilleur niveau atteint : ${arenaBestLevel} · Recommence au niveau 1`;
     const replayBtn = document.getElementById('go-replay-lbl');
     if(replayBtn) replayBtn.textContent='↺ RECOMMENCER L\'ARENE';
+  } else if(currentMode==='daily'){
+    document.getElementById('go-sub').textContent=`Défi du jour · Vague ${G.wave} · ${G.totalKills} kills`;
+    const replayBtn = document.getElementById('go-replay-lbl');
+    if(replayBtn){
+      replayBtn.textContent='⏰ DÉFI TERMINÉ';
+      replayBtn.parentElement.disabled=true;
+      replayBtn.parentElement.style.opacity='0.4';
+      replayBtn.parentElement.style.pointerEvents='none';
+      replayBtn.parentElement.setAttribute('title','Un seul essai par jour !');
+    }
   } else {
     document.getElementById('go-sub').textContent=`Vague ${G.wave} · ${G.totalKills} kills · Niveau ${G.player.level}`;
     const replayBtn = document.getElementById('go-replay-lbl');
     if(replayBtn) replayBtn.textContent='↺ REJOUER';
+    // Re-enable in case it was disabled by a previous daily run
+    const replayBtnEl = replayBtn?.parentElement;
+    if(replayBtnEl){ replayBtnEl.disabled=false; replayBtnEl.style.opacity=''; replayBtnEl.style.pointerEvents=''; }
   }
   document.getElementById('go-stats').innerHTML=`
     <div class="go-stat"><div class="go-sv">${G.wave}</div><div class="go-sl">VAGUE</div></div>
@@ -8061,9 +8086,9 @@ function gameOver(){
   }, 500);
 
   show('s-go');
-  // Show share button if Web Share API available
+  // Show share button (always — clipboard is universally supported)
   const shareBtn = document.getElementById('go-share-btn');
-  if(shareBtn) shareBtn.style.display = (navigator.share || navigator.clipboard) ? 'flex' : 'none';
+  if(shareBtn) shareBtn.style.display = 'flex';
   // Hide game canvas so it doesnt bleed through
   const _gw=document.getElementById('game-wrap');
   if(_gw) _gw.style.opacity='0';
@@ -8081,9 +8106,17 @@ function shareScore(){
   const pseudo = getPseudo();
   const text = `🎮 PULSE — ${pseudo}\n🏆 Score: ${score.toLocaleString('fr-FR')}\n🌊 Vague: ${wave} · 💀 Kills: ${kills}\nPeut-tu battre mon score ?`;
   if(navigator.share){
-    navigator.share({ title:'PULSE', text }).catch(()=>{});
-  } else {
-    navigator.clipboard?.writeText(text).then(()=>showPopup('Score copié !','#00f5d4'));
+    navigator.share({ title:'PULSE', text }).catch(()=>{
+      // Fallback to clipboard if share cancelled or failed
+      navigator.clipboard?.writeText(text).then(()=>showToast('📋 Score copié dans le presse-papiers !','success',2500));
+    });
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      showToast('📋 Score copié dans le presse-papiers !','success',2500);
+      // Visual feedback on button
+      const btn = document.getElementById('go-share-btn');
+      if(btn){ const sp=btn.querySelector('span'); const orig=sp.textContent; sp.textContent='✓ COPIÉ !'; setTimeout(()=>sp.textContent=orig,2000); }
+    }).catch(()=>showToast('Impossible de copier','danger',2000));
   }
 }
 
@@ -8276,11 +8309,6 @@ function drawMinimap(){
 //  STATS + SETTINGS
 // ═══════════════════════════════════════════════════════
 function renderStats(){
-  if(document.getElementById('s-stats')?.classList.contains('on')){
-    show('s-profile'); renderProfile();
-    setTimeout(()=>{ const btn=document.getElementById('ptab-stats'); if(btn) profileTab('stats',btn); },50);
-    return;
-  }
   const g=gStats;
   const totalTime=g.totalTime||0;
   const hh=Math.floor(totalTime/3600), mm=Math.floor((totalTime%3600)/60);
@@ -8443,6 +8471,19 @@ function renderSettings(){
   tutDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;';
   tutDiv.innerHTML=`<button class="acc-save-btn" onclick="obInit();show('s-onboard')">📖 REVOIR LE TUTORIEL</button>`;
   list.appendChild(tutDiv);
+
+  // ── Mentions légales & Confidentialité ──
+  const legalDiv = document.createElement('div');
+  legalDiv.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:6px;';
+  legalDiv.innerHTML=`
+    <div style="font-size:6px;letter-spacing:.18em;color:var(--dim);text-align:center;">PULSE v${LAST_UPDATE_VERSION} — Jeu indépendant</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <a href="privacy.html" target="_blank" rel="noopener" style="font-size:7px;color:var(--txt2);letter-spacing:.12em;text-decoration:underline;cursor:pointer;">Politique de confidentialité</a>
+      <span style="font-size:7px;color:var(--border);">·</span>
+      <a href="privacy.html#contact" target="_blank" rel="noopener" style="font-size:7px;color:var(--txt2);letter-spacing:.12em;text-decoration:underline;cursor:pointer;">Contact</a>
+    </div>
+    <div style="font-size:6px;color:var(--dim);letter-spacing:.08em;text-align:center;opacity:.5;">Aucune publicité · Aucun traqueur · Données stockées en Europe</div>`;
+  list.appendChild(legalDiv);
 }
 
 async function handleSavePseudo(){
@@ -8562,7 +8603,7 @@ async function sendGift(){
   // Lookup target profile by pseudo or email
   let {data:targets, error:qErr} = await SB.from('profiles')
     .select('id,pseudo,coins,owned_skins,battle_pass,premium_pass')
-    .or(`pseudo.ilike.${target},email.ilike.${target}`)
+    .or(`pseudo.ilike.${encodeURIComponent(target)},email.ilike.${encodeURIComponent(target)}`)
     .limit(1);
   // Fallback: try exact pseudo match if no results
   if((!targets||targets.length===0)&&!qErr){
@@ -8708,7 +8749,7 @@ async function fetchGlobalLeaderboard(){
   try {
     // Recupere le meilleur score de chaque joueur
     const {data,error}=await SB.from('profiles')
-      .select('pseudo, scores')
+      .select('id, pseudo, scores')
       .not('scores','eq','[]')
       .not('scores','is',null);
     if(error) return null;
@@ -8718,6 +8759,7 @@ async function fetchGlobalLeaderboard(){
       if(!row.scores?.length) continue;
       const best=row.scores.reduce((a,b)=>b.score>a.score?b:a, row.scores[0]);
       entries.push({
+        userId: row.id,
         pseudo: row.pseudo||'ANONYME',
         score: best.score,
         wave: best.wave,
@@ -8819,6 +8861,17 @@ function show(id){
   if(id!=='__none__') document.getElementById(id)?.classList.add('on');
   const noBack=['s-title','s-auth','s-go','s-pause','__none__'];
   if(_backBtn) _backBtn.style.display=(BACK_MAP[id]&&!noBack.includes(id))?'block':'none';
+  // Auto-render screens that need it
+  if(id==='s-lb'){ setTimeout(()=>{ renderLeaderboard(); renderHistory(); },0); }
+  if(id==='s-settings'){ setTimeout(()=>renderSettings(),0); }
+  if(id==='s-bp'){ setTimeout(()=>renderBP(),0); }
+  if(id==='s-shop'){ setTimeout(()=>renderShop(),0); }
+  if(id==='s-ach'){ setTimeout(()=>renderAch(),0); }
+  if(id==='s-stats'){ setTimeout(()=>renderStats(),0); }
+  if(id==='s-relics'){ setTimeout(()=>renderRelicEquip(),0); }
+  if(id==='s-inventory'){ setTimeout(()=>renderInventory(),0); }
+  if(id==='s-gift'){ setTimeout(()=>renderGiftUI(),0); }
+  if(id==='s-daily'){ setTimeout(()=>{ if(typeof initDailyChallenge==='function') initDailyChallenge(); },0); }
   // These screens overlay the running game — keep game-active so HUD stays visible
   const inGameOverlays=['s-upg','s-curse','s-pause','__none__'];
   if(!inGameOverlays.includes(id)){
@@ -10418,6 +10471,13 @@ async function olSubscribe(code){
       if(s==='SUBSCRIBED'){
         if(olSyncTimer) clearInterval(olSyncTimer);
         olSyncTimer=setInterval(olSyncPos,OL_SYNC_MS);
+      } else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED'){
+        if(G&&G.running&&currentMode==='online'){
+          showToast('⚠ Connexion interrompue — partie continue en local','danger',4000);
+          currentMode='classic';
+          if(olSyncTimer){ clearInterval(olSyncTimer); olSyncTimer=null; }
+          document.getElementById('online-hud')?.classList.remove('on');
+        }
       }
     });
 }
@@ -10600,7 +10660,13 @@ async function duelJoin(){
 async function duelSubscribe(code){
   if(duelChannel){ try{duelChannel.unsubscribe();}catch(e){} }
   duelChannel = SB.channel('pulse_duel_'+code, {config:{broadcast:{self:false}}});
-  duelChannel.on('broadcast',{event:'duel'},({payload})=>duelHandle(payload)).subscribe();
+  duelChannel.on('broadcast',{event:'duel'},({payload})=>duelHandle(payload)).subscribe(s=>{
+    if((s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED') && G&&G.running&&currentMode==='duel'){
+      showToast('⚠ Connexion duel interrompue — partie continue en local','danger',4000);
+      currentMode='classic';
+      document.getElementById('online-hud')?.classList.remove('on');
+    }
+  });
 }
 
 function duelSend(payload){
@@ -11639,7 +11705,7 @@ async function loadDailyLeaderboard(dateStr){
     data.forEach(p=>{
       if(!p.scores) return;
       const ds=p.scores.find(s=>s.daily===dateStr);
-      if(ds) dailyScores.push({name:p.pseudo||'Joueur',score:ds.score});
+      if(ds) dailyScores.push({id:p.id, name:p.pseudo||'Joueur',score:ds.score});
     });
     dailyScores.sort((a,b)=>b.score-a.score);
     lbEl.innerHTML='';
@@ -12924,7 +12990,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
   // Wire up leaderboard button
-  document.querySelector('.btn-g[onclick*="s-lb"]').addEventListener('click',renderLeaderboard);
+  document.querySelector('.btn-g[onclick*="s-lb"]').addEventListener('click', () => {
+    renderLeaderboard();
+    renderHistory();
+  });
 
   // iOS fix: sur file://, les clics sur boutons peuvent etre bloques.
   // On ecoute touchend et on declenche .click() manuellement.
@@ -13657,7 +13726,7 @@ if('serviceWorker' in navigator){
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
     navigator.serviceWorker.register('sw.js?v=30.0')
-      .then(reg=>{ reg.update(); console.log('[SW] Enregistre v28'); })
+      .then(reg=>{ reg.update(); console.log('[SW] Enregistre v30.0'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
