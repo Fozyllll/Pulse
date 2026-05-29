@@ -1143,102 +1143,245 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 
 /* ═══ BATTLE PASS — DUAL TRACK (FREE + PREMIUM) ═══ */
 #s-bp{background:linear-gradient(160deg,#06041a 0%,#03030a 50%,#080312 100%);backdrop-filter:blur(16px);}
-.bp-wrap{width:min(820px,97vw);display:flex;flex-direction:column;gap:0;}
+.bp-wrap{width:min(880px,98vw);display:flex;flex-direction:column;gap:0;}
 
-/* Header */
-.bp-hero{display:flex;align-items:center;gap:16px;padding:16px 0 14px;border-bottom:1px solid var(--border);}
-.bp-lv-big{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(28px,6.5vmin,44px);color:var(--c1);letter-spacing:.06em;line-height:1;text-shadow:0 0 20px rgba(0,245,212,.3);}
-.bp-lv-sub{font-size:7px;letter-spacing:.35em;color:var(--txt2);margin-top:2px;}
+/* ═══ BP HERO HEADER ═══ */
+.bp-hero{
+  display:grid;grid-template-columns:auto 1fr auto;gap:20px;
+  align-items:center;padding:20px 0 16px;
+  border-bottom:2px solid rgba(180,79,255,.25);
+  position:relative;
+}
+.bp-hero::after{
+  content:'';position:absolute;bottom:-2px;left:0;width:35%;height:2px;
+  background:linear-gradient(90deg,var(--c4),transparent);
+}
+.bp-lv-big{
+  font-family:'Orbitron',monospace;font-weight:900;
+  font-size:clamp(36px,8vmin,56px);color:var(--c4);
+  letter-spacing:.04em;line-height:1;
+  text-shadow:0 0 30px rgba(180,79,255,.5),0 0 60px rgba(180,79,255,.25);
+  position:relative;
+}
+.bp-lv-sub{font-size:7px;letter-spacing:.4em;color:var(--dim);margin-top:3px;text-align:center;}
 .bp-xp-section{flex:1;}
-.bp-xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
-.bp-xp-lbl{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.12em;color:var(--txt);}
-.bp-xp-val{font-family:'Orbitron',monospace;font-size:8px;color:var(--c4);}
-.bp-bar{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;position:relative;border:1px solid rgba(180,79,255,.25);}
-.bp-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#b44fff,#00f5d4);transition:width .8s cubic-bezier(.22,1,.36,1);}
-.bp-bar-shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);animation:bpShine 2.5s ease-in-out infinite;}
-@keyframes bpShine{0%{left:-60%;}100%{left:120%;}}
-.bp-season-badge{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.35em;color:var(--c4);padding:3px 10px;border:1px solid rgba(180,79,255,.4);background:rgba(180,79,255,.06);white-space:nowrap;}
-.bp-season-end{font-size:7px;color:var(--txt2);letter-spacing:.1em;margin-top:3px;text-align:right;}
+.bp-xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.bp-xp-lbl{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;color:var(--txt2);}
+.bp-xp-val{font-family:'Orbitron',monospace;font-size:9px;color:var(--c4);font-weight:700;}
+.bp-bar{
+  height:14px;background:rgba(255,255,255,.05);border-radius:7px;overflow:hidden;
+  position:relative;border:1px solid rgba(180,79,255,.3);
+  box-shadow:0 0 12px rgba(180,79,255,.1) inset;
+}
+.bp-bar-fill{
+  height:100%;border-radius:7px;
+  background:linear-gradient(90deg,#b44fff 0%,#7b2fff 40%,#00f5d4 100%);
+  transition:width 1s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 0 14px rgba(180,79,255,.6);
+  position:relative;
+}
+.bp-bar-fill::after{
+  content:'';position:absolute;top:0;right:0;width:6px;height:100%;
+  background:rgba(255,255,255,.6);border-radius:50%;
+  box-shadow:0 0 10px #fff;
+}
+.bp-bar-shine{position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:bpShine 2.8s ease-in-out infinite;}
+@keyframes bpShine{0%{left:-50%;}100%{left:130%;}
+}
+.bp-season-badge{
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;
+  color:var(--c4);padding:5px 14px;
+  border:1px solid rgba(180,79,255,.5);
+  background:rgba(180,79,255,.08);
+  white-space:nowrap;text-align:center;
+  box-shadow:0 0 20px rgba(180,79,255,.1);
+}
+.bp-season-end{font-size:7px;color:var(--txt2);letter-spacing:.1em;margin-top:4px;text-align:center;}
 
-/* Premium banner */
-.bp-premium-banner{width:100%;margin:10px 0 6px;padding:12px 16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;border-radius:4px;}
-.bp-premium-banner.not-owned{border:1px solid rgba(255,190,11,.5);background:linear-gradient(135deg,rgba(255,190,11,.07),rgba(180,79,255,.07));}
-.bp-premium-banner.owned{border:1px solid rgba(0,245,212,.4);background:linear-gradient(135deg,rgba(0,245,212,.06),rgba(180,79,255,.06));}
-.bp-premium-icon{font-size:26px;flex-shrink:0;}
+/* ═══ PREMIUM BANNER ═══ */
+.bp-premium-banner{
+  width:100%;margin:14px 0 8px;padding:16px 20px;
+  display:flex;align-items:center;gap:16px;
+  position:relative;overflow:hidden;border-radius:6px;
+}
+.bp-premium-banner.not-owned{
+  border:1px solid rgba(255,190,11,.6);
+  background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(180,79,255,.06));
+}
+.bp-premium-banner.not-owned::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 50%,rgba(255,190,11,.04));
+  pointer-events:none;
+}
+.bp-premium-banner.owned{
+  border:1px solid rgba(0,245,212,.5);
+  background:linear-gradient(135deg,rgba(0,245,212,.07),rgba(180,79,255,.05));
+}
+.bp-premium-icon{font-size:32px;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(255,190,11,.5));}
 .bp-premium-info{flex:1;}
-.bp-premium-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.15em;}
+.bp-premium-title{font-family:'Orbitron',monospace;font-size:12px;letter-spacing:.18em;font-weight:700;}
 .bp-premium-banner.not-owned .bp-premium-title{color:var(--c3);}
 .bp-premium-banner.owned .bp-premium-title{color:var(--c1);}
-.bp-premium-desc{font-size:7px;color:var(--txt2);margin-top:3px;line-height:1.5;}
-.bp-premium-perks{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;font-size:6px;color:var(--c3);letter-spacing:.1em;}
-
-/* Dual-track table */
-.bp-section-label{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3em;color:var(--txt2);padding:10px 0 4px;border-bottom:1px solid var(--border);margin-bottom:0;}
-.bp-dual-track{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:min(calc(100dvh - 340px), calc(100vh - 340px));padding-bottom:12px;}
-.bp-row{display:grid;grid-template-columns:clamp(36px,8vw,52px) 1fr 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,.05);transition:background .15s;}
-.bp-row:hover{background:rgba(255,255,255,.02);}
-.bp-row-lv{display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;color:var(--dim);padding:8px 4px;border-right:1px solid rgba(255,255,255,.05);}
-.bp-row.done .bp-row-lv{color:var(--c1);}
-.bp-row.current .bp-row-lv{color:var(--c3);}
-.bp-cell{padding:7px 10px;display:flex;align-items:center;gap:8px;border-right:1px solid rgba(255,255,255,.05);}
-.bp-cell.claimed-cell{background:rgba(255,255,255,.025);opacity:.55;filter:saturate(.3);}
-.bp-cell:last-child{border-right:none;}
-.bp-cell.premium-cell{background:rgba(180,79,255,.03);}
-.bp-cell.premium-cell.locked-prem{background:rgba(0,0,0,.2);}
-.bp-cell-icon{font-size:clamp(16px,4vmin,22px);flex-shrink:0;line-height:1;}
-.bp-cell.locked-prem .bp-cell-icon{filter:grayscale(1) opacity(.3);}
-.bp-cell-info{display:flex;flex-direction:column;gap:2px;flex:1;}
-.bp-cell-name{font-family:'Orbitron',monospace;font-size:clamp(6px,1.5vmin,8px);letter-spacing:.06em;color:var(--txt2);}
-.bp-cell.claimable .bp-cell-name,.bp-cell.unlocked .bp-cell-name{color:var(--txt);}
-.bp-cell.locked-prem .bp-cell-name{color:var(--dim);}
-.bp-cell-type{font-size:6px;letter-spacing:.12em;padding:1px 4px;border-radius:2px;align-self:flex-start;}
-.bp-cell-type.coins{color:var(--c3);border:1px solid rgba(255,190,11,.3);}
-.bp-cell-type.skin{color:var(--c1);border:1px solid rgba(0,245,212,.3);}
-.bp-cell-type.perma{color:#b44fff;border:1px solid rgba(180,79,255,.3);}
-.bp-cell-rarity{font-size:5px;letter-spacing:.1em;align-self:flex-start;}
-.bp-cell-rarity.legendary{color:var(--c3);}
-.bp-cell-rarity.epic{color:var(--c4);}
-.bp-cell-rarity.rare{color:#00bbf9;}
-.bp-cell-claim{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.12em;padding:3px 8px;border:1px solid var(--c3);color:var(--c3);background:transparent;cursor:pointer;transition:all .12s;white-space:nowrap;margin-top:2px;}
-.bp-cell-claim:hover{background:var(--c3);color:var(--bg);}
-.bp-cell-check{color:var(--c1);font-size:13px;margin-left:auto;}
-.bp-cell.premium-cell.locked-prem .bp-cell-lock{font-size:12px;opacity:.5;margin-left:auto;}
-.bp-track-header{display:grid;grid-template-columns:clamp(36px,8vw,52px) 1fr 1fr;gap:0;margin-top:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);}
-.bp-track-header-cell{padding:8px 10px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;display:flex;align-items:center;gap:6px;}
-.bp-track-header-cell.free-hd{color:var(--txt2);border-right:1px solid var(--border);}
-.bp-track-header-cell.prem-hd{color:var(--c3);background:rgba(180,79,255,.04);}
-.bp-track-header-cell.lv-hd{border-right:1px solid var(--border);justify-content:center;}
-.bp-row.current{background:rgba(180,79,255,.04);border-bottom:1px solid rgba(180,79,255,.15);}
-.bp-row.current .bp-row-lv{color:var(--c4);font-size:8px;background:rgba(180,79,255,.1);}
-@keyframes bpRowGlow{from{background:rgba(255,190,11,.04);}to{background:rgba(255,190,11,.1);}}
-.bp-row.has-claimable{animation:bpRowGlow .9s ease-in-out infinite alternate;}
-/* Mobile: tighter BP cells */
-@media (max-width:480px){
-  .bp-cell{ padding:5px 8px; gap:6px; }
-  .bp-cell-icon{ font-size:clamp(14px,3.5vmin,18px); }
-  .bp-cell-name{ font-size:clamp(5px,1.3vmin,7px); }
-  .bp-row-lv{ font-size:6px; padding:6px 2px; }
-  .bp-hero{ gap:10px; padding:10px 0 10px; }
-  .bp-lv-big{ font-size:clamp(22px,5.5vmin,34px); }
+.bp-premium-desc{font-size:8px;color:var(--txt2);margin-top:4px;line-height:1.6;}
+.bp-premium-perks{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:7px;color:var(--c3);letter-spacing:.1em;}
+.bp-premium-perks span{
+  padding:2px 8px;border:1px solid rgba(255,190,11,.25);
+  background:rgba(255,190,11,.04);border-radius:2px;
 }
 
-/* Unclaimed section */
-.bp-unclaimed-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.3);margin:8px 0 4px;border-radius:3px;}
-.bp-unclaimed-lbl{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;color:var(--c3);flex:1;}
-/* ── BP AMÉLIORATIONS v2 ── */
-.bp-lv-big{text-shadow:0 0 30px rgba(180,79,255,.55),0 0 60px rgba(180,79,255,.2);}
-.bp-bar{height:14px;box-shadow:0 0 10px rgba(180,79,255,.1) inset;}
-.bp-bar-fill{background:linear-gradient(90deg,#b44fff 0%,#7b2fff 40%,#00f5d4 100%);box-shadow:0 0 14px rgba(180,79,255,.5);}
-.bp-bar-fill::after{content:'';position:absolute;top:0;right:0;width:6px;height:100%;background:rgba(255,255,255,.5);border-radius:50%;}
-.bp-row[data-milestone="true"]{border-bottom:2px solid rgba(255,190,11,.2);}
-.bp-row[data-milestone="true"] .bp-row-lv{background:rgba(255,190,11,.07);}
-.bp-cell.claimable{cursor:pointer;animation:bpCellPulse .8s ease-in-out infinite alternate;}
-@keyframes bpCellPulse{from{box-shadow:none;}to{box-shadow:inset 0 0 14px rgba(255,190,11,.1);}}
-.bp-cell-claim:hover{background:var(--c3);color:var(--bg);box-shadow:0 0 12px rgba(255,190,11,.4);}
-.bp-premium-banner.not-owned{border:1px solid rgba(255,190,11,.6);}
-.bp-unclaimed-bar{animation:bpUncPulse 1.5s ease-in-out infinite alternate;}
-@keyframes bpUncPulse{from{border-color:rgba(255,190,11,.3);}to{border-color:rgba(255,190,11,.7);}}
+/* ═══ UNCLAIMED BAR ═══ */
+.bp-unclaimed-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  background:rgba(255,190,11,.06);
+  border:1px solid rgba(255,190,11,.4);margin:10px 0 6px;border-radius:4px;
+  animation:bpUncPulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes bpUncPulse{from{border-color:rgba(255,190,11,.3);}to{border-color:rgba(255,190,11,.7);}
+}
+.bp-unclaimed-lbl{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.18em;color:var(--c3);flex:1;}
+/* Rarity cell accents */
+.bp-cell.cell-legendary:not(.claimed-cell):not(.locked-prem){
+  background:rgba(255,190,11,.04);
+  border-left:2px solid rgba(255,190,11,.5);
+}
+.bp-cell.cell-epic:not(.claimed-cell):not(.locked-prem){
+  border-left:2px solid rgba(180,79,255,.4);
+}
+.bp-cell.cell-legendary .bp-cell-icon,.bp-cell.cell-epic .bp-cell-icon{
+  filter:drop-shadow(0 0 8px rgba(255,190,11,.4));
+}
+.bp-cell.cell-epic .bp-cell-icon{filter:drop-shadow(0 0 8px rgba(180,79,255,.5));}
+.bp-cell-icon{position:relative;}
 
+
+/* ═══ TRACK HEADER ═══ */
+.bp-track-header{
+  display:grid;grid-template-columns:clamp(40px,9vw,56px) 1fr 1fr;gap:0;
+  margin-top:12px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.015);
+}
+.bp-track-header-cell{padding:10px 12px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.22em;display:flex;align-items:center;gap:8px;}
+.bp-track-header-cell.lv-hd{border-right:1px solid rgba(255,255,255,.08);justify-content:center;color:var(--dim);}
+.bp-track-header-cell.free-hd{color:var(--txt2);border-right:1px solid rgba(255,255,255,.08);}
+.bp-track-header-cell.prem-hd{color:var(--c3);background:rgba(180,79,255,.05);}
+
+/* ═══ DUAL TRACK ROWS ═══ */
+.bp-dual-track{
+  display:flex;flex-direction:column;gap:0;
+  overflow-y:auto;
+  max-height:min(calc(100dvh - 360px), calc(100vh - 360px));
+  padding-bottom:16px;
+}
+.bp-row{
+  display:grid;grid-template-columns:clamp(40px,9vw,56px) 1fr 1fr;gap:0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:background .2s;position:relative;
+}
+.bp-row:hover{background:rgba(255,255,255,.025);}
+.bp-row-lv{
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;
+  color:var(--dim);padding:10px 4px;
+  border-right:1px solid rgba(255,255,255,.05);
+}
+.bp-row.done .bp-row-lv{color:var(--c1);opacity:.7;}
+.bp-row.current .bp-row-lv{
+  color:var(--c4);font-size:9px;font-weight:700;
+  background:rgba(180,79,255,.12);
+  text-shadow:0 0 8px rgba(180,79,255,.6);
+}
+.bp-row.current{
+  background:rgba(180,79,255,.04);
+  border-bottom:1px solid rgba(180,79,255,.2);
+  box-shadow:inset 0 0 20px rgba(180,79,255,.03);
+}
+
+/* ═══ CELLS ═══ */
+.bp-cell{
+  padding:9px 12px;display:flex;align-items:center;gap:10px;
+  border-right:1px solid rgba(255,255,255,.05);
+  transition:all .18s;cursor:default;
+  position:relative;overflow:hidden;
+}
+.bp-cell:last-child{border-right:none;}
+.bp-cell.claimed-cell{
+  background:rgba(255,255,255,.01);opacity:.45;filter:saturate(.2) brightness(.7);
+}
+.bp-cell.premium-cell{background:rgba(180,79,255,.025);}
+.bp-cell.premium-cell.locked-prem{background:rgba(0,0,0,.15);}
+.bp-cell.claimable{
+  cursor:pointer;
+  background:rgba(255,190,11,.04);
+  border-left:2px solid rgba(255,190,11,.6);
+  animation:bpCellGlow .8s ease-in-out infinite alternate;
+}
+.bp-cell.claimable:hover{background:rgba(255,190,11,.09);transform:translateX(2px);}
+@keyframes bpCellGlow{from{box-shadow:none;}to{box-shadow:inset 0 0 16px rgba(255,190,11,.08);}
+}
+
+.bp-cell-icon{font-size:clamp(18px,4.5vmin,26px);flex-shrink:0;line-height:1;}
+.bp-cell.locked-prem .bp-cell-icon{filter:grayscale(1) opacity(.25);}
+.bp-cell.claimed-cell .bp-cell-icon{filter:grayscale(1) opacity(.4);}
+.bp-cell-info{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+.bp-cell-name{
+  font-family:'Orbitron',monospace;font-size:clamp(6px,1.5vmin,9px);
+  letter-spacing:.06em;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.bp-cell.claimable .bp-cell-name,.bp-cell.unlocked .bp-cell-name{color:var(--txt);}
+.bp-cell.locked-prem .bp-cell-name{color:var(--dim);}
+
+.bp-cell-type{
+  font-size:6px;letter-spacing:.14em;padding:2px 5px;
+  border-radius:2px;align-self:flex-start;
+}
+.bp-cell-type.coins{color:var(--c3);border:1px solid rgba(255,190,11,.35);background:rgba(255,190,11,.04);}
+.bp-cell-type.skin{color:var(--c1);border:1px solid rgba(0,245,212,.35);background:rgba(0,245,212,.04);}
+.bp-cell-type.perma{color:#b44fff;border:1px solid rgba(180,79,255,.35);background:rgba(180,79,255,.04);}
+.bp-cell-rarity{font-size:5px;letter-spacing:.12em;align-self:flex-start;margin-top:1px;}
+.bp-cell-rarity.legendary{color:var(--c3);text-shadow:0 0 6px rgba(255,190,11,.5);}
+.bp-cell-rarity.epic{color:var(--c4);}
+.bp-cell-rarity.rare{color:#00bbf9;}
+.bp-cell-rarity.common{color:var(--dim);}
+
+/* Milestone levels — visual pop */
+.bp-row[data-milestone="true"]{
+  border-bottom:2px solid rgba(255,190,11,.2);
+}
+.bp-row[data-milestone="true"] .bp-row-lv{
+  color:var(--c3) !important;font-size:8px !important;
+  background:rgba(255,190,11,.08) !important;
+}
+
+/* Claim button */
+.bp-cell-claim{
+  font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;
+  padding:4px 10px;border:1px solid var(--c3);
+  color:var(--c3);background:transparent;cursor:pointer;
+  transition:all .15s;white-space:nowrap;margin-top:3px;
+  border-radius:2px;
+}
+.bp-cell-claim:hover{
+  background:var(--c3);color:var(--bg);
+  box-shadow:0 0 12px rgba(255,190,11,.4);
+  transform:scale(1.05);
+}
+.bp-cell-check{
+  color:var(--c1);font-size:14px;margin-left:auto;flex-shrink:0;
+  text-shadow:0 0 6px rgba(0,245,212,.5);
+}
+.bp-cell.premium-cell.locked-prem .bp-cell-lock{font-size:13px;opacity:.35;margin-left:auto;flex-shrink:0;}
+.bp-row.has-claimable{background:rgba(255,190,11,.025);}
+
+/* Mobile */
+@media (max-width:480px){
+  .bp-cell{padding:6px 8px;gap:7px;}
+  .bp-cell-icon{font-size:clamp(15px,4vmin,20px);}
+  .bp-cell-name{font-size:clamp(5px,1.3vmin,7px);}
+  .bp-row-lv{font-size:6px;padding:8px 2px;}
+  .bp-hero{gap:12px;padding:12px 0;}
+  .bp-lv-big{font-size:clamp(24px,6vmin,36px);}
+  .bp-track-header-cell{padding:7px 8px;font-size:7px;}
+}
 
 /* Skin detail modal */
 #skin-detail-modal{
@@ -1270,23 +1413,46 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 
 /* Claim animation overlay */
 #bp-claim-overlay{
-  position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;
+  position:fixed;inset:0;z-index:950;display:none;align-items:center;justify-content:center;
   background:rgba(3,3,10,.92);backdrop-filter:blur(8px);
 }
-#bp-claim-overlay.on{display:flex;animation:scrIn .2s ease both;}
-.bp-claim-card{
-  background:rgba(8,6,20,.98);border:2px solid var(--c3);
-  padding:36px 48px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;
-  animation:bpClaimPop .4s cubic-bezier(.22,1,.36,1) both;
-  position:relative;overflow:hidden;
-  box-shadow:0 0 80px rgba(255,190,11,.12),0 24px 60px rgba(0,0,0,.8);
+#bp-claim-overlay.on{display:flex;animation:bpClaimIn .3s cubic-bezier(.22,1,.36,1) both;}
+@keyframes bpClaimIn{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:scale(1);}
 }
-.bp-claim-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--c3),transparent);}
-.bp-claim-card::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--c3),transparent);}
-@keyframes bpClaimPop{from{transform:scale(.55) translateY(24px);opacity:0;}to{transform:none;opacity:1;}}
-.bp-claim-icon{font-size:64px;line-height:1.2;display:block;animation:bpClaimBounce .7s cubic-bezier(.22,1,.36,1) .25s both;filter:drop-shadow(0 0 16px rgba(255,190,11,.5));}
+.bp-claim-card{
+  background:rgba(8,5,20,.98);border-radius:8px;padding:40px 48px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  position:relative;overflow:hidden;
+  min-width:280px;text-align:center;
+}
+.bp-claim-card::before{
+  content:'';position:absolute;inset:0;border-radius:8px;
+  border:2px solid transparent;
+  background:linear-gradient(135deg,rgba(255,190,11,.6),rgba(180,79,255,.4),rgba(0,245,212,.4)) border-box;
+  -webkit-mask:linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+}
+.bp-claim-rays{
+  position:absolute;top:50%;left:50%;width:400px;height:400px;
+  transform:translate(-50%,-50%);
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(255,190,11,.06) 10deg,transparent 20deg,rgba(180,79,255,.06) 30deg,transparent 40deg);
+  animation:bpRaysRotate 8s linear infinite;
+}
+@keyframes bpRaysRotate{to{transform:translate(-50%,-50%) rotate(360deg);}
+}
+.bp-claim-rarity{
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.4em;
+  padding:3px 16px;border-radius:20px;margin-bottom:4px;
+}
+.bp-claim-rarity.legendary{background:rgba(255,190,11,.15);color:var(--c3);border:1px solid rgba(255,190,11,.5);}
+.bp-claim-rarity.epic{background:rgba(180,79,255,.15);color:var(--c4);border:1px solid rgba(180,79,255,.5);}
+.bp-claim-rarity.rare{background:rgba(0,187,249,.1);color:#00bbf9;border:1px solid rgba(0,187,249,.4);}
+.bp-claim-rarity.common{background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid rgba(255,255,255,.15);}
+.bp-claim-icon{font-size:clamp(52px,12vmin,80px);line-height:1;margin:8px 0;filter:drop-shadow(0 0 20px rgba(255,190,11,.5));animation:bpIconBounce .5s cubic-bezier(.36,2,.5,1) .1s both;}
+@keyframes bpIconBounce{from{transform:scale(0) rotate(-10deg);}to{transform:scale(1) rotate(0deg);}}
+
 @keyframes bpClaimBounce{0%{transform:scale(0) rotate(-18deg);}60%{transform:scale(1.35) rotate(6deg);}100%{transform:scale(1) rotate(0deg);}}
-.bp-claim-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4vmin,24px);color:var(--c3);letter-spacing:.1em;text-shadow:0 0 20px rgba(255,190,11,.4);}
+.bp-claim-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(13px,3vmin,18px);letter-spacing:.1em;text-align:center;text-shadow:0 0 24px currentColor;}
 .bp-claim-desc{font-size:9px;color:var(--txt2);letter-spacing:.12em;}
 @keyframes bpPulse{0%,100%{box-shadow:0 0 10px rgba(255,190,11,.2);}50%{box-shadow:0 0 22px rgba(255,190,11,.5);}}
 
@@ -2617,38 +2783,43 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
 
 <div class="scr" id="s-bp">
-  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+  <div class="scr-inner" style="align-items:center;padding:10px 10px 0;">
     <div class="bp-wrap">
-      <!-- Back button -->
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 0 10px;">
-        <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
-        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.25em;color:var(--c4);">PASSE DE COMBAT</div>
-        <div id="bp-next-reward-hint" style="font-size:7px;color:var(--txt2);letter-spacing:.08em;text-align:right;"></div>
+
+      <!-- Top nav -->
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:8px 0 12px;">
+        <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:7px 14px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
+        <div style="text-align:center;">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:.3em;color:var(--c4);font-weight:700;">⚔️ PASSE DE COMBAT</div>
+          <div id="bp-season-lbl" style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:var(--dim);margin-top:2px;"></div>
+        </div>
+        <div id="bp-next-reward-hint" style="font-size:7px;color:var(--txt2);letter-spacing:.08em;text-align:right;max-width:90px;"></div>
       </div>
 
-      <!-- Header XP -->
+      <!-- Hero header -->
       <div class="bp-hero">
-        <div>
+        <div style="text-align:center;">
           <div class="bp-lv-big" id="bp-level-badge">0</div>
           <div class="bp-lv-sub">NIVEAU</div>
         </div>
         <div class="bp-xp-section">
           <div class="bp-xp-top">
-            <span class="bp-xp-lbl" id="bp-season-lbl">SAISON 1</span>
+            <span class="bp-xp-lbl">PROGRESSION</span>
             <span class="bp-xp-val" id="bp-xp-label">0 / 500 XP</span>
           </div>
           <div class="bp-bar">
             <div class="bp-bar-fill" id="bp-xp-fill" style="width:0%"></div>
             <div class="bp-bar-shine"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
             <div class="bp-season-end" id="bp-season-end"></div>
-            <div id="bp-xp-hint" style="font-size:6px;color:var(--dim);letter-spacing:.08em;">~50-200 XP / partie</div>
+            <div id="bp-xp-hint" style="font-size:7px;color:var(--dim);letter-spacing:.08em;">⚡ ~50–200 XP / partie</div>
           </div>
+          <div id="bp-progress-pct" style="font-family:'Orbitron',monospace;font-size:8px;color:var(--c4);margin-top:3px;"></div>
         </div>
-        <div>
-          <div class="bp-season-badge" id="bp-season-badge">SAISON 1</div>
-          <div id="bp-progress-pct" style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c4);text-align:center;margin-top:4px;"></div>
+        <div style="text-align:center;">
+          <div class="bp-season-badge" id="bp-season-badge">S1</div>
+          <div style="font-size:7px;color:var(--dim);margin-top:4px;letter-spacing:.1em;">FIN DE SAISON</div>
         </div>
       </div>
 
@@ -2656,24 +2827,25 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       <div id="bp-premium-banner" class="bp-premium-banner not-owned">
         <div class="bp-premium-icon">⭐</div>
         <div class="bp-premium-info">
-          <div class="bp-premium-title" id="bp-premium-title">PASSE AMÉLIORÉ</div>
-          <div class="bp-premium-desc" id="bp-premium-desc">Débloque la piste PREMIUM et ses récompenses exclusives tout au long de la saison.</div>
+          <div class="bp-premium-title" id="bp-premium-title">PASSE PREMIUM</div>
+          <div class="bp-premium-desc" id="bp-premium-desc">Débloquez la piste PREMIUM et ses récompenses légendaires exclusives.</div>
           <div class="bp-premium-perks" id="bp-premium-perks">
-            <span>✨ SKINS EXCLUSIFS</span><span>🔮 RELIQUES PREMIUM</span><span>💎 +50% PIÈCES/NIV</span><span>🚀 RÉCOMPENSES BONUS</span>
+            <span>✨ SKINS LÉGENDAIRES</span><span>🔮 RELIQUES ÉPIQUES</span><span>💎 +3× PIÈCES/NIV</span><span>🚀 30 RÉCOMPENSES BONUS</span>
           </div>
         </div>
         <div id="bp-premium-btn-wrap">
-          <button class="btn btn-g" onclick="buyPremiumPass()" style="white-space:nowrap;"><span>⭐ 1500🪙</span></button>
+          <button class="btn btn-g" onclick="buyPremiumPass()" style="white-space:nowrap;padding:10px 18px;"><span>⭐ 1500🪙</span></button>
         </div>
       </div>
 
       <!-- Unclaimed alert -->
       <div id="bp-unclaimed-bar" class="bp-unclaimed-bar" style="display:none;">
+        <span style="font-size:16px;">🎁</span>
         <span class="bp-unclaimed-lbl" id="bp-unclaimed-hint">Récompenses à réclamer !</span>
-        <button class="bp-cell-claim" onclick="claimAllBp()" style="padding:5px 12px;font-size:7px;">⬇ TOUT RÉCLAMER</button>
+        <button class="bp-cell-claim" onclick="claimAllBp()" style="padding:6px 14px;font-size:7px;border-color:var(--c3);">⬇ TOUT RÉCLAMER</button>
       </div>
 
-      <!-- Dual-track header -->
+      <!-- Track header -->
       <div class="bp-track-header">
         <div class="bp-track-header-cell lv-hd">NIV.</div>
         <div class="bp-track-header-cell free-hd">🆓 GRATUIT</div>
@@ -2682,6 +2854,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
       <!-- Dual-track rows -->
       <div class="bp-dual-track" id="bp-track"></div>
+
     </div>
   </div>
 </div>
@@ -2689,10 +2862,13 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 <!-- CLAIM ANIMATION OVERLAY -->
 <div id="bp-claim-overlay">
   <div class="bp-claim-card">
+    <div class="bp-claim-rays" id="bp-claim-rays"></div>
     <div class="bp-claim-icon" id="bp-claim-icon">🪙</div>
+    <div class="bp-claim-rarity" id="bp-claim-rarity"></div>
     <div class="bp-claim-title" id="bp-claim-title">RÉCOMPENSE</div>
     <div class="bp-claim-desc" id="bp-claim-desc">+100 pièces</div>
-    <button class="btn btn-g" style="margin-top:8px;" onclick="closeBpClaim()"><span>SUPER !</span></button>
+    <div class="bp-claim-particles" id="bp-claim-particles"></div>
+    <button class="btn btn-g" style="margin-top:16px;padding:10px 32px;" onclick="closeBpClaim()"><span>✨ SUPER !</span></button>
   </div>
 </div>
 
@@ -9542,96 +9718,96 @@ function getSeasonTheme(){return SEASON_THEMES[(BP_SEASON_CURRENT-1)%SEASON_THEM
 // ── RECOMPENSES DUAL-TRACK ──
 // track: 'free' ou 'premium'
 const BP_REWARDS = [
-  // NIV 1
-  {lv:1,  track:'free',    type:'coins',  value:100,  label:'+100 pièces',           icon:'🪙', rarity:'common'},
-  {lv:1,  track:'premium', type:'coins',  value:300,  label:'+300 pièces',           icon:'💎', rarity:'rare'},
+  // NIV 1 — Bienvenue
+  {lv:1,  track:'free',    type:'coins',  value:100,         label:'+100 pièces',           icon:'🪙', rarity:'common'},
+  {lv:1,  track:'premium', type:'coins',  value:300,         label:'+300 pièces + BONUS',   icon:'💎', rarity:'rare'},
   // NIV 2
-  {lv:2,  track:'free',    type:'perma',  value:'p_hp',      label:'❤️ HP +15%',     icon:'❤️', rarity:'rare'},
-  {lv:2,  track:'premium', type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts +20%', icon:'⚔️', rarity:'epic'},
+  {lv:2,  track:'free',    type:'perma',  value:'p_hp',      label:'❤️ HP +15%',            icon:'❤️', rarity:'rare'},
+  {lv:2,  track:'premium', type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts +20%',       icon:'⚔️', rarity:'epic'},
   // NIV 3
-  {lv:3,  track:'free',    type:'coins',  value:150,  label:'+150 pièces',           icon:'🪙', rarity:'common'},
-  {lv:3,  track:'premium', type:'relic',  value:'chain_kill',label:'⚡ Relique Réaction',icon:'⚡',rarity:'epic'},
-  // NIV 4
-  {lv:4,  track:'free',    type:'skin',   value:'crimson',   label:'Skin Crimson',   icon:'🔴', rarity:'rare'},
-  {lv:4,  track:'premium', type:'skin',   value:'void',      label:'Skin VOID',      icon:'🌌', rarity:'legendary'},
+  {lv:3,  track:'free',    type:'coins',  value:150,         label:'+150 pièces',           icon:'🪙', rarity:'common'},
+  {lv:3,  track:'premium', type:'relic',  value:'chain_kill',label:'⚡ Relique Réaction',   icon:'⚡', rarity:'epic'},
+  // NIV 4 — Premier skin gratuit
+  {lv:4,  track:'free',    type:'skin',   value:'crimson',   label:'🔴 Skin Crimson',       icon:'🔴', rarity:'rare'},
+  {lv:4,  track:'premium', type:'skin',   value:'void',      label:'🌌 Skin VOID (Légend)', icon:'🌌', rarity:'legendary'},
   // NIV 5 — Milestone
-  {lv:5,  track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse +',   icon:'💨', rarity:'rare'},
-  {lv:5,  track:'premium', type:'coins',  value:500,  label:'+500 pièces JACKPOT',   icon:'💰', rarity:'epic'},
+  {lv:5,  track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse +10%',       icon:'💨', rarity:'rare'},
+  {lv:5,  track:'premium', type:'coins',  value:500,         label:'+500 pièces JACKPOT',   icon:'💰', rarity:'epic'},
   // NIV 6
-  {lv:6,  track:'free',    type:'coins',  value:200,  label:'+200 pièces',           icon:'🪙', rarity:'common'},
-  {lv:6,  track:'premium', type:'perma',  value:'p_regen',   label:'💚 Régén +',     icon:'💚', rarity:'rare'},
+  {lv:6,  track:'free',    type:'coins',  value:200,         label:'+200 pièces',           icon:'🪙', rarity:'common'},
+  {lv:6,  track:'premium', type:'perma',  value:'p_regen',   label:'💚 Régéné +',           icon:'💚', rarity:'rare'},
   // NIV 7
-  {lv:7,  track:'free',    type:'perma',  value:'p_dash',    label:'⚡ Dash +',      icon:'⚡', rarity:'rare'},
-  {lv:7,  track:'premium', type:'skin',   value:'circuit',   label:'Skin Circuit',   icon:'🔌', rarity:'epic'},
+  {lv:7,  track:'free',    type:'perma',  value:'p_dash',    label:'⚡ Dash amélioré',      icon:'⚡', rarity:'rare'},
+  {lv:7,  track:'premium', type:'skin',   value:'circuit',   label:'🔌 Skin Circuit',       icon:'🔌', rarity:'epic'},
   // NIV 8
-  {lv:8,  track:'free',    type:'skin',   value:'wire',      label:'Skin Néon Wire', icon:'⬡',  rarity:'rare'},
-  {lv:8,  track:'premium', type:'perma',  value:'p_spec',    label:'💜 Bombe +25%',  icon:'💜', rarity:'rare'},
+  {lv:8,  track:'free',    type:'skin',   value:'wire',      label:'⬡ Skin Néon Wire',      icon:'⬡',  rarity:'rare'},
+  {lv:8,  track:'premium', type:'perma',  value:'p_spec',    label:'💜 Bombe +25%',         icon:'💜', rarity:'rare'},
   // NIV 9
-  {lv:9,  track:'free',    type:'coins',  value:250,  label:'+250 pièces',           icon:'🪙', rarity:'common'},
-  {lv:9,  track:'premium', type:'relic',  value:'berserker', label:'😤 Relique Berserker',icon:'😤',rarity:'epic'},
+  {lv:9,  track:'free',    type:'coins',  value:250,         label:'+250 pièces',           icon:'🪙', rarity:'common'},
+  {lv:9,  track:'premium', type:'relic',  value:'berserker', label:'😤 Relique Berserker',  icon:'😤', rarity:'epic'},
   // NIV 10 — Milestone MAJEUR
-  {lv:10, track:'free',    type:'perma',  value:'p_coins',   label:'💰 Fortune+',    icon:'💰', rarity:'epic'},
-  {lv:10, track:'premium', type:'skin',   value:'solar',     label:'☀️ Skin Solaire',icon:'☀️', rarity:'legendary'},
+  {lv:10, track:'free',    type:'perma',  value:'p_coins',   label:'💰 Fortune + (passif)', icon:'💰', rarity:'epic'},
+  {lv:10, track:'premium', type:'skin',   value:'solar',     label:'☀️ Skin Solaire RARE',  icon:'☀️', rarity:'legendary'},
   // NIV 11
-  {lv:11, track:'free',    type:'coins',  value:300,  label:'+300 pièces',           icon:'🪙', rarity:'common'},
-  {lv:11, track:'premium', type:'perma',  value:'p_hp',      label:'❤️ HP+ (x2)',    icon:'❤️', rarity:'rare'},
+  {lv:11, track:'free',    type:'coins',  value:300,         label:'+300 pièces',           icon:'🪙', rarity:'common'},
+  {lv:11, track:'premium', type:'perma',  value:'p_hp',      label:'❤️ HP +15% (x2)',       icon:'❤️', rarity:'rare'},
   // NIV 12
-  {lv:12, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts+ (x2)',icon:'💥', rarity:'rare'},
-  {lv:12, track:'premium', type:'relic',  value:'reflect',   label:'🛡 Relique Reflet',icon:'🛡',rarity:'epic'},
+  {lv:12, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts +15%',       icon:'💥', rarity:'rare'},
+  {lv:12, track:'premium', type:'relic',  value:'reflect',   label:'🛡 Relique Reflet',     icon:'🛡', rarity:'epic'},
   // NIV 13
-  {lv:13, track:'free',    type:'coins',  value:350,  label:'+350 pièces',           icon:'🪙', rarity:'common'},
-  {lv:13, track:'premium', type:'skin',   value:'glitch',    label:'Skin Glitch',    icon:'⚡', rarity:'epic'},
+  {lv:13, track:'free',    type:'coins',  value:350,         label:'+350 pièces',           icon:'🪙', rarity:'common'},
+  {lv:13, track:'premium', type:'skin',   value:'glitch',    label:'⚡ Skin Glitch',         icon:'⚡', rarity:'epic'},
   // NIV 14
-  {lv:14, track:'free',    type:'skin',   value:'square',    label:'Skin Cube-X',    icon:'🟦', rarity:'rare'},
-  {lv:14, track:'premium', type:'perma',  value:'p_magnet',  label:'🧲 Magnétisme',  icon:'🧲', rarity:'rare'},
+  {lv:14, track:'free',    type:'skin',   value:'square',    label:'🟦 Skin Cube Nx',       icon:'🟦', rarity:'rare'},
+  {lv:14, track:'premium', type:'perma',  value:'p_magnet',  label:'🧲 Magnétisme',         icon:'🧲', rarity:'rare'},
   // NIV 15 — Milestone MAJEUR
-  {lv:15, track:'free',    type:'perma',  value:'p_regen',   label:'💚 Régén+ (x2)', icon:'💚', rarity:'epic'},
-  {lv:15, track:'premium', type:'skin',   value:'violet',    label:'Skin Spectre',   icon:'💜', rarity:'legendary'},
+  {lv:15, track:'free',    type:'perma',  value:'p_regen',   label:'💚 Régéné + (x2)',      icon:'💚', rarity:'epic'},
+  {lv:15, track:'premium', type:'skin',   value:'violet',    label:'💜 Skin Spectre EPIC',  icon:'💜', rarity:'legendary'},
   // NIV 16
-  {lv:16, track:'free',    type:'coins',  value:400,  label:'+400 pièces',           icon:'🪙', rarity:'rare'},
-  {lv:16, track:'premium', type:'perma',  value:'p_dash',    label:'⚡ Dash+ (x2)',  icon:'⚡', rarity:'rare'},
+  {lv:16, track:'free',    type:'coins',  value:400,         label:'+400 pièces',           icon:'🪙', rarity:'rare'},
+  {lv:16, track:'premium', type:'perma',  value:'p_dash',    label:'⚡ Dash + (x2)',        icon:'⚡', rarity:'rare'},
   // NIV 17
-  {lv:17, track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse+ (x2)',icon:'💨',rarity:'rare'},
-  {lv:17, track:'premium', type:'coins',  value:700,  label:'+700 pièces PRIME',     icon:'💰', rarity:'epic'},
+  {lv:17, track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse + (x2)',     icon:'💨', rarity:'rare'},
+  {lv:17, track:'premium', type:'coins',  value:700,         label:'+700 pièces PRIME',     icon:'💰', rarity:'epic'},
   // NIV 18
-  {lv:18, track:'free',    type:'coins',  value:450,  label:'+450 pièces',           icon:'🪙', rarity:'rare'},
-  {lv:18, track:'premium', type:'perma',  value:'p_spec',    label:'💜 Bombe+ (x2)', icon:'💜', rarity:'rare'},
+  {lv:18, track:'free',    type:'coins',  value:450,         label:'+450 pièces',           icon:'🪙', rarity:'rare'},
+  {lv:18, track:'premium', type:'relic',  value:'berserker', label:'😤 Relique+ Berserker', icon:'😤', rarity:'epic'},
   // NIV 19
-  {lv:19, track:'free',    type:'perma',  value:'p_coins',   label:'💰 Fortune+ (x2)',icon:'💰',rarity:'epic'},
-  {lv:19, track:'premium', type:'skin',   value:'ghost',     label:'Skin Fantôme',   icon:'👻', rarity:'epic'},
+  {lv:19, track:'free',    type:'perma',  value:'p_coins',   label:'💰 Fortune + (x2)',     icon:'💰', rarity:'epic'},
+  {lv:19, track:'premium', type:'skin',   value:'ghost',     label:'👻 Skin Fantôme',       icon:'👻', rarity:'epic'},
   // NIV 20 — Milestone ULTIME
-  {lv:20, track:'free',    type:'skin',   value:'star',      label:'⭐ Skin Étoile',  icon:'⭐', rarity:'epic'},
-  {lv:20, track:'premium', type:'skin',   value:'pulsering', label:'🟡 Skin Pulse Ring',icon:'🟡',rarity:'legendary'},
+  {lv:20, track:'free',    type:'skin',   value:'star',      label:'⭐ Skin Étoile EPIC',   icon:'⭐', rarity:'epic'},
+  {lv:20, track:'premium', type:'skin',   value:'pulsering', label:'🟡 Skin Pulse Ring LEG',icon:'🟡', rarity:'legendary'},
   // NIV 21
-  {lv:21, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts+ (x3)',icon:'💥',rarity:'epic'},
-  {lv:21, track:'premium', type:'coins',  value:800,  label:'+800 pièces MÉGA',      icon:'💎', rarity:'epic'},
+  {lv:21, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ Dégâts + (x3)',     icon:'💥', rarity:'epic'},
+  {lv:21, track:'premium', type:'coins',  value:800,         label:'+800 pièces MÉGA',      icon:'💎', rarity:'epic'},
   // NIV 22
-  {lv:22, track:'free',    type:'coins',  value:500,  label:'+500 pièces',           icon:'🪙', rarity:'rare'},
-  {lv:22, track:'premium', type:'perma',  value:'p_spec',    label:'💜 Bombe+ (x3)', icon:'💜', rarity:'epic'},
+  {lv:22, track:'free',    type:'coins',  value:500,         label:'+500 pièces',           icon:'🪙', rarity:'rare'},
+  {lv:22, track:'premium', type:'perma',  value:'p_spec',    label:'💜 Bombe + (x3)',       icon:'💜', rarity:'epic'},
   // NIV 23
-  {lv:23, track:'free',    type:'perma',  value:'p_hp',      label:'❤️ HP MAX +20%', icon:'❤️', rarity:'epic'},
-  {lv:23, track:'premium', type:'skin',   value:'cosmic',    label:'🌠 Skin Cosmique',icon:'🌠', rarity:'legendary'},
+  {lv:23, track:'free',    type:'perma',  value:'p_hp',      label:'❤️ HP MAX +20%',       icon:'❤️', rarity:'epic'},
+  {lv:23, track:'premium', type:'skin',   value:'cosmic',    label:'🌠 Skin Cosmique LEG',  icon:'🌠', rarity:'legendary'},
   // NIV 24
-  {lv:24, track:'free',    type:'skin',   value:'octagon',   label:'Skin Octa-X',    icon:'⬡',  rarity:'epic'},
-  {lv:24, track:'premium', type:'perma',  value:'p_magnet',  label:'🧲 Magnéto+ (x2)',icon:'🧲',rarity:'epic'},
+  {lv:24, track:'free',    type:'skin',   value:'octagon',   label:'⬡ Skin Octa-X',        icon:'⬡',  rarity:'epic'},
+  {lv:24, track:'premium', type:'perma',  value:'p_magnet',  label:'🧲 Magnétisme + (x2)', icon:'🧲', rarity:'epic'},
   // NIV 25 — Milestone LÉGENDAIRE
-  {lv:25, track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse MAX',  icon:'💨', rarity:'epic'},
-  {lv:25, track:'premium', type:'relic',  value:'chain_kill',label:'⚡ Relique Réaction+',icon:'⚡',rarity:'legendary'},
+  {lv:25, track:'free',    type:'perma',  value:'p_spd',     label:'💨 Vitesse MAX',        icon:'💨', rarity:'epic'},
+  {lv:25, track:'premium', type:'relic',  value:'chain_kill',label:'⚡ Relique Réaction+',  icon:'⚡', rarity:'legendary'},
   // NIV 26
-  {lv:26, track:'free',    type:'coins',  value:600,  label:'+600 pièces',           icon:'🪙', rarity:'epic'},
-  {lv:26, track:'premium', type:'perma',  value:'p_regen',   label:'💚 Régén MAX',   icon:'💚', rarity:'epic'},
+  {lv:26, track:'free',    type:'coins',  value:600,         label:'+600 pièces',           icon:'🪙', rarity:'epic'},
+  {lv:26, track:'premium', type:'perma',  value:'p_regen',   label:'💚 Régéné MAX',         icon:'💚', rarity:'epic'},
   // NIV 27
-  {lv:27, track:'free',    type:'perma',  value:'p_dash',    label:'⚡ Dash SUPRÊME', icon:'⚡', rarity:'epic'},
-  {lv:27, track:'premium', type:'coins',  value:1000, label:'+1000 pièces MAXI',     icon:'💎', rarity:'legendary'},
+  {lv:27, track:'free',    type:'perma',  value:'p_dash',    label:'⚡ Dash SUPRÊME',       icon:'⚡', rarity:'epic'},
+  {lv:27, track:'premium', type:'coins',  value:1000,        label:'+1000 pièces MAXI',     icon:'💎', rarity:'legendary'},
   // NIV 28
-  {lv:28, track:'free',    type:'skin',   value:'triangle',  label:'Skin Tri-Force', icon:'🔺', rarity:'epic'},
-  {lv:28, track:'premium', type:'perma',  value:'p_coins',   label:'💰 Fortune ULTIME',icon:'💰',rarity:'legendary'},
+  {lv:28, track:'free',    type:'skin',   value:'triangle',  label:'🔺 Skin Tri-Force',     icon:'🔺', rarity:'epic'},
+  {lv:28, track:'premium', type:'perma',  value:'p_coins',   label:'💰 Fortune ULTIME',     icon:'💰', rarity:'legendary'},
   // NIV 29
-  {lv:29, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ PUISSANCE FINALE',icon:'💥',rarity:'legendary'},
-  {lv:29, track:'premium', type:'skin',   value:'void',      label:'🌌 Skin VOID ULTIME',icon:'🌌',rarity:'legendary'},
-  // NIV 30 — FINALE
-  {lv:30, track:'free',    type:'skin',   value:'star',      label:'✨ Champion S'+BP_SEASON_CURRENT,icon:'✨',rarity:'legendary'},
-  {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'🌈 Skin PRISMA',  icon:'🌈', rarity:'legendary'},
+  {lv:29, track:'free',    type:'perma',  value:'p_dmg',     label:'⚔️ PUISSANCE FINALE',  icon:'💥', rarity:'legendary'},
+  {lv:29, track:'premium', type:'skin',   value:'void',      label:'🌌 Skin VOID ULTIME',   icon:'🌌', rarity:'legendary'},
+  // NIV 30 — RÉCOMPENSE FINALE
+  {lv:30, track:'free',    type:'skin',   value:'star',      label:'✨ Skin Champion S'+BP_SEASON_CURRENT, icon:'✨', rarity:'legendary'},
+  {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'🌈 Skin PRISMA LÉGEND', icon:'🌈', rarity:'legendary'},
 ]
 
 ];
@@ -9662,8 +9838,10 @@ function addBpXp(amount){
   while(battlePass.xp >= BP_XP_PER_LEVEL && battlePass.level < BP_MAX_LEVEL){
     battlePass.xp -= BP_XP_PER_LEVEL;
     battlePass.level++;
-    const _bpLvl=battlePass.level,_isMs=[5,10,15,20,25,30].includes(_bpLvl);
-    showPopup((_isMs?'🏆':'⭐')+' PASSE NIV.'+_bpLvl+(_isMs?' — JALON !':'!'),'#b44fff');
+    const _bpLvl=battlePass.level;
+    const _milestones=[5,10,15,20,25,30];
+    const _isMs=_milestones.includes(_bpLvl);
+    showPopup((_isMs?'🏆':'⭐')+' PASSE NIV.'+_bpLvl+(_isMs?' — JALON !':'!')+'',_isMs?'#ffbe0b':'#b44fff');
     checkBpAutoClaim(battlePass.level);
   }
   saveBP();
@@ -9737,7 +9915,9 @@ function claimBpReward(level, track){
   const descEl=document.getElementById('bp-claim-desc');
   ic.textContent=reward.icon;
   ic.style.filter=`drop-shadow(0 0 18px ${claimCol})`;
-  titleEl.textContent=reward.type==='coins'?'+'+reward.value+' PIÈCES !':reward.type==='skin'?'SKIN DÉBLOQUÉ !':reward.type==='relic'?'RELIQUE DÉBLOQUÉE !':'AMÉLIORATION !';
+  titleEl.textContent=reward.rarity==='legendary'?'🏆 LÉGENDAIRE !':reward.rarity==='epic'?'💎 ÉPIQUE !':reward.type==='coins'?'+'+reward.value+' PIÈCES !':reward.type==='skin'?'🎨 SKIN DÉBLOQUÉ !':reward.type==='relic'?'🔮 RELIQUE DÉBLOQUÉE !':'✨ AMÉLIORATION !';
+  const _rarEl=document.getElementById('bp-claim-rarity');
+  if(_rarEl){_rarEl.className='bp-claim-rarity '+(reward.rarity||'common');_rarEl.textContent=reward.rarity==='legendary'?'★ LÉGENDAIRE':reward.rarity==='epic'?'◆ ÉPIQUE':reward.rarity==='rare'?'✦ RARE':'COMMUN';}
   titleEl.style.color=claimCol;
   titleEl.style.textShadow=`0 0 20px ${claimCol}66`;
   descEl.textContent=reward.label;
@@ -9867,8 +10047,9 @@ function renderBP(){
     if(hasFreeClaimable||hasPremClaimable) row.classList.add('has-claimable');
     if(current) currentRow=row;
 
-    if([5,10,15,20,25,30].includes(lv)) row.setAttribute('data-milestone','true');
-    row.innerHTML=`<div class="bp-row-lv">${[5,10,15,20,25,30].includes(lv)?'<span style="color:#ffbe0b;font-size:9px;">'+lv+'</span>':lv}</div>
+    const isMilestone = [5,10,15,20,25,30].includes(lv);
+    if(isMilestone) row.setAttribute('data-milestone','true');
+    row.innerHTML=`<div class="bp-row-lv">${isMilestone?'<span style="color:var(--c3);font-size:9px;">'+lv+'</span>':lv}</div>
       ${makeBpCell(freeR, lv, lvl, false)}
       ${makeBpCell(premR, lv, lvl, !premium)}`;
     track.appendChild(row);
@@ -9885,9 +10066,13 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
   const claimed=battlePass.claimed[key];
   const unlocked=playerLv>=lv;
   const claimable=unlocked&&!claimed&&!premiumLocked;
-  const rarityLbl=r.rarity==='legendary'?'★ LEGENDAIRE':r.rarity==='epic'?'◆ EPIQUE':r.rarity==='rare'?'✦ RARE':'';
+  const rarityMap={legendary:'★ LÉGENDAIRE',epic:'◆ ÉPIQUE',rare:'✦ RARE',common:''};
+  const rarityLbl=rarityMap[r.rarity]||'';
   const typeClass=r.type==='coins'?'coins':r.type==='skin'?'skin':r.type==='perma'||r.type==='relic'?'perma':'title';
   let cls='bp-cell'+(r.track==='premium'?' premium-cell':'');
+  // Rarity visual border on the cell
+  if(r.rarity==='legendary') cls+=' cell-legendary';
+  else if(r.rarity==='epic') cls+=' cell-epic';
   if(claimed) cls+=' claimed-cell';
   if(premiumLocked) cls+=' locked-prem';
   else if(claimable) cls+=' claimable';
@@ -9896,25 +10081,30 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
 
   const lockIcon = premiumLocked ? '<span class="bp-cell-lock">🔒</span>' : '';
   const checkIcon = claimed ? '<span class="bp-cell-check">✓</span>' : '';
-  const claimBtn = claimable ? `<button class="bp-cell-claim" onclick="claimBpReward(${lv},'${r.track}')">RECLAMER</button>` : '';
+  const claimBtn = claimable ? `<button class="bp-cell-claim" onclick="event.stopPropagation();claimBpReward(${lv},'${r.track}')">⬇ RÉCLAMER</button>` : '';
+  const rarityEl = rarityLbl ? `<div class="bp-cell-rarity ${r.rarity}">${rarityLbl}</div>` : '';
 
   return `<div class="${cls}" ${claimable?`onclick="claimBpReward(${lv},'${r.track}')"`:''}>
-    <div class="bp-cell-icon">${r.icon}</div>
+    <div class="bp-cell-icon">${r.icon}${claimed?'<span style="position:absolute;font-size:8px;bottom:0;right:0;color:var(--c1);">✓</span>':''}</div>
     <div class="bp-cell-info">
       <div class="bp-cell-name">${r.label}</div>
       <div class="bp-cell-type ${typeClass}">${typeClass.toUpperCase()}</div>
-      ${rarityLbl?`<div class="bp-cell-rarity ${r.rarity}">${rarityLbl}</div>`:''}
+      ${rarityEl}
       ${claimBtn}
     </div>
-    ${premiumLocked?lockIcon:checkIcon}
+    ${premiumLocked?lockIcon:(claimed?checkIcon:'')}
   </div>`;
 }
 
 function grantBpXp(score, wave, kills){
+  // Formule améliorée: plus généreuse + bonus milestone
   const base = Math.floor(score/80) + wave*18 + Math.floor(kills/3)*8;
+  // Bonus vague milestone
   const waveBonus = wave>=10?80:wave>=5?35:0;
+  // Bonus score milestone
   const scoreBonus = score>=10000?100:score>=5000?50:score>=2000?25:0;
-  addBpXp(Math.max(30, Math.min(base+waveBonus+scoreBonus, 600)));
+  const total = base + waveBonus + scoreBonus;
+  addBpXp(Math.max(30, Math.min(total, 600)));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -13287,14 +13477,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     // Afficher un message dans lecran titre
     const userBar = document.getElementById('title-user-pill');
     if(userBar) userBar.textContent = '📱 Mode local · Compte desactive';
+    // Fix écran noir: show title immediately on file:// protocol
+    show('s-title');
+    renderTitleBest();
     maybeShowOnboard(false);
     updateCoinsHUD();
     updateUserBar();
     renderTitleBest();
   } else if(SB){
     const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
+    // Fallback: if nothing visible after 800ms, show auth screen
+    const _bsFallback = setTimeout(()=>{ if(!document.querySelector('.scr.on')){ show('s-auth'); } }, 800);
     SB.auth.getSession().then(({data})=>{
       clearTimeout(sbTimeout);
+      clearTimeout(_bsFallback);
       if(data?.session?.user){
         currentUser=data.session.user;
         isGuest=false;
@@ -13302,7 +13498,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       } else {
         show('s-auth');
       }
-    }).catch(()=>{ clearTimeout(sbTimeout); show('s-auth'); });
+    }).catch(()=>{ clearTimeout(sbTimeout); clearTimeout(_bsFallback); show('s-auth'); });
     SB.auth.onAuthStateChange((_event,session)=>{
       if(session?.user&&!currentUser){
         currentUser=session.user;
@@ -13312,6 +13508,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   } else {
     isGuest=true;
+    show('s-title');
     renderTitleBest();
     updateUserBar();
     const best=scores[0]?.score||0;
@@ -14042,7 +14239,7 @@ console.log('%c🎮 PULSE v30.0%c Production Ready', 'font-size:18px;font-weight
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     // Force update: unregister all old SWs then re-register fresh
-    const APP_VERSION = '31.0';
+    const APP_VERSION = '30.0';
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
@@ -14054,11 +14251,22 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=31.0')
+    navigator.serviceWorker.register('sw.js?v=30.0')
       .then(reg=>{ reg.update(); console.log('[SW] Enregistre v30.0'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
+
+// ── Secours écran noir : montre le bouton de cache après 2.5s si rien à l'écran ──
+setTimeout(function(){
+  if(!document.querySelector('.scr.on')){
+    var btn = document.getElementById('emergency-cache-btn');
+    if(btn) btn.style.display = 'flex';
+    // Tentative forcée d'afficher le titre
+    if(typeof show === 'function') show('s-title');
+    if(typeof renderTitleBest === 'function') renderTitleBest();
+  }
+}, 2500);
 </script>
 <!-- SKIN DETAIL MODAL -->
 <div id="skin-detail-modal">
@@ -14123,21 +14331,28 @@ if('serviceWorker' in navigator){
 </div>
 
 
-<!-- Secours écran noir -->
-<div id="ecran-noir-fix" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(3,3,10,.97);border:1px solid rgba(0,245,212,.4);border-radius:6px;padding:18px 26px;text-align:center;box-shadow:0 0 40px rgba(0,245,212,.08);">
-  <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.2em;color:#00f5d4;margin-bottom:8px;">⚠️ PROBLÈME D'AFFICHAGE ?</div>
-  <button onclick="(async function(){var b=document.getElementById('ecran-noir-fix');b.querySelector('button').textContent='⏳…';if('serviceWorker' in navigator){var r=await navigator.serviceWorker.getRegistrations();await Promise.all(r.map(x=>x.unregister()));}if('caches' in window){var k=await caches.keys();await Promise.all(k.map(x=>caches.delete(x)));}location.reload(true);})()" style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.12em;padding:10px 22px;background:rgba(0,245,212,.12);border:1px solid rgba(0,245,212,.6);color:#00f5d4;cursor:pointer;border-radius:3px;display:block;width:100%;margin-bottom:8px;">🔄 VIDER CACHE ET RELANCER</button>
-  <button onclick="document.getElementById('ecran-noir-fix').style.display='none';if(typeof show==='function'){show('s-title');}if(typeof renderTitleBest==='function'){renderTitleBest();}" style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.1em;padding:7px 16px;background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.5);cursor:pointer;border-radius:3px;width:100%;">↩ FORCER L'AFFICHAGE</button>
+<!-- ═══ BOUTON SECOURS CACHE — visible si écran noir ═══ -->
+<div id="emergency-cache-btn" style="
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:none;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(3,3,10,.96);border:1px solid rgba(0,245,212,.35);
+  padding:16px 24px;border-radius:6px;text-align:center;
+  box-shadow:0 0 40px rgba(0,245,212,.1);
+">
+  <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.2em;color:var(--c1);">⚠️ ÉCRAN NOIR ?</div>
+  <div style="font-size:8px;color:var(--txt2);letter-spacing:.1em;margin:4px 0 8px;">Cache bloqué — appuie ici pour réparer</div>
+  <button onclick="hardReload()" style="
+    font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;
+    padding:10px 24px;background:rgba(0,245,212,.12);
+    border:1px solid rgba(0,245,212,.6);color:var(--c1);cursor:pointer;
+    border-radius:3px;
+  ">🔄 VIDER LE CACHE ET RELANCER</button>
+  <button onclick="document.getElementById('emergency-cache-btn').style.display='none';show('s-title');renderTitleBest();" style="
+    font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.1em;
+    padding:6px 14px;background:transparent;
+    border:1px solid rgba(255,255,255,.15);color:var(--txt2);cursor:pointer;
+    border-radius:3px;margin-top:2px;
+  ">↩ ESSAYER QUAND MÊME</button>
 </div>
-<script>
-setTimeout(function(){
-  if(!document.querySelector('.scr.on')){
-    var d=document.getElementById('ecran-noir-fix');
-    if(d) d.style.display='block';
-    // Tentative forcée
-    try{ show('s-title'); renderTitleBest(); }catch(e){}
-  }
-},3000);
-</script>
 </body>
 </html>
