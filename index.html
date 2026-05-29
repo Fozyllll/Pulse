@@ -79,7 +79,6 @@ body:not(.touch).game-active #xhair{opacity:1;}
 #cd,
 #combo,
 #kfeed,
-#minimap,
 #overheat-bar,
 #relic-hud,
 #danger-edge,
@@ -109,8 +108,7 @@ body.game-active #wbanner,
 body.game-active #cd,
 body.game-active #combo,
 body.game-active #kfeed,
-body.game-active #minimap,
-body.game-active #overheat-bar,
+body.game-active body.game-active #overheat-bar,
 body.game-active #danger-edge,
 body.game-active #hud-objective,
 body.game-active #boss-hud { display:block; }
@@ -742,7 +740,6 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
   #kfeed{ bottom:42% !important; }
   #ach-toast{ bottom:46% !important; }
   /* Minimap: top-right in portrait, smaller */
-  #minimap{ bottom:auto !important; top:clamp(48px,12vw,64px); right:clamp(6px,1.5vw,12px); display:block !important; transform:scale(0.85); transform-origin:top right; }
   /* Overheat bar */
   #overheat-bar{ bottom:38% !important; }
   /* HUD: compact 2-row in portrait — reduce bar widths */
@@ -779,12 +776,7 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
     display:block;
     height:40%;
   }
-  body.touch #minimap{
-    display:block !important;
-    bottom:auto !important;
-    top:clamp(52px,14vw,72px) !important;
-    right:clamp(8px,2vw,14px) !important;
-  }
+  /* portrait: minimap removed */
 }
 /* iOS safe area : compenser la barre du bas */
 @supports (padding-bottom: env(safe-area-inset-bottom)){
@@ -1331,9 +1323,6 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 .mode-card.c3 .mode-tag{border:1px solid rgba(255,26,110,.3);color:var(--c2);}
 .mode-card.c4 .mode-tag{border:1px solid rgba(180,79,255,.3);color:var(--c4);}
 
-#minimap{position:fixed;bottom:clamp(70px,15vw,90px);right:clamp(10px,3vw,18px);z-index:100;opacity:.75;pointer-events:none;}
-#minimap canvas{border:1px solid rgba(0,245,212,.2);display:block;box-shadow:0 0 12px rgba(0,245,212,.1);}
-body.touch #minimap{display:none;}
 #s-duo-config{background:radial-gradient(ellipse 100% 75% at 50% 30%,#080c1a 0%,var(--bg) 65%);}
 .duo-config-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(620px,96vw);margin-top:16px;}
 .duo-player-box{
@@ -2519,7 +2508,44 @@ input:focus, select:focus, textarea:focus {
 
 /* ── FIN DES AMÉLIORATIONS v30 ── */
 
-</style>
+/* ═══ EDGE THREAT INDICATORS ═══ */
+#edge-threats{position:fixed;inset:0;pointer-events:none;z-index:90;}
+.edge-arrow{position:absolute;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:12px;width:20px;height:20px;border-radius:50%;background:rgba(255,26,110,.12);border:1px solid rgba(255,26,110,.35);animation:edgePulse .8s ease-in-out infinite alternate;}
+.edge-arrow.boss{font-size:14px;background:rgba(255,190,11,.15);border-color:rgba(255,190,11,.5);animation:edgePulseBoss .5s ease-in-out infinite alternate;}
+.edge-arrow.powerup{background:rgba(0,245,212,.1);border-color:rgba(0,245,212,.4);}
+@keyframes edgePulse{from{opacity:.45;}to{opacity:.9;}}
+@keyframes edgePulseBoss{from{opacity:.7;transform:scale(1);}to{opacity:1;transform:scale(1.18);}}
+
+/* ═══ RAGE MODE ═══ */
+#rage-bar-wrap{position:fixed;bottom:clamp(54px,10vw,68px);left:50%;transform:translateX(-50%);z-index:91;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;transition:opacity .3s;}
+#rage-bar-wrap.on{opacity:1;}
+#rage-streak{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:#ff6b1a;text-shadow:0 0 10px rgba(255,107,26,.6);}
+#rage-bar{width:clamp(80px,18vw,120px);height:4px;background:rgba(255,107,26,.15);border:1px solid rgba(255,107,26,.3);}
+#rage-bar-fill{height:100%;background:linear-gradient(90deg,#ff6b1a,#ffbe0b);box-shadow:0 0 8px rgba(255,107,26,.5);transition:width .12s;}
+#rage-active-banner{position:fixed;top:clamp(50px,11vw,66px);left:50%;transform:translateX(-50%);z-index:92;pointer-events:none;font-family:'Orbitron',monospace;font-size:clamp(8px,2vw,11px);letter-spacing:.25em;color:#ff6b1a;text-shadow:0 0 20px rgba(255,107,26,.8);opacity:0;transition:opacity .3s;white-space:nowrap;}
+#rage-active-banner.on{opacity:1;animation:rageBannerPulse 1s ease-in-out infinite alternate;}
+@keyframes rageBannerPulse{from{text-shadow:0 0 12px rgba(255,107,26,.5);}to{text-shadow:0 0 28px rgba(255,107,26,1),0 0 50px rgba(255,190,11,.4);}}
+body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:flex;}
+
+/* ═══ PERFECT WAVE ═══ */
+#perfect-wave-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:210;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;}
+#perfect-wave-banner.on{animation:pwIn .45s cubic-bezier(.22,1,.36,1) forwards,pwOut .35s ease-in 1.7s forwards;}
+@keyframes pwIn{from{opacity:0;transform:translate(-50%,-50%) scale(.4);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes pwOut{from{opacity:1;}to{opacity:0;}}
+.pw-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(22px,5vw,34px);letter-spacing:.2em;color:#ffbe0b;text-shadow:0 0 40px rgba(255,190,11,.9);}
+.pw-sub{font-size:clamp(9px,2vw,12px);letter-spacing:.15em;color:var(--c3);}
+
+/* ═══ SCORE MILESTONES ═══ */
+#score-milestone{position:fixed;top:clamp(46px,10vw,62px);left:50%;transform:translateX(-50%);z-index:200;pointer-events:none;font-family:'Orbitron',monospace;font-size:clamp(11px,2.5vw,16px);font-weight:900;letter-spacing:.25em;opacity:0;white-space:nowrap;text-align:center;}
+#score-milestone.pop{animation:milePop 2s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes milePop{0%{opacity:0;transform:translateX(-50%) scale(.7);}12%{opacity:1;transform:translateX(-50%) scale(1.06);}80%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(-18px);}}
+
+/* ═══ WAVE THREAT PREVIEW ═══ */
+#wave-threat-preview{position:fixed;bottom:clamp(54px,10vw,68px);right:clamp(10px,2.5vw,18px);z-index:91;pointer-events:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px;opacity:0;transition:opacity .4s;}
+#wave-threat-preview.on{opacity:1;}
+.wtp-line{font-size:clamp(7px,1.5vw,9px);letter-spacing:.1em;color:var(--txt2);display:flex;align-items:center;gap:4px;}
+.wtp-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.15em;color:var(--dim);margin-bottom:1px;}
+
 </head>
 <body>
 
@@ -2810,6 +2836,7 @@ input:focus, select:focus, textarea:focus {
     <div class="hb" style="text-align:right"><div class="hl">VAGUE</div><div class="hv hv1" id="hv-wave">—</div></div>
     <div class="hb" style="text-align:right"><div class="hl">SCORE</div><div class="hv hv3" id="hv-score">0</div><div id="hud-streak" style="color:var(--c2);font-size:8px;letter-spacing:.1em;opacity:0;transition:opacity .3s;min-height:12px;"></div></div>
     <div class="hb" style="text-align:right"><div class="hl">KILLS</div><div class="hv hv2" id="hv-kills">0</div></div>
+    <div class="hb" style="text-align:right"><div class="hl">ENNEMIS</div><div class="hv" id="hv-enemies" style="color:var(--c2);font-size:clamp(9px,2.2vmin,13px);">0</div></div>
     <div class="hb" style="text-align:right"><div class="hl">ENNEMIS</div><div class="hv" style="color:var(--c6)" id="hv-enemies">0</div></div>
     <button id="hud-pause-btn" onclick="togglePause()">❙❙</button>
   </div>
@@ -2827,6 +2854,31 @@ input:focus, select:focus, textarea:focus {
 </div>
 <!-- Danger edge vignette -->
 <div id="danger-edge" style="position:fixed;inset:0;pointer-events:none;z-index:103;opacity:0;background:radial-gradient(ellipse at center, transparent 55%, rgba(255,26,110,.35) 100%);transition:opacity .3s;"></div>
+
+<!-- Edge threat indicators -->
+<div id="edge-threats"></div>
+
+<!-- Rage mode UI -->
+<div id="rage-bar-wrap">
+  <div id="rage-streak">🔥 RAGE ×<span id="rage-mult">1.0</span></div>
+  <div id="rage-bar"><div id="rage-bar-fill" style="width:0%"></div></div>
+</div>
+<div id="rage-active-banner">⚡ RAGE MODE — DEGATS ×<span id="rage-banner-mult">1.5</span></div>
+
+<!-- Perfect wave banner -->
+<div id="perfect-wave-banner">
+  <div class="pw-title">✨ VAGUE PARFAITE !</div>
+  <div class="pw-sub" id="pw-bonus-lbl">+500 POINTS · BOMBE RECHARGÉE</div>
+</div>
+
+<!-- Score milestones -->
+<div id="score-milestone"></div>
+
+<!-- Wave threat preview -->
+<div id="wave-threat-preview">
+  <div class="wtp-label">PROCHAINE VAGUE</div>
+  <div id="wtp-lines"></div>
+</div>
 <div id="boss-hud"><div id="boss-lbl">BOSS</div><div id="boss-track"><div id="boss-fill"></div></div></div>
 <div id="wbanner"><div id="wb-num"></div><div id="wb-sub"></div><div id="wb-tip"></div></div>
 <div id="cd"></div>
@@ -3249,8 +3301,6 @@ input:focus, select:focus, textarea:focus {
 
 <div id="gamepad-hud">🎮 <span id="gamepad-name">MANETTE</span></div>
 <div id="watermark">PULSE v30.0 — TWIN-STICK SURVIVOR</div>
-<!-- MINIMAP -->
-<div id="minimap"><canvas id="minimap-cvs" width="100" height="70"></canvas></div>
 <!-- OVERHEAT BAR -->
 <div id="overheat-bar"><div id="overheat-track"><div id="overheat-fill" style="width:0%"></div></div><div id="overheat-lbl">SURCHAUFFE</div></div>
 
@@ -5443,7 +5493,6 @@ const TIPS = [
   'Les drones-tourelles tirent de loin — priorite haute !',
   'Les sangsues volent tes PV si elles te touchent !',
   'Accepte une malediction pour une recompense puissante.',
-  'La mini-map (coin bas-droit) montre les ennemis hors ecran.',
   'Le puits de gravite des balles desoriente les hordes.',
   'La surchauffe arme gere les rafales — menage ta cadence.',
 ];
@@ -5770,7 +5819,7 @@ function initDomCache(){
   const ids=['hv-score','hv-kills','hv-enemies','hv-wave','hv-hp','hv-lv',
     'bfhp','bfxp','bfsp','bfcd','wave-bar-fill','frz-fx',
     'mb-spec','boss-hud','boss-lbl','boss-fill','overheat-bar','overheat-fill',
-    'combo','cval','cmul','clbl','hud-passives','kfeed','minimap-cvs'];
+    'combo','cval','cmul','clbl','hud-passives','kfeed'];
   for(const id of ids) _dom[id]=document.getElementById(id);
 }
 
@@ -5993,6 +6042,12 @@ function startWave(){
   if(!G||!G.running) return;
   G.wave++;
   const w=G.wave;
+  // Check perfect wave bonus from PREVIOUS wave (wave start = previous wave just ended)
+  if(w>1) checkPerfectWave(w-1);
+  // Show threat preview for next wave
+  if(w<50) showWaveThreatPreview(w+1);
+  // Reset rage between waves (no penalty, just fresh start)
+  _rageKills=0; _rageTimer=0;
   G.waveHitsReceived=0;
   // Start speedrun timer AND reset startTime only when wave 1 actually begins (after countdown)
   if(w===1){ G.startTime=Date.now(); startSpeedrunTimer(); }
@@ -6926,16 +6981,27 @@ function update(now){
   G.powerups=G.powerups.filter(pu=>{
     pu.life--; pu.age++;
     if(Math.hypot(pu.x-p.x,pu.y-p.y)<p.r+pu.r+6){
-      pu.type.apply(p,G);
-      // p_pu_heal upgrade: extra HP on heal pickups
-      if((pu.type.id==='heal')&&getPermaLvl('p_pu_heal')>0){
-        const bonus=getPermaLvl('p_pu_heal')*15;
-        p.hp=Math.min(p.maxHp,p.hp+bonus);
+      const isHealPu = pu.type.id==='heal'||pu.type.id==='fullheal';
+      if(isHealPu && currentMode==='hardcore'){
+        // Hardcore: soins → score + recharge bombe
+        const scoreBonus = pu.type.id==='fullheal' ? 500 : 200;
+        G.score += scoreBonus;
+        G._hardcoreScoreMult = G._hardcoreScoreMult||3;
+        p.specCharge = Math.min(p.specMax, p.specCharge + p.specMax*0.35);
+        updateSpecBar();
+        _dom['hv-score'].textContent = G.score.toLocaleString('fr-FR');
+        showPopup('💀 +'+scoreBonus+' HARDCORE !','#ff1a6e');
+        spawnDmgNumber(pu.x, pu.y, '+'+scoreBonus+'💀', 'heal');
+      } else {
+        pu.type.apply(p,G);
+        // p_pu_heal upgrade: extra HP on heal pickups
+        if(isHealPu && getPermaLvl('p_pu_heal')>0){
+          const bonus=getPermaLvl('p_pu_heal')*15;
+          p.hp=Math.min(p.maxHp,p.hp+bonus);
+        }
+        showPopup(pu.type.icon+' '+pu.type.lbl, pu.type.col);
+        if(isHealPu) spawnDmgNumber(pu.x, pu.y, pu.type.icon+' '+pu.type.lbl, 'heal');
       }
-      showPopup(pu.type.icon+' '+pu.type.lbl, pu.type.col);
-      // DOM floating text for heal/coin pickups
-      const puType = pu.type.id;
-      if(puType==='heal'||puType==='fullheal') spawnDmgNumber(pu.x, pu.y, pu.type.icon+' '+pu.type.lbl, 'heal');
       updateHPBar(); sfxPowerup();
       return false;
     }
@@ -7021,6 +7087,8 @@ function hitEnemy(e,b){
   // Armored enemies take half damage from normal bullets (not big/laser/overcharged)
   let dmg=b.dmg;
   if(e.armored&&!b.big&&!b.isLaser&&!b.overcharged) dmg=Math.ceil(dmg*0.4);
+  // Rage mode damage multiplier
+  if(_rageActive) dmg=Math.round(dmg*_rageMult);
   e.hp-=dmg; e.flash=7; spawnFx(e.x,e.y,e.col,3); sfxHit();
   G.shotsHit=(G.shotsHit||0)+1;
   // Floating damage number (canvas)
@@ -7117,11 +7185,13 @@ function hitEnemy(e,b){
 // ─── ON KILL ───
 function onKill(e){
   const p=G.player;
+  onKillRage(); // rage streak tracking
   // Combo cap at ×8 max multiplier (was unbounded, became absurd)
   const comboCap=Math.min(G.combo, 58); // ×8 max: 1+58*0.12 = 7.96
   const mult=1+comboCap*.12;
   const hardMult=G._hardcoreScoreMult||1;
-  const pts=Math.round(e.pts*mult*hardMult);
+  const rageMult=_rageActive?_rageMult:1;
+  const pts=Math.round(e.pts*mult*hardMult*rageMult);
   G.score+=pts; G.totalKills++; G.sessionKills++;
   G._streak=(G._streak||0)+1;
   G._streakTimer=180; // 3s pour continuer le streak
@@ -7282,6 +7352,7 @@ function doExplosion(x,y,col){ G.explosions.push({x,y,r:12,life:11,maxLife:11,co
 
 // ─── DAMAGE PLAYER ───
 function dmgPlayer(raw){
+  _waveHitCount++; // track for perfect wave bonus
   const p=G.player;
   if(p.invincible>0) return;
   if(p.tempShield&&p.tempShieldHp>0){ p.tempShieldHp--; if(p.tempShieldHp<=0) p.tempShield=false; addKF('🛡 BOUCLIER −1','p'); return; }
@@ -7781,7 +7852,6 @@ function draw(){
   ctx.restore();
   if(_duoActive) drawP2();
   if(currentMode==='online') olDrawPeers();
-  drawMinimap();
   // Redraw crosshair canvas each frame (keeps colour in sync with skin)
   if(frame%12===0) drawXhair();
 }
@@ -7803,6 +7873,18 @@ function loop(now){
   if(frame%2===0||!G||!G.running) drawBg(now*.001); // fond: 30fps suffisant
   update(now);
   draw();
+  // New feature ticks
+  updateEdgeThreats();
+  updateRageMode();
+  if(G&&G.running){
+    checkScoreMilestones(G.score);
+    // Update enemy counter HUD
+    if(frame%8===0){
+      const alive=(G.enemies||[]).filter(e=>!e.dead).length;
+      const hvE=document.getElementById('hv-enemies');
+      if(hvE) hvE.textContent=alive;
+    }
+  }
 }
 
 // Gamepad poll runs independently — works in menus AND in game
@@ -8365,54 +8447,129 @@ function skipCurse(){
 // ═══════════════════════════════════════════════════════
 //  MINIMAP
 // ═══════════════════════════════════════════════════════
-function drawMinimap(){
-  if(!G||!G.running||isMobile) return;
-  if(frame%3!==0) return;
-  const mc=_dom['minimap-cvs']||document.getElementById('minimap-cvs');
-  const mw=100, mh=70;
-  mc.width=mw; mc.height=mh;
-  const mx=mc.getContext('2d');
-  mx.clearRect(0,0,mw,mh);
-  // Background
-  mx.fillStyle='rgba(3,3,10,.85)'; mx.fillRect(0,0,mw,mh);
-  // Obstacles
-  mx.fillStyle='rgba(0,245,212,.12)';
-  for(const o of G.obstacles){
-    mx.fillRect(o.x/W*mw-o.w/W*mw/2, o.y/H*mh-o.h/H*mh/2, o.w/W*mw, o.h/H*mh);
+// drawMinimap removed — replaced by edge threat indicators
+
+
+// ═══════════════════════════════════════════════════════
+//  EDGE THREAT INDICATORS  (replaces minimap)
+// ═══════════════════════════════════════════════════════
+const _edgeMargin = 90;
+function updateEdgeThreats(){
+  if(!G||!G.running) return;
+  if(frame%4!==0) return;
+  const cont = document.getElementById('edge-threats');
+  if(!cont) return;
+  cont.innerHTML='';
+  const pad=24, half=10;
+  const entities=[
+    ...G.enemies.filter(e=>!e.dead).map(e=>({x:e.x,y:e.y,boss:e.boss,mini:e.mini,type:'enemy'})),
+    ...G.powerups.map(pu=>({x:pu.x,y:pu.y,boss:false,mini:false,type:'powerup'})),
+  ];
+  const arrows=['→','↘','↓','↙','←','↖','↑','↗'];
+  for(const en of entities){
+    if(en.x>=_edgeMargin&&en.x<=W-_edgeMargin&&en.y>=_edgeMargin&&en.y<=H-_edgeMargin) continue;
+    const cx=Math.max(pad+half,Math.min(W-pad-half,en.x));
+    const cy=Math.max(pad+half,Math.min(H-pad-half,en.y));
+    const dx=en.x-G.player.x, dy=en.y-G.player.y;
+    const angle=Math.atan2(dy,dx);
+    const idx=Math.round(((angle/(Math.PI*2))*8+8))%8;
+    const el=document.createElement('div');
+    el.className='edge-arrow'+(en.boss?' boss':en.type==='powerup'?' powerup':'');
+    el.style.left=(cx-half)+'px'; el.style.top=(cy-half)+'px';
+    el.textContent=en.type==='powerup'?'✨':(en.boss?'👑':(en.mini?'💀':arrows[idx]));
+    cont.appendChild(el);
+    if(cont.children.length>=14) break;
   }
-  const fogRange = G.player.fogCurse ? 200 : Infinity;
-  // Powerups — yellow dots
-  mx.fillStyle='rgba(255,190,11,.8)';
-  for(const pu of G.powerups){
-    const px2=pu.x/W*mw, py2=pu.y/H*mh;
-    mx.beginPath(); mx.arc(px2,py2,2,0,Math.PI*2); mx.fill();
-  }
-  // Enemies
-  for(const e of G.enemies){
-    if(e.dead) continue;
-    const dist=Math.hypot(e.x-G.player.x, e.y-G.player.y);
-    if(dist>fogRange) continue;
-    const ex=e.x/W*mw, ey=e.y/H*mh;
-    const pulse=0.7+0.3*Math.sin(frame*.1);
-    mx.globalAlpha=e.boss?pulse:1;
-    mx.fillStyle=e.boss?'#fee440':e.mini?'#ff6600':e.ghostEnemy?'#b44fff':e.col;
-    const er=e.boss?4.5:e.mini?3:1.5;
-    mx.beginPath(); mx.arc(ex,ey,er,0,Math.PI*2); mx.fill();
-    mx.globalAlpha=1;
-  }
-  // Player — triangle pointing in aim direction
-  const px=G.player.x/W*mw, py=G.player.y/H*mh;
-  const aimA=Math.atan2(G.aimDy||0, G.aimDx||1);
-  mx.fillStyle='#00f5d4'; mx.shadowColor='#00f5d4'; mx.shadowBlur=5;
-  mx.save(); mx.translate(px,py); mx.rotate(aimA);
-  mx.beginPath(); mx.moveTo(4,0); mx.lineTo(-2.5,2.5); mx.lineTo(-2.5,-2.5); mx.closePath(); mx.fill();
-  mx.restore(); mx.shadowBlur=0;
-  // Wave count label
-  mx.fillStyle='rgba(0,245,212,.45)'; mx.font='5px monospace';
-  mx.fillText('V.'+G.wave+' · '+G.enemies.filter(e=>!e.dead).length+'e', 3, mh-3);
-  // Border
-  mx.strokeStyle='rgba(0,245,212,.3)'; mx.lineWidth=1; mx.strokeRect(0,0,mw,mh);
 }
+
+// ═══════════════════════════════════════════════════════
+//  RAGE MODE — kill streak → damage multiplier up to ×2
+// ═══════════════════════════════════════════════════════
+let _rageKills=0,_rageTimer=0,_rageMult=1,_rageActive=false;
+const RAGE_THRESHOLD=8,RAGE_DECAY=300;
+function updateRageMode(){
+  if(!G||!G.running){_rageKills=0;_rageTimer=0;_rageMult=1;_rageActive=false;return;}
+  if(_rageTimer>0){_rageTimer--;}
+  else if(_rageKills>0){_rageKills=Math.max(0,_rageKills-1);_rageTimer=18;}
+  const pct=Math.min(_rageKills/RAGE_THRESHOLD,1);
+  const wasActive=_rageActive;
+  _rageActive=_rageKills>=RAGE_THRESHOLD;
+  _rageMult=_rageActive?Math.min(2,1+pct):1+(pct*0.25);
+  if(_rageActive&&!wasActive){showPopup('🔥 RAGE MODE !','#ff6b1a');if(G)G.shk=8;}
+  const wrap=document.getElementById('rage-bar-wrap');
+  const fill=document.getElementById('rage-bar-fill');
+  const mult=document.getElementById('rage-mult');
+  const banner=document.getElementById('rage-active-banner');
+  const bm=document.getElementById('rage-banner-mult');
+  if(wrap) wrap.classList.toggle('on',_rageKills>0||_rageActive);
+  if(fill) fill.style.width=Math.min(100,pct*100)+'%';
+  if(mult) mult.textContent=_rageMult.toFixed(1);
+  if(banner) banner.classList.toggle('on',_rageActive);
+  if(bm) bm.textContent=_rageMult.toFixed(1);
+}
+function onKillRage(){_rageKills=Math.min(_rageKills+1,20);_rageTimer=RAGE_DECAY;}
+
+// ═══════════════════════════════════════════════════════
+//  PERFECT WAVE BONUS — no damage taken this wave
+// ═══════════════════════════════════════════════════════
+let _waveHitCount=0;
+function checkPerfectWave(wave){
+  if(_waveHitCount===0&&wave>1){
+    const bonus=wave*100+500;
+    G.score+=bonus;
+    _dom['hv-score'].textContent=G.score.toLocaleString('fr-FR');
+    const banner=document.getElementById('perfect-wave-banner');
+    const lbl=document.getElementById('pw-bonus-lbl');
+    if(lbl) lbl.textContent='+'+bonus+' POINTS • BOMBE +50%';
+    if(banner){banner.classList.remove('on');void banner.offsetWidth;banner.classList.add('on');}
+    G.player.specCharge=Math.min(G.player.specMax,G.player.specCharge+G.player.specMax*0.5);
+    updateSpecBar(); addKF('✨ PARFAIT +'+bonus,'g');
+  }
+  _waveHitCount=0;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCORE MILESTONES
+// ═══════════════════════════════════════════════════════
+const SCORE_MILESTONES=[1000,2500,5000,10000,25000,50000,100000,250000,500000];
+let _nextMilestoneIdx=0;
+function resetMilestones(){_nextMilestoneIdx=0;}
+function checkScoreMilestones(score){
+  while(_nextMilestoneIdx<SCORE_MILESTONES.length&&score>=SCORE_MILESTONES[_nextMilestoneIdx]){
+    const m=SCORE_MILESTONES[_nextMilestoneIdx];
+    const el=document.getElementById('score-milestone');
+    if(el){
+      const big=m>=50000;
+      el.style.color=big?'#ffbe0b':'var(--c1)';
+      el.style.textShadow=big?'0 0 30px rgba(255,190,11,.9)':'0 0 20px rgba(0,245,212,.7)';
+      el.textContent=(big?'🏆 ':'⭐ ')+m.toLocaleString('fr-FR')+' PTS !';
+      el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');
+      if(big&&G)G.shk=6;
+    }
+    _nextMilestoneIdx++;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  WAVE THREAT PREVIEW — shows what's coming next wave
+// ═══════════════════════════════════════════════════════
+function showWaveThreatPreview(nextWave){
+  const el=document.getElementById('wave-threat-preview');
+  const lines=document.getElementById('wtp-lines');
+  if(!el||!lines) return;
+  const threats=[];
+  if(nextWave%10===0) threats.push({ico:'👑',lbl:'BOSS'});
+  else if(nextWave%5===0) threats.push({ico:'💀',lbl:'MINI-BOSS'});
+  const cnt=5+Math.floor(nextWave*1.6);
+  threats.push({ico:'👾',lbl:cnt+' ennemis'});
+  if(nextWave>3&&nextWave%3===0) threats.push({ico:'💨',lbl:'Rapides'});
+  if(nextWave>6&&nextWave%4===0) threats.push({ico:'🛡',lbl:'Blindés'});
+  if(nextWave>9&&nextWave%7===0) threats.push({ico:'👻',lbl:'Fantômes'});
+  lines.innerHTML=threats.map(t=>'<div class="wtp-line"><span>'+t.ico+'</span><span>'+t.lbl+'</span></div>').join('');
+  el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),3600);
+}
+
 
 // ═══════════════════════════════════════════════════════
 //  STATS + SETTINGS
@@ -9048,6 +9205,8 @@ function startGame(){
     G._hardcoreScoreMult=3;
     showPopup('💀 HARDCORE — 1 VIE','#ff1a6e');
   }
+  resetMilestones();
+  _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
   updateRelicHud();
   updateHPBar();
   document.getElementById('hv-wave').textContent='—';
