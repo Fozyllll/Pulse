@@ -1,12 +1,10 @@
-// PULSE — Service Worker v30.0
-const CACHE_NAME = 'pulse-v30.0';
+// PULSE — Service Worker v31.0
+const CACHE_NAME = 'pulse-v31.0';
 const ASSETS = [
   'index.html',
   'manifest.json',
   'icon-192.png',
   'icon-512.png',
-  'screenshot-wide.png',
-  'screenshot-narrow.png',
 ];
 
 self.addEventListener('install', event => {
@@ -28,7 +26,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Network first, fallback to cache — ensures updates are always picked up
+  // Network first, fallback to cache
   event.respondWith(
     fetch(event.request)
       .then(response => {

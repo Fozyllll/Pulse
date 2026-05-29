@@ -14256,6 +14256,17 @@ if('serviceWorker' in navigator){
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
+
+// ── Secours écran noir : montre le bouton de cache après 2.5s si rien à l'écran ──
+setTimeout(function(){
+  if(!document.querySelector('.scr.on')){
+    var btn = document.getElementById('emergency-cache-btn');
+    if(btn) btn.style.display = 'flex';
+    // Tentative forcée d'afficher le titre
+    if(typeof show === 'function') show('s-title');
+    if(typeof renderTitleBest === 'function') renderTitleBest();
+  }
+}, 2500);
 </script>
 <!-- SKIN DETAIL MODAL -->
 <div id="skin-detail-modal">
@@ -14319,5 +14330,29 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+
+<!-- ═══ BOUTON SECOURS CACHE — visible si écran noir ═══ -->
+<div id="emergency-cache-btn" style="
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:none;flex-direction:column;align-items:center;gap:8px;
+  background:rgba(3,3,10,.96);border:1px solid rgba(0,245,212,.35);
+  padding:16px 24px;border-radius:6px;text-align:center;
+  box-shadow:0 0 40px rgba(0,245,212,.1);
+">
+  <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.2em;color:var(--c1);">⚠️ ÉCRAN NOIR ?</div>
+  <div style="font-size:8px;color:var(--txt2);letter-spacing:.1em;margin:4px 0 8px;">Cache bloqué — appuie ici pour réparer</div>
+  <button onclick="hardReload()" style="
+    font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;
+    padding:10px 24px;background:rgba(0,245,212,.12);
+    border:1px solid rgba(0,245,212,.6);color:var(--c1);cursor:pointer;
+    border-radius:3px;
+  ">🔄 VIDER LE CACHE ET RELANCER</button>
+  <button onclick="document.getElementById('emergency-cache-btn').style.display='none';show('s-title');renderTitleBest();" style="
+    font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.1em;
+    padding:6px 14px;background:transparent;
+    border:1px solid rgba(255,255,255,.15);color:var(--txt2);cursor:pointer;
+    border-radius:3px;margin-top:2px;
+  ">↩ ESSAYER QUAND MÊME</button>
+</div>
 </body>
 </html>
