@@ -172,10 +172,14 @@ body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
 :focus-visible{outline:2px solid var(--c1);outline-offset:2px;}
 .scr-inner{
   display:flex;flex-direction:column;align-items:center;gap:0;
-  padding:clamp(14px,4vmin,28px) clamp(12px,3vw,20px) 40px;
+  padding:clamp(10px,3vmin,24px) clamp(10px,3vw,18px) max(40px,env(safe-area-inset-bottom,16px));
   min-height:min-content;width:100%;
   /* Center vertically only when content fits */
   margin:auto;
+}
+/* On small portrait screens, reduce padding further */
+@media (orientation:portrait) and (max-height:700px){
+  .scr-inner{ padding:8px 10px max(30px,env(safe-area-inset-bottom,12px)) !important; }
 }
 /* Screens that should stay visually centered when there's room */
 #s-title .scr-inner,#s-go .scr-inner,#s-pause .scr-inner,#s-auth .auth-box{
@@ -708,7 +712,7 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 
 /* ── PORTRAIT MODE overrides ── */
 @media (orientation:portrait){
-  /* In portrait: game canvas area is top 62%, controls bottom 38% */
+  /* In portrait: game canvas area is top 60%, controls bottom 40% */
   #joy-zone{
     position:fixed;
     bottom:0; left:0;
@@ -734,17 +738,26 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
     gap:clamp(8px,2.5vw,14px);
   }
   /* Shift combo + killfeed higher in portrait */
-  #combo{ bottom:38% !important; }
-  #kfeed{ bottom:38% !important; }
-  #ach-toast{ bottom:42% !important; }
-  /* Minimap: top-right in portrait */
-  #minimap{ bottom:auto !important; top:clamp(52px,14vw,72px); right:clamp(8px,2vw,14px); display:block !important; }
+  #combo{ bottom:42% !important; }
+  #kfeed{ bottom:42% !important; }
+  #ach-toast{ bottom:46% !important; }
+  /* Minimap: top-right in portrait, smaller */
+  #minimap{ bottom:auto !important; top:clamp(48px,12vw,64px); right:clamp(6px,1.5vw,12px); display:block !important; transform:scale(0.85); transform-origin:top right; }
   /* Overheat bar */
-  #overheat-bar{ bottom:36% !important; }
-  /* HUD: compact 2-row in portrait */
+  #overheat-bar{ bottom:38% !important; }
+  /* HUD: compact 2-row in portrait — reduce bar widths */
   #hud-top{ flex-wrap:wrap; row-gap:2px; }
-  .hw-hp{ width:clamp(52px,22vw,90px); }
-  .hw-xp,.hw-sp,.hw-cd{ width:clamp(38px,14vw,65px); }
+  .hw-hp{ width:clamp(48px,20vw,80px); }
+  .hw-xp,.hw-sp,.hw-cd{ width:clamp(32px,12vw,55px); }
+  /* Boss HUD: more compact in portrait so it doesn't cover game area */
+  #boss-hud{ max-width:92vw; font-size:clamp(7px,2vw,10px); padding:6px 10px; }
+  /* Relic HUD: smaller in portrait */
+  #relic-hud{ bottom:clamp(44%,45%,46%); right:2px; }
+  .relic-hud-item{ font-size:5px; padding:1px 4px; }
+  /* Danger edge compact */
+  #danger-edge{ border-width:3px; }
+  /* Popup centered higher (above controls zone) */
+  #popup{ bottom:42% !important; top:auto !important; }
 }
 
 /* ── SMALL SCREEN (phones < 380px) ── */
@@ -764,7 +777,7 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 @media (orientation:portrait){
   body.touch.game-active #portrait-ctrl-bg{
     display:block;
-    height:38%;
+    height:40%;
   }
   body.touch #minimap{
     display:block !important;
@@ -1169,7 +1182,7 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 
 /* Dual-track table */
 .bp-section-label{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.3em;color:var(--txt2);padding:10px 0 4px;border-bottom:1px solid var(--border);margin-bottom:0;}
-.bp-dual-track{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:calc(100vh - 320px);padding-bottom:12px;}
+.bp-dual-track{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:min(calc(100dvh - 340px), calc(100vh - 340px));padding-bottom:12px;}
 .bp-row{display:grid;grid-template-columns:clamp(36px,8vw,52px) 1fr 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,.05);transition:background .15s;}
 .bp-row:hover{background:rgba(255,255,255,.02);}
 .bp-row-lv{display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;color:var(--dim);padding:8px 4px;border-right:1px solid rgba(255,255,255,.05);}
@@ -1203,8 +1216,19 @@ body.force-landscape #portrait-ctrl-bg{ display:none!important; }
 .bp-track-header-cell.free-hd{color:var(--txt2);border-right:1px solid var(--border);}
 .bp-track-header-cell.prem-hd{color:var(--c3);background:rgba(180,79,255,.04);}
 .bp-track-header-cell.lv-hd{border-right:1px solid var(--border);justify-content:center;}
+.bp-row.current{background:rgba(180,79,255,.04);border-bottom:1px solid rgba(180,79,255,.15);}
+.bp-row.current .bp-row-lv{color:var(--c4);font-size:8px;background:rgba(180,79,255,.1);}
 @keyframes bpRowGlow{from{background:rgba(255,190,11,.04);}to{background:rgba(255,190,11,.1);}}
 .bp-row.has-claimable{animation:bpRowGlow .9s ease-in-out infinite alternate;}
+/* Mobile: tighter BP cells */
+@media (max-width:480px){
+  .bp-cell{ padding:5px 8px; gap:6px; }
+  .bp-cell-icon{ font-size:clamp(14px,3.5vmin,18px); }
+  .bp-cell-name{ font-size:clamp(5px,1.3vmin,7px); }
+  .bp-row-lv{ font-size:6px; padding:6px 2px; }
+  .bp-hero{ gap:10px; padding:10px 0 10px; }
+  .bp-lv-big{ font-size:clamp(22px,5.5vmin,34px); }
+}
 
 /* Unclaimed section */
 .bp-unclaimed-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.3);margin:8px 0 4px;border-radius:3px;}
@@ -2555,6 +2579,13 @@ input:focus, select:focus, textarea:focus {
 <div class="scr" id="s-bp">
   <div class="scr-inner" style="align-items:center;padding:10px 8px;">
     <div class="bp-wrap">
+      <!-- Back button -->
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 0 10px;">
+        <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
+        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.25em;color:var(--c4);">PASSE DE COMBAT</div>
+        <div id="bp-next-reward-hint" style="font-size:7px;color:var(--txt2);letter-spacing:.08em;text-align:right;"></div>
+      </div>
+
       <!-- Header XP -->
       <div class="bp-hero">
         <div>
@@ -2570,10 +2601,14 @@ input:focus, select:focus, textarea:focus {
             <div class="bp-bar-fill" id="bp-xp-fill" style="width:0%"></div>
             <div class="bp-bar-shine"></div>
           </div>
-          <div class="bp-season-end" id="bp-season-end"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="bp-season-end" id="bp-season-end"></div>
+            <div id="bp-xp-hint" style="font-size:6px;color:var(--dim);letter-spacing:.08em;">~50-200 XP / partie</div>
+          </div>
         </div>
         <div>
           <div class="bp-season-badge" id="bp-season-badge">SAISON 1</div>
+          <div id="bp-progress-pct" style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c4);text-align:center;margin-top:4px;"></div>
         </div>
       </div>
 
@@ -2595,7 +2630,7 @@ input:focus, select:focus, textarea:focus {
       <!-- Unclaimed alert -->
       <div id="bp-unclaimed-bar" class="bp-unclaimed-bar" style="display:none;">
         <span class="bp-unclaimed-lbl" id="bp-unclaimed-hint">Récompenses à réclamer !</span>
-        <button class="bp-cell-claim" onclick="claimAllBp()">TOUT RÉCLAMER</button>
+        <button class="bp-cell-claim" onclick="claimAllBp()" style="padding:5px 12px;font-size:7px;">⬇ TOUT RÉCLAMER</button>
       </div>
 
       <!-- Dual-track header -->
@@ -5098,12 +5133,12 @@ const LOTTERY_PRIZES=[
   {w:3,  ico:'✨', lbl:'Relique aleatoire',        fn:()=>{
     const ul=loadData('pulse_unlocked_relics_v1',[]);
     const avail=RELIC_DEFS.filter(r=>!r.premium&&!ul.includes(r.id));
-    if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); showPopup('✨ '+r.name+' debloquee !','#ffbe0b'); }
+    if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); showToast('✨ '+r.name+' débloquée !','warn',3000,'#ffbe0b'); }
     else awardCoins(400);
   }},
   {w:2,  ico:'🎨', lbl:'Skin aleatoire',           fn:()=>{
-    const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
-    if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; grantSkin(sk.id); showPopup('🎨 '+sk.name+' !','#b44fff'); }
+    const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0&&!s.premium);
+    if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; _bpClaimInProgress=true; grantSkin(sk.id); _bpClaimInProgress=false; showToast('🎨 Skin '+sk.name+' obtenu !','success',3000,'#b44fff'); }
     else awardCoins(600);
   }},
   // Jackpot (1%)
@@ -5183,6 +5218,7 @@ function renderLotteryTab(grid){
       <button class="btn btn-g" style="min-width:220px;" onclick="spinLottery()" id="lottery-btn">
         <span>🎰 TENTER MA CHANCE — ${LOTTERY_COST}🪙</span>
       </button>
+      <div id="lottery-slot-anim" style="display:none;gap:4px;align-items:center;justify-content:center;font-size:28px;min-height:44px;padding:8px 16px;background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.12);letter-spacing:.05em;"></div>
       <div id="lottery-result" style="font-family:'Orbitron',monospace;font-size:14px;letter-spacing:.1em;min-height:24px;text-align:center;transition:all .3s;"></div>
     </div>`;
 }
@@ -5197,24 +5233,88 @@ function spinLottery(){
   const totalW=LOTTERY_PRIZES.reduce((s,p)=>s+p.w,0);
   let r=Math.random()*totalW, prize=LOTTERY_PRIZES[LOTTERY_PRIZES.length-1];
   for(const p of LOTTERY_PRIZES){ r-=p.w; if(r<=0){ prize=p; break; } }
-  // Delay for suspense
+
+  // ── Slot machine animation ──
   const res=document.getElementById('lottery-result');
-  if(res){ res.textContent='⏳ ...'; }
-  setTimeout(()=>{
-    prize.fn();
-    const won=prize.loss?0:(prize.lbl.match(/\+(\d+)/)?parseInt(prize.lbl.match(/\+(\d+)/)[1]):0);
-    if(won>0) saveData('pulse_lottery_won',(loadData('pulse_lottery_won',0)+won));
-    saveData('pulse_lottery_last',{ico:prize.ico,lbl:prize.lbl,loss:!!prize.loss});
-    if(res){ 
-      res.textContent=prize.ico+' '+prize.lbl;
-      res.style.color=prize.loss?'#ff6688':'var(--c3)';
-      res.classList.remove('pop'); void res.offsetWidth; res.classList.add('pop');
+  const slotEl=document.getElementById('lottery-slot-anim');
+  const allIcos=LOTTERY_PRIZES.map(p=>p.ico);
+  let frame=0, maxFrames=18, speed=55;
+  if(slotEl){ slotEl.style.display='flex'; }
+  if(res){ res.textContent=''; }
+
+  function animStep(){
+    if(!slotEl) return;
+    const ico1=allIcos[(frame)%allIcos.length];
+    const ico2=allIcos[(frame+3)%allIcos.length];
+    const ico3=allIcos[(frame+6)%allIcos.length];
+    slotEl.innerHTML=`<span class="slot-reel">${ico1}</span><span class="slot-sep">|</span><span class="slot-reel">${ico2}</span><span class="slot-sep">|</span><span class="slot-reel">${ico3}</span>`;
+    frame++;
+    if(frame<maxFrames){
+      // Slow down near the end
+      const delay = frame<10?55:frame<15?100:160;
+      setTimeout(animStep, delay);
+    } else {
+      // Final reveal
+      slotEl.innerHTML=`<span class="slot-reel slot-final">${prize.ico}</span><span class="slot-sep">|</span><span class="slot-reel slot-final">${prize.ico}</span><span class="slot-sep">|</span><span class="slot-reel slot-final">${prize.ico}</span>`;
+      setTimeout(()=>{
+        if(slotEl) slotEl.style.display='none';
+        prize.fn();
+        const won=prize.loss?0:(prize.lbl.match(/\+(\d+)/)?parseInt(prize.lbl.match(/\+(\d+)/)[1]):0);
+        if(won>0) saveData('pulse_lottery_won',(loadData('pulse_lottery_won',0)+won));
+        // Special overlay for rare rewards
+        if(prize.ico==='✨'||prize.ico==='🎨'||prize.ico==='👑'){
+          showLotteryRewardOverlay(prize);
+        }
+        saveData('pulse_lottery_last',{ico:prize.ico,lbl:prize.lbl,loss:!!prize.loss});
+        if(res){ 
+          res.textContent=prize.ico+' '+prize.lbl;
+          res.style.color=prize.loss?'#ff6688':'var(--c3)';
+          res.classList.remove('pop'); void res.offsetWidth; res.classList.add('pop');
+        }
+        document.getElementById('shop-coins-display').textContent=coins;
+        if(btn){ btn.style.opacity=''; btn.style.pointerEvents=''; }
+        renderLotteryTab(document.getElementById('shop-grid'));
+      }, 350);
     }
-    document.getElementById('shop-coins-display').textContent=coins;
-    if(btn){ btn.style.opacity=''; btn.style.pointerEvents=''; }
-    // Refresh lottery stats
-    renderLotteryTab(document.getElementById('shop-grid'));
-  }, 600);
+  }
+  animStep();
+}
+
+function showLotteryRewardOverlay(prize){
+  const isRelic = prize.ico==='✨';
+  const isSkin  = prize.ico==='🎨';
+  const isJack  = prize.ico==='👑';
+  const col = isJack?'#ffbe0b':isRelic?'#ffbe0b':'#b44fff';
+  const title = isJack?'JACKPOT !':isRelic?'RELIQUE OBTENUE !':'SKIN OBTENU !';
+  let ov=document.getElementById('lottery-reward-overlay');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='lottery-reward-overlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:9997;display:flex;align-items:center;justify-content:center;background:rgba(3,3,10,.88);';
+    ov.innerHTML=`<div id="lro-card" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 40px;border:2px solid ${col};background:rgba(3,3,10,.96);animation:lroIn .45s cubic-bezier(.22,1,.36,1) both;max-width:90vw;text-align:center;">
+      <div id="lro-ico" style="font-size:60px;animation:lroIco 1.2s ease-in-out infinite;"></div>
+      <div id="lro-title" style="font-family:Orbitron,monospace;font-weight:900;font-size:clamp(16px,5vw,26px);letter-spacing:.14em;color:${col};text-shadow:0 0 32px ${col}88;"></div>
+      <div id="lro-lbl" style="font-size:clamp(10px,3vw,14px);color:var(--txt2);letter-spacing:.1em;"></div>
+      <button class="btn btn-g" onclick="document.getElementById('lottery-reward-overlay').remove();" style="margin-top:8px;"><span>SUPER !</span></button>
+    </div>`;
+    document.body.appendChild(ov);
+    const st=document.createElement('style');
+    st.textContent='@keyframes lroIn{from{opacity:0;transform:scale(.5) translateY(40px);}to{opacity:1;transform:scale(1) translateY(0);}}@keyframes lroIco{0%,100%{transform:scale(1) rotate(-5deg);}50%{transform:scale(1.15) rotate(5deg);}}'+
+      '.slot-reel{font-size:28px;display:inline-block;animation:slotSpin .08s linear infinite;width:40px;text-align:center;}'+
+      '.slot-reel.slot-final{animation:slotLand .3s cubic-bezier(.22,1,.36,1) both;}'+
+      '.slot-sep{font-size:22px;color:rgba(0,245,212,.4);padding:0 4px;}'+
+      '@keyframes slotSpin{0%{transform:translateY(-4px);}100%{transform:translateY(4px);}}'+
+      '@keyframes slotLand{0%{transform:scale(1.4);}100%{transform:scale(1);}}';
+    document.head.appendChild(st);
+  }
+  document.getElementById('lro-ico').textContent=prize.ico;
+  document.getElementById('lro-ico').style.textShadow=`0 0 40px ${col}`;
+  document.getElementById('lro-title').textContent=title;
+  document.getElementById('lro-title').style.color=col;
+  document.getElementById('lro-lbl').textContent=prize.lbl;
+  const card=document.getElementById('lro-card');
+  if(card){ card.style.borderColor=col; card.style.animation='none'; void card.offsetWidth; card.style.animation='lroIn .45s cubic-bezier(.22,1,.36,1) both'; }
+  ov.style.display='flex';
+  ov.onclick=(e)=>{ if(e.target===ov) ov.remove(); };
 }
 
 
@@ -5753,8 +5853,8 @@ function setupCanvas(){
   const isPortrait = isMobile && !isPhysicallyLandscape();
 
   if(isPortrait && isMobile){
-    // Portrait mobile: game in top 62% of real viewport
-    const gameH=Math.floor(sh*0.62);
+    // Portrait mobile: game in top 60% of real viewport
+    const gameH=Math.floor(sh*0.60);
     W=sw; H=gameH;
     bc.style.width=gc.style.width=sw+'px';
     bc.style.height=gc.style.height=H+'px';
@@ -5900,8 +6000,12 @@ function startWave(){
   if(w>0 && shouldOfferRelic(w)){
     offerRelic(); return; // wave incremented, relic offered, then resume
   }
-  // Relic: berserker — +6% damage per wave
-  if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
+  // Relic: berserker — +6% damage per wave, capped at 3x base
+  if(G.player.berserkerRelic){ 
+    const base=G.player._berserkerBase||G.player.bulletDmg;
+    G.player._berserkerBase=G.player._berserkerBase||base;
+    G.player.bulletDmg=Math.min(G.player.bulletDmg*1.06, base*3);
+  }
   // Relic: transcend (premium) — +25 PV every 5 waves (not in hardcore)
   if(G.player.transcendRelic && w%5===0 && currentMode!=='hardcore'){ G.player.hp=Math.min(G.player.maxHp,G.player.hp+25); updateHPBar(); showPopup('✨ TRANSCENDANCE +25 PV','#b44fff'); }
   // Relic: ghost step reset per wave
@@ -6420,6 +6524,8 @@ function update(now){
   if(p.invincible>0) p.invincible--;
   if(p.dashTimer>0){ p.dashTimer-=16; if(p.dashTimer<=0){ p.dashTimer=0; p.dashChargesLeft=p.dashCharges; } }
   if(G.timeSlow>0){ G.timeSlow--; if(G.timeSlow===0) showPopup('⏱ TEMPS NORMAL','#88aaff'); }
+  // Chain kill timer: reset counter if no kill in 5s
+  if(G._chainKillTimer>0){ G._chainKillTimer--; if(G._chainKillTimer===0) G._chainKillCount=0; }
   // Relic: adrenaline — boost speed and firerate under 30% HP
   if(p.adrenalineRelic){
     const lowHP = p.hp/p.maxHp < 0.30;
@@ -6772,8 +6878,9 @@ function update(now){
     if(!b.enemy&&blocked(b.x,b.y,b.r)){ b.vx*=-1; b.vy*=-1; b.life=Math.min(b.life,18); }
     // Enemy bullet hits player
     if(b.enemy&&p.invincible<=0&&Math.hypot(b.x-p.x,b.y-p.y)<p.r+b.r){
-      if(p.reflect){
+      if(p.reflect && Math.random()<0.30){
         b.enemy=false; b.vx*=-1; b.vy*=-1; b.dmg*=1.5;
+        spawnFx(b.x,b.y,'#aaddff',3);
       } else {
         dmgPlayer(b.dmg); b.dead=true;
       }
@@ -7113,11 +7220,13 @@ function onKill(e){
   
   // Relic: chain kill
   G._chainKillCount=(G._chainKillCount||0)+1;
+  G._chainKillTimer=300; // 5s window at 60fps — reset counter if no kill in 5s
   G._chainCooldown=(G._chainCooldown||0);
   if(G._chainCooldown>0) G._chainCooldown--;
   if(p.chainKill && G._chainKillCount>=8 && G._chainCooldown<=0 && !e._fromNuke){ 
     G._chainKillCount=0;
-    G._chainCooldown=900; // 15s cooldown (60fps x 15)
+    G._chainKillTimer=0;
+    G._chainCooldown=600; // 10s cooldown (60fps x 10)
     const nukeKills=G.enemies.filter(en=>!en.dead);
     nukeKills.forEach(en=>en._fromNuke=true);
     // Nuke bridee : degats reduits, pas de soin via vampirisme
@@ -7126,7 +7235,7 @@ function onKill(e){
     doNuke(G,12+(p.berserkerRelic?6:0)); 
     p.vampireRelic=_vampSave; p.lifesteal=_lifeSave;
     setTimeout(()=>{ if(G) G.enemies.forEach(en=>en._fromNuke=false); },100);
-    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ REACTION ! (x'+Math.min(8,G._chainKillCount+8)+')','#ffbe0b'); 
+    spawnFx(p.x,p.y,'#ffbe0b',8); showPopup('⚡ REACTION EN CHAINE !','#ffbe0b'); 
   }
   // ✅ NEW: Foudre Chain (p.chain) — arc electrique vers lennemi le plus proche
   if(p.chain && !e._fromNuke){
@@ -7987,8 +8096,8 @@ function gameOver(){
   // Calculate BP XP BEFORE granting (to show animation from→to)
   const bpXpBefore = battlePass.xp;
   const bpLvBefore = battlePass.level;
-  const bpXpGained = Math.max(10, Math.min(
-    Math.floor(G.score/200) + G.wave*10 + Math.floor(G.totalKills/5)*5, 300
+  const bpXpGained = Math.max(15, Math.min(
+    Math.floor(G.score/150) + G.wave*12 + Math.floor(G.totalKills/4)*5, 500
   ));
   // Grant BP XP
   grantBpXp(G.score, G.wave, G.totalKills);
@@ -8104,7 +8213,7 @@ function shareScore(){
   const wave = G.wave||0;
   const kills = G.totalKills||0;
   const pseudo = getPseudo();
-  const text = `🎮 PULSE — ${pseudo}\n🏆 Score: ${score.toLocaleString('fr-FR')}\n🌊 Vague: ${wave} · 💀 Kills: ${kills}\nPeut-tu battre mon score ?`;
+  const text = `🎮 PULSE — ${pseudo}\n🏆 Score: ${score.toLocaleString('fr-FR')}\n🌊 Vague: ${wave} · 💀 Kills: ${kills}\nPeut-tu battre mon score ?\n👉 https://fozyllll.github.io/Pulse/`;
   if(navigator.share){
     navigator.share({ title:'PULSE', text }).catch(()=>{
       // Fallback to clipboard if share cancelled or failed
@@ -9429,18 +9538,32 @@ function claimBpReward(level, track){
     if(def){ const lvl=getPermaLvl(reward.value); if(lvl<def.maxLvl){ permaUpgrades[reward.value]=(lvl+1); saveData('pulse_perma_v3',permaUpgrades); if(currentUser&&SB) saveCloudProfile({perma_upgrades:permaUpgrades}); } }
   } else if(reward.type==='relic'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    if(!ul.includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); }
+    if(!ul.includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); }
   }
 
   _bpClaimInProgress=false;
   renderBP();
+
+  // Color claim card by reward type
+  const claimCard = document.querySelector('.bp-claim-card');
+  const rewardColors = {coins:'var(--c3)',skin:'var(--c1)',perma:'#b44fff',relic:'#ffbe0b'};
+  const rewardGlows  = {coins:'rgba(255,190,11,.12)',skin:'rgba(0,245,212,.1)',perma:'rgba(180,79,255,.12)',relic:'rgba(255,190,11,.14)'};
+  const typeKey = reward.type==='relic'?'relic':reward.type;
+  const claimCol = rewardColors[typeKey]||'var(--c3)';
+  if(claimCard){
+    claimCard.style.borderColor=claimCol;
+    claimCard.style.boxShadow=`0 0 80px ${rewardGlows[typeKey]||'rgba(255,190,11,.12)'},0 24px 60px rgba(0,0,0,.8)`;
+  }
 
   const ov=document.getElementById('bp-claim-overlay');
   const ic=document.getElementById('bp-claim-icon');
   const titleEl=document.getElementById('bp-claim-title');
   const descEl=document.getElementById('bp-claim-desc');
   ic.textContent=reward.icon;
-  titleEl.textContent=reward.type==='coins'?'+'+reward.value+' PIECES !':reward.type==='skin'?'SKIN DEBLOQUE !':reward.type==='relic'?'RELIQUE DEBLOQUEE !':'AMELIORATION !';
+  ic.style.filter=`drop-shadow(0 0 18px ${claimCol})`;
+  titleEl.textContent=reward.type==='coins'?'+'+reward.value+' PIÈCES !':reward.type==='skin'?'SKIN DÉBLOQUÉ !':reward.type==='relic'?'RELIQUE DÉBLOQUÉE !':'AMÉLIORATION !';
+  titleEl.style.color=claimCol;
+  titleEl.style.textShadow=`0 0 20px ${claimCol}66`;
   descEl.textContent=reward.label;
   const card=ov.querySelector('.bp-claim-card');
   if(card){card.style.animation='none';void card.offsetWidth;card.style.animation='';}
@@ -9464,7 +9587,7 @@ function claimAllBp(){
     if(r.type==='coins'){coins+=r.value;saveData('pulse_coins_v3',coins);updateCoinsHUD();}
     else if(r.type==='skin') grantSkin(r.value);
     else if(r.type==='perma'){const def=PERMA_DEFS.find(d=>d.id===r.value);if(def){const lvl=getPermaLvl(r.value);if(lvl<def.maxLvl){permaUpgrades[r.value]=(lvl+1);saveData('pulse_perma_v3',permaUpgrades);}}}
-    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);}}
+    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);if(currentUser&&SB)saveCloudProfile({unlocked_relics:ul});}}
   }
   saveBP();
   if(currentUser&&SB) saveCloudProfile({coins});
@@ -9511,6 +9634,21 @@ function renderBP(){
   const endEl=document.getElementById('bp-season-end');
   if(endEl) endEl.textContent=formatSeasonEnd();
 
+  // Progress percentage hint
+  const pctEl=document.getElementById('bp-progress-pct');
+  if(pctEl) pctEl.textContent=lvl>=BP_MAX_LEVEL?'✓ COMPLET':`${pct}%`;
+
+  // Next reward hint
+  const nextHintEl=document.getElementById('bp-next-reward-hint');
+  if(nextHintEl){
+    if(lvl>=BP_MAX_LEVEL){ nextHintEl.textContent='Passe terminé !'; }
+    else {
+      const xpLeft=BP_XP_PER_LEVEL-xp;
+      const nextFree=BP_REWARDS.find(r=>r.lv===lvl+1&&r.track==='free');
+      nextHintEl.innerHTML=`Prochain : ${nextFree?nextFree.icon+' '+nextFree.label:'—'}<br><span style="color:var(--c4);">${xpLeft} XP restant</span>`;
+    }
+  }
+
   // Premium banner
   const banner=document.getElementById('bp-premium-banner');
   const btnWrap=document.getElementById('bp-premium-btn-wrap');
@@ -9534,11 +9672,12 @@ function renderBP(){
   const unclBar=document.getElementById('bp-unclaimed-bar');
   const unclHint=document.getElementById('bp-unclaimed-hint');
   if(unclBar){ unclBar.style.display=unclaimed.length>0?'flex':'none'; }
-  if(unclHint){ unclHint.textContent=unclaimed.length+' recompense'+(unclaimed.length>1?'s':'')+' a reclamer !'; }
+  if(unclHint){ unclHint.textContent=unclaimed.length+' récompense'+(unclaimed.length>1?'s':'')+' à réclamer !'; }
 
   // Dual-track rows
   const track=document.getElementById('bp-track');
   track.innerHTML='';
+  let currentRow=null;
   for(let lv=1;lv<=BP_MAX_LEVEL;lv++){
     const freeR  = BP_REWARDS.find(r=>r.lv===lv&&r.track==='free');
     const premR  = BP_REWARDS.find(r=>r.lv===lv&&r.track==='premium');
@@ -9546,14 +9685,20 @@ function renderBP(){
     const current= lvl===lv;
     const row=document.createElement('div');
     row.className='bp-row'+(done?' done':current?' current':'');
+    row.id='bp-row-lv-'+lv;
     const hasFreeClaimable  = freeR && lv<=lvl && !battlePass.claimed[lv+':free'];
     const hasPremClaimable  = premR && lv<=lvl && !battlePass.claimed[lv+':premium'] && premium;
     if(hasFreeClaimable||hasPremClaimable) row.classList.add('has-claimable');
+    if(current) currentRow=row;
 
     row.innerHTML=`<div class="bp-row-lv">${lv}</div>
       ${makeBpCell(freeR, lv, lvl, false)}
       ${makeBpCell(premR, lv, lvl, !premium)}`;
     track.appendChild(row);
+  }
+  // Auto-scroll to current level
+  if(currentRow){
+    setTimeout(()=>currentRow.scrollIntoView({behavior:'smooth',block:'center'}),120);
   }
 }
 
@@ -9589,8 +9734,9 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
 }
 
 function grantBpXp(score, wave, kills){
-  const xp = Math.floor(score/200) + wave*10 + Math.floor(kills/5)*5;
-  addBpXp(Math.max(10, Math.min(xp, 300)));
+  // More rewarding: score/150 + wave*12 + kills/4*5, cap 500 (roughly 50-200 XP/run)
+  const xp = Math.floor(score/150) + wave*12 + Math.floor(kills/4)*5;
+  addBpXp(Math.max(15, Math.min(xp, 500)));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -11456,48 +11602,47 @@ function initAdminBroadcastListener(){
 //  SYSTEME DE RELIQUES
 // ═══════════════════════════════════════════════════════
 const RELIC_DEFS = [
-  // ── COMMUN ──
-  {id:'dash_trail',   ico:'💫', name:'TRAINE DE DASH',      desc:'Chaque dash laisse une traine qui blesse les ennemis proches (15 dmg).', tag:'MOBILITE',  rarity:'common',  price:600,
+  {id:'dash_trail',   ico:'💫', name:'TRAINE DE DASH',      desc:'Chaque dash laisse une traîne qui inflige 15 dégâts aux ennemis traversés. Stacks avec les dégâts normaux.', tag:'MOBILITE',  rarity:'common',  price:600,
     apply:(p)=>{ p.dashTrail=true; }},
-  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'Chaque kill restaure 2 PV.', tag:'SURVIE',     rarity:'common',  price:600,
+  {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'+2 PV par ennemi tué. Désactivé en mode Hardcore.', tag:'SURVIE',     rarity:'common',  price:600,
     apply:(p)=>{ p.vampireRelic=true; }},
-  {id:'coin_magnet',  ico:'🧲', name:'MAGNETISME MONETAIRE', desc:'+50% de pieces gagnees. Les kills a combo×10+ donnent des pieces bonus.', tag:'ECONOMIE', rarity:'common',  price:700,
+  {id:'coin_magnet',  ico:'🧲', name:'MAGNETISME MONETAIRE', desc:'+50% de pièces gagnées. À combo ×10, ×20, etc. : +5 pièces bonus supplémentaires.', tag:'ECONOMIE', rarity:'common',  price:700,
     apply:(p)=>{ p.coinMagnet=true; }},
-  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE REGENERANT',  desc:'Chaque upgrade choisie restaure 15 PV.', tag:'DEFENSIF',   rarity:'common',  price:600,
+  {id:'armor_regen',  ico:'🛡', name:'BLINDAGE REGENERANT',  desc:'Chaque upgrade choisie entre les vagues restaure 15 PV.', tag:'DEFENSIF',   rarity:'common',  price:600,
     apply:(p)=>{ p.armorRegen=true; }},
-  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'Gagne une charge de dash supplementaire.', tag:'MOBILITE',  rarity:'common',  price:700,
+  {id:'double_dash',  ico:'⚡', name:'DOUBLE DASH',          desc:'+1 charge de dash supplémentaire. Les deux charges se rechargent ensemble.', tag:'MOBILITE',  rarity:'common',  price:700,
     apply:(p)=>{ p.dashCharges=(p.dashCharges||1)+1; p.dashChargesLeft=(p.dashChargesLeft||1)+1; }},
-  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'Chaque ennemi tue a 20% de chance de dropper des pieces.', tag:'ECONOMIE',    rarity:'common',  price:550,
+  {id:'scavenger',    ico:'🪙', name:'PILLEUR',              desc:'20% de chance par kill de gagner 2 pièces. S\'accumule avec Magnétisme et Vampirisme.', tag:'ECONOMIE',    rarity:'common',  price:550,
     apply:(p)=>{ p.scavengerRelic=true; }},
-  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'La recharge de dash est reduite de 25%.', tag:'MOBILITE',   rarity:'common',  price:600,
+  {id:'quick_reload', ico:'🔄', name:'RECHARGEMENT RAPIDE',  desc:'Cooldown du dash réduit de 25% (min. 350ms). Synergie forte avec Double Dash.', tag:'MOBILITE',   rarity:'common',  price:600,
     apply:(p)=>{ p.dashCd=Math.max(350, Math.round(p.dashCd*0.75)); }},
-  {id:'thorns',       ico:'🌵', name:'EPINES',               desc:'Renvoie 30% des degats recus aux ennemis.', tag:'DEFENSIF',  rarity:'common',  price:650,
+  {id:'thorns',       ico:'🌵', name:'EPINES',               desc:'Renvoie 30% des dégâts reçus à tous les ennemis dans un rayon de 180px.', tag:'DEFENSIF',  rarity:'common',  price:650,
     apply:(p)=>{ p.thornsRelic=true; }},
 
   // ── RARE ──
-  {id:'chain_kill',   ico:'⚡', name:'REACTION EN CHAINE',  desc:'Tuer 5 ennemis d\'affilee declenche un mini-nuke. Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:1100,
+  {id:'chain_kill',   ico:'⚡', name:'REACTION EN CHAINE',  desc:'8 kills en moins de 5 secondes declenche un mini-nuke (cd: 10s). Synergie : Berserker amplifie le nuke.', tag:'OFFENSIF',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.chainKill=true; }},
-  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'La bombe attire les ennemis vers le centre avant d\'exploser.', tag:'STRATEGIQUE',rarity:'rare',    price:1200,
+  {id:'gravity_well', ico:'🌀', name:'PUITS GRAVITATIONNEL', desc:'Quand la bombe explose, attire d\'abord tous les ennemis vers le centre, puis détone. Zone d\'effet élargie.', tag:'STRATEGIQUE',rarity:'rare',    price:1200,
     apply:(p)=>{ p.gravityNuke=true; }},
-  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Degats +6% par vague jouee. Cumulatif — devient devastateur en fin de run.', tag:'SCALING',   rarity:'rare',    price:1000,
-    apply:(p)=>{ p.berserkerRelic=true; }},
-  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30%. Synergie : Vampirisme → soins doubles par la cadence.', tag:'RISQUE',     rarity:'rare',    price:1000,
+  {id:'berserker',    ico:'😡', name:'BERSERKER',            desc:'Degats +6% par vague jouee (max ×3). Cumulatif jusqu\'a 300% — devastateur sur la duree.', tag:'SCALING',   rarity:'rare',    price:1000,
+    apply:(p)=>{ p.berserkerRelic=true; p._berserkerBase=p.bulletDmg; }},
+  {id:'overclock',    ico:'⚙',  name:'SURCHAUFFE',           desc:'Cadence de tir +30% (intervalle −30%). Attention : surchauffe les systemes. Synergie : Vampirisme → soins plus frequents.', tag:'RISQUE',     rarity:'rare',    price:1000,
     apply:(p)=>{ p.fireRate=Math.max(60,Math.round(p.fireRate*0.7)); }},
-  {id:'ghost_step',   ico:'👟', name:'PAS FANTOME',          desc:'Apres un dash, le prochain tir traverse les ennemis (piercing).', tag:'MOBILITE',   rarity:'rare',    price:1100,
+  {id:'ghost_step',   ico:'👟', name:'PAS FANTOME',          desc:'Après un dash, le prochain tir est perforant (traverse tous les ennemis). Se remet à zéro à chaque vague.', tag:'MOBILITE',   rarity:'rare',    price:1100,
     apply:(p)=>{ p.ghostStepRelic=true; }},
-  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'AMES',    desc:'Chaque boss ou mini-boss tue restaure 30 PV et recharge la bombe de 40%.', tag:'SURVIE',     rarity:'rare',    price:1200,
+  {id:'soul_harvest',  ico:'💀', name:'MOISSON D\'AMES',    desc:'Boss ou mini-boss tué : +30 PV (sauf Hardcore) + 40% de recharge bombe.', tag:'SURVIE',     rarity:'rare',    price:1200,
     apply:(p)=>{ p.soulHarvestRelic=true; }},
-  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGE',     desc:'La bombe se recharge 2× plus vite grace aux kills.', tag:'OFFENSIF',  rarity:'rare',    price:1150,
+  {id:'overload_core', ico:'🔋', name:'CŒUR SURCHARGE',     desc:'Chaque kill recharge la bombe en fonction du type : boss +28, mini +15, normal +7 (× vitesse de recharge).', tag:'OFFENSIF',  rarity:'rare',    price:1150,
     apply:(p)=>{ p.overloadCoreRelic=true; }},
 
   // ── EPIQUE ──
-  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'Mourir declenche une explosion de 16 balles. (Oui, mourir.)', tag:'ULTIME',    rarity:'epic',    price:1800,
+  {id:'bullet_nova',   ico:'💥', name:'NOVA DE BALLES',      desc:'En mourant, tire 12 balles perforantes tout autour (×2 dégâts). Oui, c\'est à la mort — ça vaut le sacrifice.', tag:'ULTIME',    rarity:'epic',    price:1800,
     apply:(p)=>{ p.bulletNova=true; }},
-  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow prolonge l\'effet de 0.5s.', tag:'STRATEGIQUE',rarity:'epic',   price:1700,
+  {id:'time_thief',    ico:'⏳', name:'VOLEUR DE TEMPS',     desc:'Chaque kill pendant Time Slow ajoute +0.5s à l\'effet (max 7s total). Transforme la bombe en machine à décimer.', tag:'STRATEGIQUE',rarity:'epic',   price:1700,
     apply:(p)=>{ p.timeThiefRelic=true; }},
-  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max reduits a 40, mais degats doubles. Synergie : Vampirisme + Epines.', tag:'RISQUE',     rarity:'epic',    price:1600,
+  {id:'death_wish',    ico:'💀', name:'PACTE DE MORT',       desc:'PV max réduits à 40, dégâts ×2. Synergie létale : Vampirisme (soins rapides) + Épines (réflexion ×2 dégâts).', tag:'RISQUE',     rarity:'epic',    price:1600,
     apply:(p)=>{ p.maxHp=40; p.hp=Math.min(p.hp,40); p.bulletDmg*=2; }},
-  {id:'adrenaline',    ico:'💉', name:'ADRENALINE',          desc:'Sous 30% de PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort.', tag:'SURVIE',      rarity:'epic',    price:1900,
+  {id:'adrenaline',    ico:'💉', name:'ADRENALINE',          desc:'Sous 30% PV : vitesse +50%, cadence +30%. Synergie : Pacte de Mort → actif quasiment tout le temps.', tag:'SURVIE',      rarity:'epic',    price:1900,
     apply:(p)=>{ p.adrenalineRelic=true; }},
 
   // ── EXCLUSIF PASSE AMELIORE ──
@@ -11505,6 +11650,8 @@ const RELIC_DEFS = [
     apply:(p)=>{ p.transcendRelic=true; }},
   {id:'ghost_walk',   ico:'👻', name:'MARCHE FANTOME',       desc:'Le dash traverse les obstacles. Exclusif Passe Ameliore ⭐', tag:'⭐ PREMIUM',  rarity:'epic', price:0, premium:true,
     apply:(p)=>{ p.phantom=true; }},
+  {id:'reflect',      ico:'🪞', name:'REFLEXION',            desc:'30% de chance de reflechir les balles ennemies. Fonctionne sur projectiles ennemis seulement. Exclusif Passe Ameliore ⭐', tag:'⭐ PREMIUM', rarity:'epic', price:0, premium:true,
+    apply:(p)=>{ p.reflect=true; }},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -11582,7 +11729,11 @@ function pickRelic(r){
   showPopup('✨ '+r.name,'#ffbe0b');
   updateRelicHud();
   // Apply berserker and ghost step for this wave since we skipped it
-  if(G.player.berserkerRelic){ G.player.bulletDmg*=1.06; }
+  if(G.player.berserkerRelic){ 
+    const base=G.player._berserkerBase||G.player.bulletDmg;
+    G.player._berserkerBase=G.player._berserkerBase||base;
+    G.player.bulletDmg=Math.min(G.player.bulletDmg*1.06, base*3);
+  }
   G.player._ghostStepReady=false;
   // Resume wave spawning directly (wave already incremented)
   const w=G.wave;
