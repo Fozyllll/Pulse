@@ -157,8 +157,8 @@ body:not(.touch):not(.game-active) .toggle,
 body:not(.touch):not(.game-active) .skin-card,
 body:not(.touch):not(.game-active) .mode-card,
 body:not(.touch):not(.game-active) .relic-card { cursor:pointer; }
-.scr.on{display:flex;animation:scrIn .22s cubic-bezier(.22,1,.36,1) both;}
-@keyframes scrIn{from{opacity:0;}to{opacity:1;}}
+.scr.on{display:flex;animation:scrFadeIn .22s cubic-bezier(.22,1,.36,1) both;}
+@keyframes scrFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* Global scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px;}
@@ -2008,8 +2008,8 @@ body.game-active #combo-wrap{display:block;}
 }
 
 /* ── SCREEN TRANSITION ENHANCEMENTS ── */
-.scr.on{animation:scrIn .28s cubic-bezier(.22,1,.36,1) both;}
-@keyframes scrIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+/* .scr.on animation — défini ligne 160, ne pas redéfinir ici */
+/* @keyframes scrFadeIn défini ligne 161 */
 
 /* ── PAUSE SCREEN BUILD SUMMARY ── */
 .pause-build-grid{
@@ -2583,11 +2583,8 @@ body.game-active #speedrun-timer{display:block;}
 #s-bp      { background:linear-gradient(160deg,#06041a 0%,#03030a 50%,#080312 100%); }
 
 /* ── 22. SCREENS — légère animation d'entrée ── */
-.scr.on { animation:scrFadeIn .2s var(--ease-out) both; }
-@keyframes scrFadeIn {
-  from { opacity:0; transform:translateY(6px); }
-  to   { opacity:1; transform:none; }
-}
+/* .scr.on animation — défini ligne 160, ne pas redéfinir ici */
+/* @keyframes scrFadeIn — défini ligne 161, ne pas redéfinir ici */
 
 /* ── 23. SCORE SCREENS HEADERS ── */
 .scr-h {
@@ -14236,9 +14233,16 @@ console.log('%c🎮 PULSE v30.0%c Production Ready', 'font-size:18px;font-weight
 
 <script>
 if('serviceWorker' in navigator){
+  // Recharge la page si un nouveau SW vient de s'activer (évite l'écran noir)
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if(e.data && e.data.type === 'SW_UPDATED'){
+      console.log('[SW] Nouveau SW actif — rechargement...');
+      location.reload();
+    }
+  });
   window.addEventListener('load',()=>{
     // Force update: unregister all old SWs then re-register fresh
-    const APP_VERSION = '30.0';
+    const APP_VERSION = '31.0';
     const swVersionKey = 'pulse_sw_version';
     const lastVersion = localStorage.getItem(swVersionKey);
     if(lastVersion !== APP_VERSION){
@@ -14250,22 +14254,32 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=30.0')
-      .then(reg=>{ reg.update(); console.log('[SW] Enregistre v30.0'); })
+    navigator.serviceWorker.register('sw.js?v=31.0')
+      .then(reg=>{ reg.update(); console.log('[SW] Enregistre v31.0'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
 }
 
-// ── Secours écran noir : montre le bouton de cache après 2.5s si rien à l'écran ──
+// ── Secours écran noir : force l'affichage si rien à l'écran après 3s ──
 setTimeout(function(){
-  if(!document.querySelector('.scr.on')){
+  var hasVisible = document.querySelector('.scr.on');
+  if(!hasVisible){
+    console.warn('[PULSE] Aucun écran visible après 3s — forçage s-title');
     var btn = document.getElementById('emergency-cache-btn');
     if(btn) btn.style.display = 'flex';
     // Tentative forcée d'afficher le titre
     if(typeof show === 'function') show('s-title');
     if(typeof renderTitleBest === 'function') renderTitleBest();
   }
-}, 2500);
+}, 3000);
+// ── Secours secondaire à 6s si toujours rien ──
+setTimeout(function(){
+  var hasVisible = document.querySelector('.scr.on');
+  if(!hasVisible){
+    console.error('[PULSE] Écran noir persistant — rechargement forcé');
+    location.reload();
+  }
+}, 6000);
 </script>
 <!-- SKIN DETAIL MODAL -->
 <div id="skin-detail-modal">
