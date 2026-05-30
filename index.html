@@ -13485,20 +13485,19 @@ document.addEventListener('DOMContentLoaded',()=>{
     updateUserBar();
     renderTitleBest();
   } else if(SB){
-    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
-    // Fallback: if nothing visible after 800ms, show auth screen
-    const _bsFallback = setTimeout(()=>{ if(!document.querySelector('.scr.on')){ show('s-auth'); } }, 800);
+    // Afficher l'écran immédiatement sans attendre Supabase
+    show('s-auth');
+    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 2000);
     SB.auth.getSession().then(({data})=>{
       clearTimeout(sbTimeout);
-      clearTimeout(_bsFallback);
       if(data?.session?.user){
         currentUser=data.session.user;
         isGuest=false;
         afterLogin();
       } else {
-        show('s-auth');
+        if(!document.querySelector('.scr.on')) show('s-auth');
       }
-    }).catch(()=>{ clearTimeout(sbTimeout); clearTimeout(_bsFallback); show('s-auth'); });
+    }).catch(()=>{ clearTimeout(sbTimeout); if(!document.querySelector('.scr.on')) show('s-auth'); });
     SB.auth.onAuthStateChange((_event,session)=>{
       if(session?.user&&!currentUser){
         currentUser=session.user;
