@@ -3851,29 +3851,34 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 //  Ce bloc doit rester EN TOUT PREMIER dans le script.
 // ═══════════════════════════════════════════════════════
 (function(){
-  var CURRENT_BUILD = '31.1';
-  var storedBuild = localStorage.getItem('pulse_build_v1');
-  if(storedBuild !== CURRENT_BUILD){
-    // Nouvelle version détectée — purger SW + caches puis recharger
-    localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
-    var doNuke = function(){
+  var CURRENT_BUILD = '31.2';
+
+  function nukeAndReload(){
+    var nuke = function(){
       if('caches' in window){
         caches.keys().then(function(keys){
           return Promise.all(keys.map(function(k){ return caches.delete(k); }));
         }).then(function(){ location.reload(true); }).catch(function(){ location.reload(true); });
-      } else {
-        location.reload(true);
-      }
+      } else { location.reload(true); }
     };
     if('serviceWorker' in navigator){
       navigator.serviceWorker.getRegistrations().then(function(regs){
         return Promise.all(regs.map(function(r){ return r.unregister(); }));
-      }).then(doNuke).catch(doNuke);
-    } else {
-      doNuke();
+      }).then(nuke).catch(nuke);
+    } else { nuke(); }
+  }
+
+  // Un SW actif = page peut-être servie depuis l'ancien cache
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    var storedBuild = localStorage.getItem('pulse_build_v1');
+    if(storedBuild !== CURRENT_BUILD){
+      localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
+      nukeAndReload();
+      throw new Error('__PULSE_CACHE_RESET__');
     }
-    // Arrêt immédiat — le reste du script ne s'exécute pas
-    throw new Error('__PULSE_CACHE_RESET__');
+  } else {
+    // Pas de SW actif = servi depuis le réseau = version fraîche
+    localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
   }
 })();
 
@@ -14082,7 +14087,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=31.0')
+    navigator.serviceWorker.register('sw.js?v=31.2')
       .then(reg=>{ reg.update(); console.log('[SW] Enregistre v31.0'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });
