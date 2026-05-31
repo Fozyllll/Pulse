@@ -9805,8 +9805,6 @@ const BP_REWARDS = [
   // NIV 30 — RÉCOMPENSE FINALE
   {lv:30, track:'free',    type:'skin',   value:'star',      label:'✨ Skin Champion S'+BP_SEASON_CURRENT, icon:'✨', rarity:'legendary'},
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'🌈 Skin PRISMA LÉGEND', icon:'🌈', rarity:'legendary'},
-]
-
 ];
 
 let battlePass = loadData('pulse_bp_v2', {
@@ -13474,17 +13472,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     // Afficher un message dans lecran titre
     const userBar = document.getElementById('title-user-pill');
     if(userBar) userBar.textContent = '📱 Mode local · Compte desactive';
-    // Fix écran noir: show title immediately on file:// protocol
-    show('s-title');
-    renderTitleBest();
     maybeShowOnboard(false);
     updateCoinsHUD();
     updateUserBar();
     renderTitleBest();
   } else if(SB){
-    // Afficher l'écran immédiatement sans attendre Supabase
-    show('s-auth');
-    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 2000);
+    // Laisser s-auth visible (déjà class="scr on" dans le HTML)
+    // Attendre la réponse Supabase avant d'afficher quoi que ce soit
+    const sbTimeout = setTimeout(()=>{ if(!document.querySelector('.scr.on')) show('s-auth'); }, 4000);
     SB.auth.getSession().then(({data})=>{
       clearTimeout(sbTimeout);
       if(data?.session?.user){
@@ -13492,9 +13487,9 @@ document.addEventListener('DOMContentLoaded',()=>{
         isGuest=false;
         afterLogin();
       } else {
-        if(!document.querySelector('.scr.on')) show('s-auth');
+        show('s-auth');
       }
-    }).catch(()=>{ clearTimeout(sbTimeout); if(!document.querySelector('.scr.on')) show('s-auth'); });
+    }).catch(()=>{ clearTimeout(sbTimeout); show('s-auth'); });
     SB.auth.onAuthStateChange((_event,session)=>{
       if(session?.user&&!currentUser){
         currentUser=session.user;
@@ -13504,7 +13499,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   } else {
     isGuest=true;
-    show('s-title');
     renderTitleBest();
     updateUserBar();
     const best=scores[0]?.score||0;
