@@ -3850,6 +3850,22 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
 const VERSION = '31.0';
+
+// ── BATTLE PASS — fonctions saison déplacées ici pour éviter TDZ ──
+function getCurrentSeason(){
+  const d=new Date();
+  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
+}
+function getSeasonEndDate(){
+  const d=new Date();
+  return new Date(d.getFullYear(), d.getMonth()+1, 1);
+}
+function formatSeasonEnd(){
+  const end=getSeasonEndDate();
+  const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
+  return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
+}
+const BP_SEASON_CURRENT = getCurrentSeason();
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -9490,21 +9506,8 @@ document.getElementById('mb-dash').addEventListener('touchstart',e=>{ e.preventD
 //  BATTLE PASS — SAISON MENSUELLE + DUAL TRACK
 // ═══════════════════════════════════════════════════════
 
-function getCurrentSeason(){
-  const d=new Date();
-  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
-}
-function getSeasonEndDate(){
-  const d=new Date();
-  return new Date(d.getFullYear(), d.getMonth()+1, 1); // 1er du mois suivant
-}
-function formatSeasonEnd(){
-  const end=getSeasonEndDate();
-  const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
-  return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
-}
-
-const BP_SEASON_CURRENT = getCurrentSeason();
+// getCurrentSeason / getSeasonEndDate / formatSeasonEnd / BP_SEASON_CURRENT
+// déplacés en haut du script pour éviter l'erreur TDZ (temporal dead zone)
 const BP_MAX_LEVEL = 30;
 const BP_XP_PER_LEVEL = 500;
 
