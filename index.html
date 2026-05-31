@@ -2554,13 +2554,7 @@ input:focus, select:focus, textarea:focus {
 .bp-claim-rarity.rare{background:rgba(0,187,249,.1);color:#00bbf9;border:1px solid rgba(0,187,249,.4);}
 .bp-claim-rarity.common{background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid rgba(255,255,255,.15);}
 
-/* ── Edge Threats ── */
-#edge-threats{position:fixed;inset:0;pointer-events:none;z-index:90;}
-.edge-arrow{position:absolute;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:12px;width:20px;height:20px;border-radius:50%;background:rgba(255,26,110,.12);border:1px solid rgba(255,26,110,.35);animation:edgePulse .8s ease-in-out infinite alternate;}
-.edge-arrow.boss{font-size:14px;background:rgba(255,190,11,.15);border-color:rgba(255,190,11,.5);animation:edgePulseBoss .5s ease-in-out infinite alternate;}
-.edge-arrow.powerup{background:rgba(0,245,212,.1);border-color:rgba(0,245,212,.4);}
-@keyframes edgePulse{from{opacity:.45;}to{opacity:.9;}}
-@keyframes edgePulseBoss{from{opacity:.7;transform:scale(1);}to{opacity:1;transform:scale(1.18);}}
+to{opacity:1;transform:scale(1.18);}}
 
 /* ── Rage Mode ── */
 #rage-bar-wrap{position:fixed;bottom:clamp(54px,10vw,68px);left:50%;transform:translateX(-50%);z-index:91;display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;transition:opacity .3s;}
@@ -2591,6 +2585,297 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 #wave-threat-preview.on{opacity:1;}
 .wtp-line{font-size:clamp(7px,1.5vw,9px);letter-spacing:.1em;color:var(--txt2);display:flex;align-items:center;gap:4px;}
 .wtp-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.15em;color:var(--dim);margin-bottom:1px;}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   NOUVELLES FEATURES RÉVOLUTIONNAIRES — PULSE v31
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── BATTLE PASS REFONDU ── */
+.bp2-wrap{width:min(600px,97vw);display:flex;flex-direction:column;gap:0;}
+.bp2-hero{
+  display:flex;align-items:center;gap:0;
+  background:linear-gradient(135deg,rgba(180,79,255,.08),rgba(255,190,11,.06));
+  border:1px solid rgba(180,79,255,.25);border-radius:6px;padding:16px;
+  margin-bottom:10px;position:relative;overflow:hidden;
+}
+.bp2-hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(
+  -45deg,transparent,transparent 12px,rgba(255,255,255,.012) 12px,rgba(255,255,255,.012) 13px
+);}
+.bp2-season-ring{
+  width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:conic-gradient(var(--c4) var(--prog,0%),rgba(255,255,255,.06) 0%);
+  position:relative;flex-shrink:0;box-shadow:0 0 20px rgba(180,79,255,.3);
+}
+.bp2-season-ring::after{
+  content:'';position:absolute;inset:6px;border-radius:50%;
+  background:var(--bg);
+}
+.bp2-season-lv{position:relative;z-index:1;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--c3);line-height:1;}
+.bp2-season-sub{position:relative;z-index:1;font-size:6px;letter-spacing:.15em;color:var(--c4);margin-top:1px;}
+.bp2-hero-info{flex:1;padding:0 16px;}
+.bp2-season-name{font-family:'Orbitron',monospace;font-size:clamp(12px,3vw,16px);letter-spacing:.2em;color:var(--c4);font-weight:700;}
+.bp2-xp-row{display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;font-size:7px;letter-spacing:.12em;}
+.bp2-bar{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;position:relative;}
+.bp2-bar-fill{height:100%;background:linear-gradient(90deg,var(--c4),var(--c3));border-radius:3px;transition:width .5s cubic-bezier(.22,1,.36,1);}
+.bp2-bar-shine{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:bpShine 2.5s ease-in-out infinite;}
+@keyframes bpShine{0%{left:-60%;}100%{left:160%;}}
+.bp2-season-end{font-size:6px;color:var(--dim);letter-spacing:.1em;margin-top:4px;}
+.bp2-prem-badge{
+  display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;
+  padding:8px 14px;background:rgba(180,79,255,.1);border:1px solid rgba(180,79,255,.3);
+  border-radius:4px;cursor:pointer;transition:all .15s;
+}
+.bp2-prem-badge:hover{background:rgba(180,79,255,.2);}
+.bp2-prem-badge.owned{border-color:rgba(255,190,11,.5);background:rgba(255,190,11,.08);}
+.bp2-tabs{display:flex;border-bottom:1px solid var(--border);}
+.bp2-tab{flex:1;padding:10px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.15em;
+  background:none;border:none;color:var(--dim);cursor:pointer;transition:all .15s;position:relative;}
+.bp2-tab.active{color:var(--c1);border-bottom:2px solid var(--c1);}
+.bp2-tab .badge{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--c2);border-radius:50%;}
+
+/* Piste récompenses */
+.bp2-track-row{
+  display:grid;grid-template-columns:40px 1fr 1fr;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  transition:background .1s;
+}
+.bp2-track-row:hover{background:rgba(255,255,255,.02);}
+.bp2-lv-cell{display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:8px;color:var(--dim);border-right:1px solid rgba(255,255,255,.05);}
+.bp2-lv-cell.milestone{color:var(--c3);font-weight:700;}
+.bp2-reward-cell{padding:8px 10px;display:flex;align-items:center;gap:8px;border-right:1px solid rgba(255,255,255,.04);}
+.bp2-reward-cell.prem{background:rgba(180,79,255,.02);}
+.bp2-reward-cell.locked-prem{opacity:.4;filter:grayscale(.8);}
+.bp2-r-icon{font-size:clamp(18px,4vmin,24px);flex-shrink:0;}
+.bp2-r-info{flex:1;display:flex;flex-direction:column;gap:2px;}
+.bp2-r-name{font-size:clamp(7px,1.6vmin,9px);color:var(--txt);letter-spacing:.05em;}
+.bp2-r-type{font-size:5px;letter-spacing:.15em;padding:1px 5px;border-radius:2px;align-self:flex-start;}
+.bp2-r-type.coins{color:var(--c3);border:1px solid rgba(255,190,11,.25);}
+.bp2-r-type.skin{color:var(--c1);border:1px solid rgba(0,245,212,.25);}
+.bp2-r-type.perma{color:var(--c4);border:1px solid rgba(180,79,255,.25);}
+.bp2-r-type.relic{color:var(--c3);border:1px solid rgba(255,190,11,.4);}
+.bp2-r-rarity{font-size:5px;letter-spacing:.1em;}
+.bp2-r-rarity.legendary{color:var(--c3);}
+.bp2-r-rarity.epic{color:var(--c4);}
+.bp2-r-rarity.rare{color:#00bbf9;}
+.bp2-r-btn{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;padding:4px 10px;
+  border:1px solid var(--c1);color:var(--c1);background:transparent;cursor:pointer;
+  transition:all .12s;border-radius:2px;white-space:nowrap;}
+.bp2-r-btn:hover{background:var(--c1);color:var(--bg);}
+.bp2-r-btn.claimed{border-color:rgba(255,255,255,.15);color:var(--dim);cursor:default;}
+.bp2-r-btn.claimed:hover{background:transparent;color:var(--dim);}
+.bp2-milestone-banner{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:6px;background:linear-gradient(90deg,transparent,rgba(255,190,11,.06),transparent);
+  border-top:1px solid rgba(255,190,11,.2);border-bottom:1px solid rgba(255,190,11,.2);
+  font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:var(--c3);
+}
+
+/* Quêtes journalières */
+.quest-list{display:flex;flex-direction:column;gap:8px;padding:12px 0;}
+.quest-card{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;
+  transition:all .2s;
+}
+.quest-card.done{background:rgba(0,245,212,.04);border-color:rgba(0,245,212,.25);}
+.quest-icon{font-size:22px;flex-shrink:0;}
+.quest-info{flex:1;}
+.quest-name{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;color:var(--txt);}
+.quest-card.done .quest-name{color:var(--c1);}
+.quest-desc{font-size:7px;color:var(--txt2);margin-top:2px;letter-spacing:.05em;}
+.quest-progress{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.quest-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.quest-bar-fill{height:100%;background:var(--c1);border-radius:2px;transition:width .4s;}
+.quest-bar-fill.done{background:var(--c1);}
+.quest-pct{font-size:6px;color:var(--dim);}
+.quest-reward{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.quest-xp{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);font-weight:700;}
+.quest-xp-lbl{font-size:5px;color:var(--dim);letter-spacing:.1em;}
+.quest-check{font-size:20px;color:var(--c1);}
+.quest-reset{font-size:7px;color:var(--dim);text-align:center;padding:8px 0;letter-spacing:.1em;}
+
+/* ── CLANS ── */
+#s-clan .scr-inner{align-items:center;padding:10px 8px;}
+.clan-wrap{width:min(580px,97vw);display:flex;flex-direction:column;gap:0;}
+.clan-hero{
+  display:flex;align-items:center;gap:14px;padding:14px;
+  background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.15);
+  border-radius:6px;margin-bottom:10px;
+}
+.clan-tag-big{
+  width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:18px;font-weight:900;
+  background:rgba(0,245,212,.1);border:2px solid rgba(0,245,212,.4);color:var(--c1);
+  flex-shrink:0;letter-spacing:.05em;
+}
+.clan-name-big{font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,20px);letter-spacing:.15em;color:var(--c1);}
+.clan-stats-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;}
+.clan-stat{font-size:7px;color:var(--txt2);letter-spacing:.1em;}
+.clan-stat span{color:var(--c3);font-family:'Orbitron',monospace;}
+.clan-tabs{display:flex;border-bottom:1px solid var(--border);}
+.clan-tab{flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;
+  background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
+.clan-tab.active{color:var(--c1);border-bottom:2px solid var(--c1);}
+.clan-member-row{
+  display:flex;align-items:center;gap:10px;padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.clan-member-row:hover{background:rgba(255,255,255,.02);}
+.clan-member-rank{font-family:'Orbitron',monospace;font-size:9px;width:24px;text-align:center;color:var(--dim);}
+.clan-member-name{flex:1;font-size:8px;letter-spacing:.08em;}
+.clan-member-score{font-family:'Orbitron',monospace;font-size:8px;color:var(--c3);}
+.clan-member-role{font-size:6px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;}
+.clan-member-role.chef{color:var(--c3);border:1px solid rgba(255,190,11,.3);}
+.clan-member-role.officier{color:var(--c4);border:1px solid rgba(180,79,255,.3);}
+.clan-member-role.membre{color:var(--dim);border:1px solid rgba(255,255,255,.1);}
+.clan-war-card{
+  padding:14px;background:rgba(255,26,110,.04);border:1px solid rgba(255,26,110,.2);
+  border-radius:4px;margin:8px 0;
+}
+.clan-war-vs{display:flex;align-items:center;justify-content:center;gap:20px;padding:10px 0;}
+.clan-war-team{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.clan-war-tag{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--c1);}
+.clan-war-score{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;}
+.clan-war-score.winning{color:var(--c1);}
+.clan-war-score.losing{color:var(--c2);}
+.clan-war-divider{font-family:'Orbitron',monospace;font-size:14px;color:var(--dim);}
+.clan-war-timer{text-align:center;font-size:7px;color:var(--txt2);letter-spacing:.15em;margin-top:6px;}
+
+/* ── CHAT GLOBAL ── */
+#s-chat .scr-inner{align-items:center;padding:0;height:100%;}
+.chat-wrap{width:min(560px,97vw);height:100%;display:flex;flex-direction:column;}
+.chat-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.chat-online{width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0;animation:chatPulse 2s ease-in-out infinite;}
+@keyframes chatPulse{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.4);}50%{box-shadow:0 0 0 5px rgba(46,204,113,0);}}
+.chat-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c1);flex:1;}
+.chat-online-count{font-size:7px;color:var(--txt2);}
+.chat-messages{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+.chat-msg{display:flex;gap:8px;align-items:flex-start;}
+.chat-msg-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.2);display:flex;align-items:center;justify-content:center;font-size:10px;}
+.chat-msg-body{flex:1;}
+.chat-msg-header{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;}
+.chat-msg-name{font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.08em;color:var(--c1);cursor:pointer;}
+.chat-msg-name:hover{text-decoration:underline;}
+.chat-msg-time{font-size:6px;color:var(--dim);}
+.chat-msg-text{font-size:8px;color:var(--txt2);line-height:1.5;word-break:break-word;}
+.chat-msg.me .chat-msg-name{color:var(--c3);}
+.chat-msg-badge{font-size:5px;letter-spacing:.1em;padding:1px 4px;border-radius:2px;vertical-align:middle;}
+.chat-msg-badge.chef{background:rgba(255,190,11,.15);color:var(--c3);border:1px solid rgba(255,190,11,.3);}
+.chat-msg-badge.prem{background:rgba(180,79,255,.12);color:var(--c4);}
+.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
+.chat-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt);
+  padding:9px 12px;font-size:8px;letter-spacing:.05em;border-radius:3px;outline:none;font-family:inherit;}
+.chat-input:focus{border-color:rgba(0,245,212,.4);}
+.chat-send{padding:9px 16px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;
+  background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.4);color:var(--c1);cursor:pointer;
+  border-radius:3px;transition:all .12s;}
+.chat-send:hover{background:rgba(0,245,212,.2);}
+.chat-system-msg{text-align:center;font-size:6px;color:var(--dim);letter-spacing:.1em;padding:4px 0;}
+
+/* ── TOURNOIS ── */
+#s-tournament .scr-inner{align-items:center;padding:10px 8px;}
+.tourn-wrap{width:min(580px,97vw);}
+.tourn-hero{
+  background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(255,26,110,.05));
+  border:1px solid rgba(255,190,11,.25);border-radius:6px;padding:16px;
+  margin-bottom:12px;position:relative;overflow:hidden;
+}
+.tourn-hero::before{content:'🏆';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:64px;opacity:.1;}
+.tourn-name{font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,20px);letter-spacing:.15em;color:var(--c3);font-weight:700;}
+.tourn-timer-big{font-family:'Orbitron',monospace;font-size:clamp(20px,5vw,28px);letter-spacing:.1em;color:var(--c2);font-weight:900;margin:6px 0;}
+.tourn-timer-lbl{font-size:7px;letter-spacing:.2em;color:var(--dim);}
+.tourn-status{display:inline-flex;align-items:center;gap:5px;font-size:7px;letter-spacing:.2em;
+  padding:3px 10px;border-radius:12px;margin-top:4px;}
+.tourn-status.active{background:rgba(46,204,113,.12);color:#2ecc71;border:1px solid rgba(46,204,113,.3);}
+.tourn-status.upcoming{background:rgba(0,245,212,.08);color:var(--c1);border:1px solid rgba(0,245,212,.2);}
+.tourn-status.ended{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid rgba(255,255,255,.1);}
+.tourn-rewards-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.tourn-reward-pill{display:flex;align-items:center;gap:4px;padding:4px 10px;
+  background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;font-size:7px;color:var(--c3);}
+.tourn-my-score{
+  padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:4px;margin-bottom:10px;display:flex;align-items:center;gap:14px;
+}
+.tourn-my-rank{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--c3);flex-shrink:0;}
+.tourn-my-info{flex:1;}
+.tourn-lb-row{
+  display:flex;align-items:center;gap:10px;padding:10px 8px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.tourn-lb-row.me{background:rgba(0,245,212,.05);border-color:rgba(0,245,212,.15);}
+.tourn-lb-rank{font-family:'Orbitron',monospace;font-size:11px;width:32px;color:var(--dim);}
+.tourn-lb-rank.gold{color:var(--c3);}
+.tourn-lb-rank.silver{color:#aaa;}
+.tourn-lb-rank.bronze{color:#cd7f32;}
+.tourn-lb-name{flex:1;font-size:8px;letter-spacing:.08em;}
+.tourn-lb-score{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);}
+.tourn-submit-btn{
+  width:100%;padding:14px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;
+  background:linear-gradient(135deg,rgba(255,190,11,.15),rgba(255,26,110,.1));
+  border:1px solid rgba(255,190,11,.4);color:var(--c3);cursor:pointer;
+  border-radius:4px;transition:all .2s;margin-bottom:10px;
+}
+.tourn-submit-btn:hover{background:linear-gradient(135deg,rgba(255,190,11,.25),rgba(255,26,110,.15));transform:translateY(-1px);}
+.tourn-submit-btn:disabled{opacity:.4;cursor:default;transform:none;}
+
+/* ── REPLAY ── */
+#s-replay .scr-inner{align-items:center;padding:10px 8px;}
+.replay-wrap{width:min(560px,97vw);}
+.replay-card{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:4px;transition:all .15s;cursor:pointer;
+}
+.replay-card:hover{background:rgba(255,255,255,.06);border-color:rgba(0,245,212,.2);transform:translateX(3px);}
+.replay-card.playing{border-color:var(--c1);background:rgba(0,245,212,.05);}
+.replay-thumb{width:48px;height:48px;border-radius:4px;background:rgba(0,245,212,.08);
+  border:1px solid rgba(0,245,212,.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.replay-info{flex:1;}
+.replay-score{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:.1em;color:var(--c3);}
+.replay-meta{font-size:7px;color:var(--txt2);margin-top:3px;letter-spacing:.08em;}
+.replay-controls{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;}
+.replay-btn{padding:8px 16px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.12em;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt2);
+  cursor:pointer;border-radius:3px;transition:all .12s;}
+.replay-btn:hover,.replay-btn.active{background:rgba(0,245,212,.1);border-color:rgba(0,245,212,.3);color:var(--c1);}
+.replay-progress{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin:4px 0;position:relative;cursor:pointer;}
+.replay-progress-fill{height:100%;background:var(--c1);border-radius:2px;transition:width .1s;}
+#replay-hud-overlay{
+  position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:500;
+  background:rgba(3,3,10,.9);border:1px solid rgba(0,245,212,.3);
+  padding:8px 16px;border-radius:4px;display:none;gap:16px;align-items:center;
+}
+#replay-hud-overlay.on{display:flex;}
+.replay-hud-val{font-family:'Orbitron',monospace;font-size:10px;color:var(--c1);}
+.replay-hud-lbl{font-size:6px;color:var(--dim);letter-spacing:.1em;}
+
+/* ── PROFIL amélioré ── */
+.profile-clan-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 8px;
+  background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.2);
+  border-radius:12px;font-size:7px;color:var(--c1);margin-top:4px;cursor:pointer;
+}
+.profile-clan-badge:hover{background:rgba(0,245,212,.15);}
+
+/* ── NAV HUB (icônes en bas de l'écran titre) ── */
+.hub-nav{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
+.hub-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;
+  cursor:pointer;transition:all .15s;min-width:70px;position:relative;
+}
+.hub-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(0,245,212,.25);transform:translateY(-2px);}
+.hub-btn-icon{font-size:20px;}
+.hub-btn-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.12em;color:var(--dim);}
+.hub-btn:hover .hub-btn-label{color:var(--txt);}
+.hub-notif{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--c2);border-radius:50%;display:none;}
+.hub-notif.on{display:block;}
+
+/* Ajout au leaderboard pour onglet tournois */
+.tourn-past-card{padding:10px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;}
+.tourn-past-name{font-family:'Orbitron',monospace;font-size:8px;color:var(--txt2);letter-spacing:.1em;}
+.tourn-past-result{font-family:'Orbitron',monospace;font-size:12px;color:var(--c3);margin:4px 0;}
 
 </style>
 </head>
@@ -2651,324 +2936,51 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
 <div class="scr" id="s-bp">
   <div class="scr-inner" style="align-items:center;padding:10px 8px;">
-    <div class="bp-wrap">
-      <!-- Back button -->
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:6px 0 10px;">
+    <div class="bp2-wrap">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
         <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
-        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.25em;color:var(--c4);">PASSE DE COMBAT</div>
-        <div id="bp-next-reward-hint" style="font-size:7px;color:var(--txt2);letter-spacing:.08em;text-align:right;"></div>
+        <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c4);flex:1;">⭐ PASSE DE COMBAT</div>
+        <button class="btn btn-s" id="bp-unclaimed-btn" onclick="claimAllBp()" style="font-size:7px;padding:6px 10px;display:none;"><span>⬇ TOUT RÉCLAMER</span></button>
       </div>
 
-      <!-- Header XP -->
-      <div class="bp-hero">
-        <div>
-          <div class="bp-lv-big" id="bp-level-badge">0</div>
-          <div class="bp-lv-sub">NIVEAU</div>
+      <!-- Hero XP ring -->
+      <div class="bp2-hero">
+        <div class="bp2-season-ring" id="bp2-ring" style="--prog:0%">
+          <div class="bp2-season-lv" id="bp2-level">0</div>
+          <div class="bp2-season-sub">NIV</div>
         </div>
-        <div class="bp-xp-section">
-          <div class="bp-xp-top">
-            <span class="bp-xp-lbl" id="bp-season-lbl">SAISON 1</span>
-            <span class="bp-xp-val" id="bp-xp-label">0 / 500 XP</span>
+        <div class="bp2-hero-info">
+          <div class="bp2-season-name" id="bp2-season-name">SAISON 1</div>
+          <div class="bp2-xp-row">
+            <span id="bp2-xp-label" style="color:var(--txt2);">0 / 500 XP</span>
+            <span id="bp2-progress-pct" style="color:var(--c4);font-family:'Orbitron',monospace;font-size:8px;"></span>
           </div>
-          <div class="bp-bar">
-            <div class="bp-bar-fill" id="bp-xp-fill" style="width:0%"></div>
-            <div class="bp-bar-shine"></div>
+          <div class="bp2-bar">
+            <div class="bp2-bar-fill" id="bp2-xp-fill" style="width:0%"></div>
+            <div class="bp2-bar-shine"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="bp-season-end" id="bp-season-end"></div>
-            <div id="bp-xp-hint" style="font-size:6px;color:var(--dim);letter-spacing:.08em;">~50-200 XP / partie</div>
-          </div>
+          <div class="bp2-season-end" id="bp2-season-end"></div>
+          <div style="font-size:6px;color:var(--dim);margin-top:4px;" id="bp2-next-hint"></div>
         </div>
-        <div>
-          <div class="bp-season-badge" id="bp-season-badge">SAISON 1</div>
-          <div id="bp-progress-pct" style="font-family:'Orbitron',monospace;font-size:7px;color:var(--c4);text-align:center;margin-top:4px;"></div>
-        </div>
-      </div>
-
-      <!-- Premium banner -->
-      <div id="bp-premium-banner" class="bp-premium-banner not-owned">
-        <div class="bp-premium-icon">⭐</div>
-        <div class="bp-premium-info">
-          <div class="bp-premium-title" id="bp-premium-title">PASSE AMÉLIORÉ</div>
-          <div class="bp-premium-desc" id="bp-premium-desc">Débloque la piste PREMIUM et ses récompenses exclusives tout au long de la saison.</div>
-          <div class="bp-premium-perks" id="bp-premium-perks">
-            <span>✨ SKINS EXCLUSIFS</span><span>🔮 RELIQUES PREMIUM</span><span>💎 +50% PIÈCES/NIV</span><span>🚀 RÉCOMPENSES BONUS</span>
-          </div>
-        </div>
-        <div id="bp-premium-btn-wrap">
-          <button class="btn btn-g" onclick="buyPremiumPass()" style="white-space:nowrap;"><span>⭐ 1500🪙</span></button>
+        <div class="bp2-prem-badge" id="bp2-prem-badge" onclick="buyPremiumPass()">
+          <div style="font-size:20px;" id="bp2-prem-icon">⭐</div>
+          <div style="font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.1em;color:var(--c4);" id="bp2-prem-lbl">PREMIUM</div>
+          <div style="font-size:6px;color:var(--dim);" id="bp2-prem-price">1500🪙</div>
         </div>
       </div>
 
-      <!-- Unclaimed alert -->
-      <div id="bp-unclaimed-bar" class="bp-unclaimed-bar" style="display:none;">
-        <span class="bp-unclaimed-lbl" id="bp-unclaimed-hint">Récompenses à réclamer !</span>
-        <button class="bp-cell-claim" onclick="claimAllBp()" style="padding:5px 12px;font-size:7px;">⬇ TOUT RÉCLAMER</button>
+      <!-- Onglets -->
+      <div class="bp2-tabs">
+        <button class="bp2-tab active" onclick="bp2Tab('rewards',this)">🎁 RÉCOMPENSES</button>
+        <button class="bp2-tab" onclick="bp2Tab('quests',this)" id="bp2-tab-quests">📋 QUÊTES</button>
+        <button class="bp2-tab" onclick="bp2Tab('info',this)">ℹ INFO</button>
       </div>
 
-      <!-- Dual-track header -->
-      <div class="bp-track-header">
-        <div class="bp-track-header-cell lv-hd">NIV.</div>
-        <div class="bp-track-header-cell free-hd">🆓 GRATUIT</div>
-        <div class="bp-track-header-cell prem-hd">⭐ PREMIUM</div>
-      </div>
+      <!-- Contenu onglets -->
+      <div id="bp2-content" style="max-height:calc(100vh - 280px);overflow-y:auto;padding:4px 0;"></div>
 
-      <!-- Dual-track rows -->
-      <div class="bp-dual-track" id="bp-track"></div>
-    </div>
-  </div>
-</div>
-
-<!-- CLAIM ANIMATION OVERLAY -->
-<div id="bp-claim-overlay">
-  <div class="bp-claim-card">
-    <div class="bp-claim-rays" id="bp-claim-rays"></div>
-    <div class="bp-claim-icon" id="bp-claim-icon">🪙</div>
-    <div class="bp-claim-rarity" id="bp-claim-rarity"></div>
-    <div class="bp-claim-title" id="bp-claim-title">RÉCOMPENSE</div>
-    <div class="bp-claim-desc" id="bp-claim-desc">+100 pièces</div>
-    <div class="bp-claim-particles" id="bp-claim-particles"></div>
-    <button class="btn btn-g" style="margin-top:8px;" onclick="closeBpClaim()"><span>SUPER !</span></button>
-  </div>
-</div>
-
-
-<!-- DUO LOCAL — CONFIG TOUCHES -->
-<div class="scr" id="s-duo-config">
-  <div class="scr-inner" style="align-items:center;gap:12px;">
-    <div class="scr-h">👥 DUO LOCAL</div>
-    <div style="font-size:8px;letter-spacing:.2em;color:var(--txt2);text-align:center;">2 joueurs sur le même écran · chaque joueur contrôle son propre personnage</div>
-
-    <!-- Mode selection -->
-    <div style="width:min(560px,96vw);display:flex;flex-direction:column;gap:6px;">
-      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0;border-bottom:1px solid var(--border);">MODE DE JEU</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="mode-card" id="duo-mode-classic" style="flex:1;min-width:120px;border-color:rgba(0,245,212,.5);background:rgba(0,245,212,.05);" onclick="selectDuoMode('classic')">
-          <div class="mode-icon" style="font-size:18px;">🌊</div>
-          <div class="mode-name" style="font-size:9px;">CLASSIQUE</div>
-          <div class="mode-desc" style="font-size:7px;">Vagues infinies ensemble</div>
-        </div>
-        <div class="mode-card" id="duo-mode-chrono" style="flex:1;min-width:120px;" onclick="selectDuoMode('chrono')">
-          <div class="mode-icon" style="font-size:18px;">⏱</div>
-          <div class="mode-name" style="font-size:9px;">CHRONO</div>
-          <div class="mode-desc" style="font-size:7px;">90s, meilleur score</div>
-        </div>
-        <div class="mode-card" id="duo-mode-arena" style="flex:1;min-width:120px;" onclick="selectDuoMode('arena')">
-          <div class="mode-icon" style="font-size:18px;">💀</div>
-          <div class="mode-name" style="font-size:9px;">ARÈNE</div>
-          <div class="mode-desc" style="font-size:7px;">Une vague massive</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Controls config -->
-    <div style="width:min(560px,96vw);display:flex;flex-direction:column;gap:6px;">
-      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);padding:4px 0;border-bottom:1px solid var(--border);">CONTRÔLES</div>
-      <div class="duo-config-grid">
-        <div class="duo-player-box duo-p1">
-          <div class="duo-player-title">🎮 JOUEUR 1</div>
-          <div id="duo-p1-binds"></div>
-        </div>
-        <div class="duo-player-box duo-p2">
-          <div class="duo-player-title">🎮 JOUEUR 2</div>
-          <div id="duo-p2-binds"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="btn-row" style="margin-top:8px;gap:10px;">
-      <button class="btn btn-p" onclick="launchDuo()"><span>▶ JOUER</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- MULTIJOUEUR EN LIGNE -->
-<div class="scr" id="s-online">
-  <div class="scr-inner" style="align-items:center;">
-    <div class="online-box">
-      <div class="online-title">🌐 EN LIGNE</div>
-      <div style="font-size:7px;letter-spacing:.25em;color:var(--txt2);text-align:center;margin:4px 0 12px;">CO-OP · MÊME ARÈNE · VAGUES PARTAGÉES</div>
-      <div class="online-tabs">
-        <button class="online-tab active" id="ol-tab-browse" onclick="olSetTab('browse')">PARTIES PUBLIQUES</button>
-        <button class="online-tab" id="ol-tab-create" onclick="olSetTab('create')">CRÉER</button>
-        <button class="online-tab" id="ol-tab-join" onclick="olSetTab('join')">CODE</button>
-        <button class="online-tab" id="ol-tab-duel" onclick="olSetTab('duel')" style="border-color:var(--c2);color:var(--c2);">⚔ DUEL</button>
-      </div>
-
-      <!-- BROWSE -->
-      <div id="ol-browse-sec">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);">ROOMS OUVERTES</div>
-          <button class="bind-reset" onclick="olRefreshRooms()">↺ ACTUALISER</button>
-        </div>
-        <div class="room-list" id="ol-room-list"><div class="online-empty">Chargement…</div></div>
-      </div>
-
-      <!-- CREATE -->
-      <div id="ol-create-sec" style="display:none;flex-direction:column;gap:8px;">
-        <input class="online-room-name" id="ol-room-name-input" maxlength="20" placeholder="NOM DE LA ROOM (ex: VIENS JOUER !)"
-          oninput="this.value=this.value.toUpperCase()">
-        <!-- Online mode selection -->
-        <div style="font-size:7px;letter-spacing:.2em;color:var(--txt2);margin-top:2px;">MODE DE JEU</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <div id="ol-mode-classic" onclick="selectOlMode('classic')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid rgba(0,245,212,.5);background:rgba(0,245,212,.05);cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:14px;">🌊</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--c1);">CLASSIQUE</div>
-          </div>
-          <div id="ol-mode-chrono" onclick="selectOlMode('chrono')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:14px;">⏱</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">CHRONO</div>
-          </div>
-          <div id="ol-mode-arena" onclick="selectOlMode('arena')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:14px;">💀</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">ARÈNE</div>
-          </div>
-          <div id="ol-mode-duo" onclick="selectOlMode('duo')" style="flex:1;min-width:80px;padding:8px 6px;border:1px solid var(--border);background:var(--dim2);cursor:pointer;text-align:center;transition:all .15s;">
-            <div style="font-size:14px;">👥</div><div style="font-family:Orbitron,monospace;font-size:7px;letter-spacing:.1em;color:var(--txt2);">DUO</div>
-          </div>
-        </div>
-        <div style="font-size:7px;letter-spacing:.12em;color:var(--txt2);">Jusqu'à 4 joueurs · Partie co-op partagée</div>
-        <div class="online-status" id="ol-create-status"></div>
-        <div class="online-lobby-players" id="ol-lobby-players" style="display:none;"></div>
-        <button class="btn btn-p" id="ol-create-btn" onclick="olCreate()"><span>🎮 CRÉER LA ROOM</span></button>
-        <button class="btn btn-p" id="ol-start-btn" style="display:none;" onclick="olStart()"><span>▶ LANCER</span></button>
-        <button class="btn btn-s" id="ol-leave-btn" style="display:none;" onclick="olLeave()"><span>✕ QUITTER</span></button>
-      </div>
-
-      <!-- DUEL PvP -->
-      <div id="ol-duel-sec" style="display:none;flex-direction:column;gap:8px;">
-        <div style="text-align:center;padding:8px;border:1px solid rgba(255,26,110,.3);background:rgba(255,26,110,.04);margin-bottom:4px;">
-          <div style="font-family:Orbitron,monospace;font-size:9px;letter-spacing:.15em;color:var(--c2);">⚔ MODE DUEL</div>
-          <div style="font-size:7px;color:var(--txt2);margin-top:4px;letter-spacing:.08em;">1v1 PvP · Tes balles blessent ladversaire · Dernier en vie gagne</div>
-        </div>
-        <input class="online-room-name" id="ol-duel-name-input" maxlength="20" placeholder="NOM DU DUEL" oninput="this.value=this.value.toUpperCase()">
-        <div style="font-size:7px;letter-spacing:.12em;color:var(--txt2);">Duree : 90 secondes · Arena fermee · PV : 100</div>
-        <div class="online-status" id="ol-duel-status"></div>
-        <div class="online-lobby-players" id="ol-duel-players" style="display:none;"></div>
-        <button class="btn btn-p" id="ol-duel-create-btn" onclick="duelCreate()" style="background:transparent;border-color:var(--c2);color:var(--c2);"><span>⚔ CREER LE DUEL</span></button>
-        <button class="btn btn-p" id="ol-duel-start-btn" style="display:none;border-color:var(--c2);color:var(--c2);" onclick="duelStart()"><span>▶ LANCER LE DUEL</span></button>
-        <button class="btn btn-s" id="ol-duel-leave-btn" style="display:none;" onclick="duelLeave()"><span>✕ QUITTER</span></button>
-        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;">
-          <div style="font-size:7px;color:var(--dim);letter-spacing:.15em;margin-bottom:6px;">REJOINDRE UN DUEL PAR CODE</div>
-          <input class="online-room-name" id="ol-duel-code-input" maxlength="6" placeholder="CODE (6 CHIFFRES)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-          <button class="btn btn-s" style="margin-top:6px;border-color:var(--c2);color:var(--c2);" onclick="duelJoin()"><span>⚔ REJOINDRE</span></button>
-        </div>
-      </div>
-
-      <!-- JOIN BY CODE -->
-      <div id="ol-join-sec" style="display:none;flex-direction:column;gap:8px;">
-        <input class="online-room-name" id="ol-code-input" maxlength="6" placeholder="CODE (6 CHIFFRES)"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')olJoinByCode()">
-        <div class="online-status" id="ol-join-status"></div>
-        <div class="online-lobby-players" id="ol-join-players" style="display:none;"></div>
-        <button class="btn btn-p" onclick="olJoinByCode()"><span>🔗 REJOINDRE</span></button>
-        <button class="btn btn-s" id="ol-join-leave-btn" style="display:none;" onclick="olLeave()"><span>✕ QUITTER</span></button>
-      </div>
-    </div>
-    
-  </div>
-</div>
-
-<!-- ONLINE IN-GAME HUD -->
-<div id="online-hud"></div>
-
-<canvas id="cvs-bg"></canvas>
-<canvas id="cvs-game"></canvas>
-<canvas id="xhair" width="28" height="28"></canvas>
-
-<div id="wave-bar"><div id="wave-bar-fill"></div></div>
-
-<!-- HUD -->
-<div id="hud">
-  <div id="hud-top">
-    <div class="hb hw-hp"><div class="hl">❤ VIE</div><div class="bt"><div class="bf" id="bfhp"></div></div><div class="hv hv2" id="hv-hp">100</div></div>
-    <div class="hb hw-xp"><div class="hl">XP NIV.<span id="hv-lv">1</span></div><div class="bt"><div class="bf" id="bfxp"></div></div></div>
-    <div class="hb hw-sp"><div class="hl">BOMBE</div><div class="bt"><div class="bf" id="bfsp"></div></div></div>
-    <div class="hb hw-cd"><div class="hl">⚡DASH</div><div class="bt"><div class="bf" id="bfcd"></div></div></div>
-    <div id="hud-sep"></div>
-    <div class="hb" style="text-align:right"><div class="hl">VAGUE</div><div class="hv hv1" id="hv-wave">—</div></div>
-    <div class="hb" style="text-align:right"><div class="hl">SCORE</div><div class="hv hv3" id="hv-score">0</div><div id="hud-streak" style="color:var(--c2);font-size:8px;letter-spacing:.1em;opacity:0;transition:opacity .3s;min-height:12px;"></div></div>
-    <div class="hb" style="text-align:right"><div class="hl">KILLS</div><div class="hv hv2" id="hv-kills">0</div></div>
-    <div class="hb" style="text-align:right"><div class="hl">ENNEMIS</div><div class="hv" style="color:var(--c6)" id="hv-enemies">0</div></div>
-    <button id="hud-pause-btn" onclick="togglePause()">❙❙</button>
-  </div>
-  <!-- Mini-objective bar -->
-  <div id="hud-objective" style="display:none;position:fixed;bottom:clamp(100px,20vmin,130px);left:50%;transform:translateX(-50%);z-index:105;background:rgba(3,3,10,.82);border:1px solid rgba(255,190,11,.35);padding:5px 14px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.18em;color:var(--c3);pointer-events:none;white-space:nowrap;border-radius:2px;"></div>
-  <div id="hud-passives"></div>
-  <!-- P2 HP bar — visible only in duo -->
-  <div id="hud-p2" style="display:none;position:absolute;top:0;right:0;padding:clamp(4px,1.5vmin,10px) clamp(8px,2.5vmin,16px);pointer-events:none;">
-    <div class="hb hw-hp" style="opacity:.85;">
-      <div class="hl" style="color:#b44fff;">💜 P2</div>
-      <div class="bt"><div class="bf" id="bfhp-p2" style="background:linear-gradient(90deg,#7a1fa0,#b44fff);width:100%;"></div></div>
-      <div class="hv hv2" id="hv-hp-p2" style="color:#b44fff;">100</div>
-    </div>
-  </div>
-</div>
-<!-- Danger edge vignette -->
-<div id="danger-edge" style="position:fixed;inset:0;pointer-events:none;z-index:103;opacity:0;background:radial-gradient(ellipse at center, transparent 55%, rgba(255,26,110,.35) 100%);transition:opacity .3s;"></div>
-
-<!-- Edge threat indicators -->
-<div id="edge-threats"></div>
-
-<!-- Rage mode UI -->
-<div id="rage-bar-wrap">
-  <div id="rage-streak">🔥 RAGE ×<span id="rage-mult">1.0</span></div>
-  <div id="rage-bar"><div id="rage-bar-fill" style="width:0%"></div></div>
-</div>
-<div id="rage-active-banner">⚡ RAGE MODE — DEGATS ×<span id="rage-banner-mult">1.5</span></div>
-
-<!-- Perfect wave banner -->
-<div id="perfect-wave-banner">
-  <div class="pw-title">✨ VAGUE PARFAITE !</div>
-  <div class="pw-sub" id="pw-bonus-lbl">+500 POINTS · BOMBE RECHARGÉE</div>
-</div>
-
-<!-- Score milestones -->
-<div id="score-milestone"></div>
-
-<!-- Wave threat preview -->
-<div id="wave-threat-preview">
-  <div class="wtp-label">PROCHAINE VAGUE</div>
-  <div id="wtp-lines"></div>
-</div>
-
-<div id="boss-hud"><div id="boss-lbl">BOSS</div><div id="boss-track"><div id="boss-fill"></div></div></div>
-<div id="wbanner"><div id="wb-num"></div><div id="wb-sub"></div><div id="wb-tip"></div></div>
-<div id="cd"></div>
-<div id="popup"></div>
-<div id="kfeed"></div>
-<div id="combo"><div id="cval">0</div><div id="cmul"></div><div id="clbl">COMBO</div><div id="combo-timer-bar" style="height:3px;background:var(--c1);width:100%;margin-top:3px;transform-origin:right;transition:none;border-radius:2px;"></div></div>
-<div id="dmg-fx"></div><div id="heal-fx"></div><div id="spec-fx"></div><div id="frz-fx"></div><div id="lvup-fx"></div><div id="wave-clear-fx"></div>
-<div id="ach-toast"><div class="at-icon" id="at-ico">🏆</div><div><div class="at-name" id="at-name"></div><div class="at-desc" id="at-desc"></div><div class="at-reward" id="at-reward"></div></div></div>
-
-<!-- PORTRAIT CONTROLS BG -->
-<div id="portrait-ctrl-bg">
-  <div style="position:absolute;top:12px;left:22%;transform:translateX(-50%);font-size:7px;letter-spacing:.25em;color:rgba(0,245,212,.3);pointer-events:none;">DÉPLACER</div>
-  <div style="position:absolute;top:12px;right:22%;transform:translateX(50%);font-size:7px;letter-spacing:.25em;color:rgba(0,245,212,.3);pointer-events:none;">VISER</div>
-</div>
-
-<!-- MOBILE -->
-<div id="mob">
-  <div id="joy-zone"><div id="joy-base"></div><div id="joy-knob"></div></div>
-  <div id="aim-zone">
-    <div id="aim-ring"><div id="aim-ring-lbl">VISER</div><div id="aim-ring-sub">AUTO-FEU</div></div>
-    <div id="aim-knob"></div>
-  </div>
-  <div id="mob-btns">
-    <button class="mb" id="mb-spec">💥</button>
-    <button class="mb" id="mb-dash">⚡</button>
-  </div>
-  <button id="mob-pause-btn" onclick="togglePause()">❙❙</button>
-</div>
-
-<!-- RESET PASSWORD SCREEN -->
-<div class="scr" id="s-reset">
-  <div class="reset-box">
-    <div class="reset-title">🔑 MOT DE PASSE</div>
-    <div class="reset-sub" id="reset-mode-desc">Saisis ton email pour recevoir<br>un lien de réinitialisation.</div>
-    <input class="auth-input" id="reset-email" type="email" placeholder="EMAIL" autocomplete="email">
-    <div class="auth-err" id="reset-err"></div>
-    <div class="auth-ok"  id="reset-ok"></div>
-    <button class="btn btn-p" onclick="doResetPassword()"><span>ENVOYER LE LIEN</span></button>
-    <div class="auth-switch" style="margin-top:6px;">
-      <span onclick="showAuthFrom('reset')" style="color:var(--c1);cursor:pointer;text-decoration:underline;">← RETOUR À LA CONNEXION</span>
     </div>
   </div>
 </div>
@@ -3023,7 +3035,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v30.0</div>
+    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v31.0</div>
 
     <div class="title-user-pill" id="title-user-pill"></div>
 
@@ -3066,6 +3078,31 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       <button class="btn btn-s title-sec-btn" onclick="show('s-settings');renderSettings()"><span>⚙ OPTIONS</span></button>
       <button class="btn btn-s title-sec-btn" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
       <button class="btn btn-s title-sec-btn" style="position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
+    </div>
+
+    <!-- HUB social — nouvelles features -->
+    <div class="hub-nav">
+      <button class="hub-btn" onclick="openClan()">
+        <div class="hub-btn-icon">⚔</div>
+        <div class="hub-btn-label">CLANS</div>
+        <div class="hub-notif" id="hub-clan-notif"></div>
+      </button>
+      <button class="hub-btn" onclick="openChat()">
+        <div class="hub-btn-icon">💬</div>
+        <div class="hub-btn-label">CHAT</div>
+        <div class="hub-notif" id="hub-chat-notif"></div>
+      </button>
+      <button class="hub-btn" onclick="openTournament()">
+        <div class="hub-btn-icon">🏆</div>
+        <div class="hub-btn-label">TOURNOI</div>
+        <div class="hub-notif" id="hub-tourn-notif"></div>
+      </button>
+      <button class="hub-btn" onclick="openReplays()">
+        <div class="hub-btn-icon">⏮</div>
+        <div class="hub-btn-label">REPLAYS</div>
+      </button>
+    </div>
+
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint" style="border-radius:3px;border-color:rgba(0,245,212,.1);line-height:2;max-width:min(420px,90vw);">
@@ -3812,7 +3849,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '30.0';
+const VERSION = '31.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -6774,7 +6811,7 @@ function update(now){
     if(!blocked(nx,p.y,p.r)) p.x=nx;
     if(!blocked(p.x,ny,p.r)) p.y=ny;
     p.dashFrames--;
-    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; }
+    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; updateQuestProgress('dashes',1); }
     // dashTrail relic: damage enemies touched during dash
     if(p.dashTrail){
       for(const e of G.enemies){
@@ -7891,10 +7928,10 @@ function draw(){
   ctx.restore();
   if(_duoActive) drawP2();
   if(currentMode==='online') olDrawPeers();
-  updateEdgeThreats();
   updateRageMode();
   if(G && G.running && !G.paused) checkScoreMilestones(G.score);
   drawMinimap();
+  if(frame%2===0) recordReplayFrame();
   // Redraw crosshair canvas each frame (keeps colour in sync with skin)
   if(frame%12===0) drawXhair();
 }
@@ -8308,6 +8345,11 @@ function gameOver(){
   }, 500);
 
   show('s-go');
+  // Hooks nouvelles features
+  stopReplayRecording();
+  _updateQuestsEndGame();
+  if(G) submitTournamentScore(G.score||0, G.wave||0);
+  if(G) updateClanContribution(G.score||0);
   // Show share button (always — clipboard is universally supported)
   const shareBtn = document.getElementById('go-share-btn');
   if(shareBtn) shareBtn.style.display = 'flex';
@@ -9057,7 +9099,7 @@ const BACK_MAP = {
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
   's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
-  's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
+  's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-replay':'s-title',
 };
 let _backBtn=null;
 function _initBackBtn(){
@@ -9131,6 +9173,8 @@ function startGame(){
   newAchThisRun=[];
   resetMilestones();
   _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
+  startReplayRecording();
+  loadDailyQuests();
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
@@ -9711,7 +9755,7 @@ function claimAllBp(){
   claimBpReward(eligible[eligible.length-1].lv, eligible[eligible.length-1].track);
 }
 
-function openBP(){
+function openBP_legacy(){
   renderBP();
   show('s-bp');
   setTimeout(updateMenuBadges, 200);
@@ -9858,9 +9902,17 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
 }
 
 function grantBpXp(score, wave, kills){
-  // More rewarding: score/150 + wave*12 + kills/4*5, cap 500 (roughly 50-200 XP/run)
-  const xp = Math.floor(score/150) + wave*12 + Math.floor(kills/4)*5;
-  addBpXp(Math.max(15, Math.min(xp, 500)));
+  // score/150 + wave*12 + kills/4*5 + streak bonus, cap 600
+  const baseXp = Math.floor(score/150) + wave*12 + Math.floor(kills/4)*5;
+  // Streak bonus
+  const streak = loadData('pulse_login_streak_v1',{streak:0}).streak||0;
+  const streakBonus = Math.min(streak,7)*10;
+  const xp = baseXp + streakBonus;
+  addBpXp(Math.max(15, Math.min(xp, 600)));
+  // Mettre à jour quêtes XP 
+  updateQuestProgress('score', score);
+  updateQuestProgress('wave', wave);
+  updateQuestProgress('kills', kills);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -14022,7 +14074,7 @@ function updateRageMode(){
   const wasActive=_rageActive;
   _rageActive=_rageKills>=RAGE_THRESHOLD;
   _rageMult=_rageActive?Math.min(2,1+pct):1+(pct*0.25);
-  if(_rageActive&&!wasActive){showPopup('🔥 RAGE MODE !','#ff6b1a');if(G)G.shk=8;}
+  if(_rageActive&&!wasActive){showPopup('🔥 RAGE MODE !','#ff6b1a');if(G)G.shk=8;updateQuestProgress('rage',1);}
   const wrap=document.getElementById('rage-bar-wrap');
   const fill=document.getElementById('rage-bar-fill');
   const mult=document.getElementById('rage-mult');
@@ -14042,6 +14094,7 @@ let _waveHitCount=0;
 
 function checkPerfectWave(wave){
   if(_waveHitCount===0&&wave>1){
+    updateQuestProgress('perfectwave', 1);
     const bonus=wave*100+500;
     G.score+=bonus;
     _dom['hv-score'].textContent=G.score.toLocaleString('fr-FR');
@@ -14076,39 +14129,6 @@ function checkScoreMilestones(score){
       if(big&&G)G.shk=6;
     }
     _nextMilestoneIdx++;
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-//  EDGE THREATS (indicateurs ennemis hors écran)
-// ═══════════════════════════════════════════════════════
-const _edgeMargin=90;
-
-function updateEdgeThreats(){
-  if(!G||!G.running) return;
-  if(frame%4!==0) return;
-  const cont=document.getElementById('edge-threats');
-  if(!cont) return;
-  cont.innerHTML='';
-  const pad=24,half=10;
-  const entities=[
-    ...G.enemies.filter(e=>!e.dead).map(e=>({x:e.x,y:e.y,boss:e.boss,mini:e.mini,type:'enemy'})),
-    ...G.powerups.map(pu=>({x:pu.x,y:pu.y,boss:false,mini:false,type:'powerup'})),
-  ];
-  const arrows=['→','↘','↓','↙','←','↖','↑','↗'];
-  for(const en of entities){
-    if(en.x>=_edgeMargin&&en.x<=W-_edgeMargin&&en.y>=_edgeMargin&&en.y<=H-_edgeMargin) continue;
-    const cx=Math.max(pad+half,Math.min(W-pad-half,en.x));
-    const cy=Math.max(pad+half,Math.min(H-pad-half,en.y));
-    const dx=en.x-G.player.x,dy=en.y-G.player.y;
-    const angle=Math.atan2(dy,dx);
-    const idx=Math.round(((angle/(Math.PI*2))*8+8))%8;
-    const el=document.createElement('div');
-    el.className='edge-arrow'+(en.boss?' boss':en.type==='powerup'?' powerup':'');
-    el.style.left=(cx-half)+'px'; el.style.top=(cy-half)+'px';
-    el.textContent=en.type==='powerup'?'✨':(en.boss?'👑':(en.mini?'💀':arrows[idx]));
-    cont.appendChild(el);
-    if(cont.children.length>=14) break;
   }
 }
 
@@ -14159,6 +14179,1186 @@ setTimeout(function(){
 setTimeout(function(){
   if(!document.querySelector('.scr.on')) location.reload();
 },6000);
+
+
+// ═══════════════════════════════════════════════════════════════
+//  BATTLE PASS V2 — REFONTE TOTALE
+// ═══════════════════════════════════════════════════════════════
+
+// Quêtes journalières
+const QUEST_DEFS = [
+  {id:'q_kills_50',   name:'EXTERMINATION',   desc:'Tuer 50 ennemis en une partie',  icon:'💀', stat:'kills',   target:50,  xp:120},
+  {id:'q_kills_100',  name:'MASSACRE',        desc:'Tuer 100 ennemis en une partie', icon:'☠️', stat:'kills',   target:100, xp:200},
+  {id:'q_wave_10',    name:'SURVIVANT',       desc:'Atteindre la vague 10',          icon:'🌊', stat:'wave',    target:10,  xp:150},
+  {id:'q_wave_20',    name:'VÉTÉRAN',         desc:'Atteindre la vague 20',          icon:'⚡', stat:'wave',    target:20,  xp:300},
+  {id:'q_score_5k',   name:'SCORE ÉLITE',     desc:'Marquer 5000 points',            icon:'⭐', stat:'score',   target:5000,xp:100},
+  {id:'q_score_20k',  name:'MAÎTRE DU SCORE', desc:'Marquer 20 000 points',          icon:'🏆', stat:'score',   target:20000,xp:250},
+  {id:'q_combo_20',   name:'ENCHAÎNEUR',      desc:'Atteindre un combo x20',         icon:'🔥', stat:'combo',   target:20,  xp:180},
+  {id:'q_combo_50',   name:'COMBO DIEU',      desc:'Atteindre un combo x50',         icon:'💥', stat:'combo',   target:50,  xp:350},
+  {id:'q_boss_1',     name:'CHASSEUR',        desc:'Tuer 1 boss',                    icon:'👑', stat:'boss',    target:1,   xp:200},
+  {id:'q_boss_3',     name:'TUEUR DE BOSS',   desc:'Tuer 3 boss',                    icon:'🔮', stat:'boss',    target:3,   xp:400},
+  {id:'q_dash_30',    name:'FANTÔME',         desc:'Dasher 30 fois',                 icon:'👻', stat:'dashes',  target:30,  xp:80},
+  {id:'q_no_hit',     name:'INTOUCHABLE',     desc:'Finir une vague sans dégâts',    icon:'🛡', stat:'perfectwave',target:1, xp:250},
+  {id:'q_rage_mode',  name:'ENRAGÉ',          desc:'Activer le RAGE MODE',           icon:'😡', stat:'rage',    target:1,   xp:150},
+  {id:'q_3_games',    name:'ASSIDU',          desc:'Jouer 3 parties',                icon:'🎮', stat:'games',   target:3,   xp:60},
+  {id:'q_speed_run',  name:'SPEEDRUNNER',     desc:'Passer 5 vagues en moins de 3min',icon:'⏱',stat:'speedwave',target:5,  xp:300},
+];
+
+function getTodayQuestIds(){
+  const now = new Date();
+  const seed = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
+  // Sélection déterministe de 3 quêtes par jour
+  const idxs = [];
+  let s = seed;
+  while(idxs.length < 3){
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const i = Math.abs(s) % QUEST_DEFS.length;
+    if(!idxs.includes(i)) idxs.push(i);
+  }
+  return idxs.map(i=>QUEST_DEFS[i].id);
+}
+
+let dailyQuests = null;
+function loadDailyQuests(){
+  const today = new Date().toISOString().slice(0,10);
+  const saved = loadData('pulse_daily_quests_v1', {date:'',quests:{}});
+  if(saved.date !== today){
+    // Nouveau jour — reset
+    const ids = getTodayQuestIds();
+    dailyQuests = {
+      date: today,
+      quests: Object.fromEntries(ids.map(id=>([id,{progress:0,done:false,claimed:false}])))
+    };
+    saveData('pulse_daily_quests_v1', dailyQuests);
+  } else {
+    dailyQuests = saved;
+  }
+}
+
+function updateQuestProgress(stat, value){
+  if(!dailyQuests) return;
+  let changed = false;
+  for(const [id, state] of Object.entries(dailyQuests.quests)){
+    if(state.done) continue;
+    const def = QUEST_DEFS.find(q=>q.id===id);
+    if(!def || def.stat !== stat) continue;
+    const prev = state.progress;
+    state.progress = Math.max(state.progress, stat==='wave'||stat==='combo'||stat==='score'||stat==='kills'||stat==='boss'
+      ? value : state.progress + 1);
+    if(state.progress >= def.target && !state.done){
+      state.done = true;
+      showToast('📋 Quête terminée : '+def.name+' !','success',3000);
+      changed = true;
+    } else if(state.progress !== prev) changed = true;
+  }
+  if(changed) saveData('pulse_daily_quests_v1', dailyQuests);
+}
+
+function claimQuestReward(questId){
+  if(!dailyQuests?.quests[questId]) return;
+  const state = dailyQuests.quests[questId];
+  if(!state.done || state.claimed) return;
+  const def = QUEST_DEFS.find(q=>q.id===questId);
+  if(!def) return;
+  state.claimed = true;
+  // Ajouter XP au BP
+  addBpXpManual(def.xp);
+  saveData('pulse_daily_quests_v1', dailyQuests);
+  renderBP2Content('quests');
+  showToast(`⭐ +${def.xp} XP BP gagné !`,'success',2500);
+  if(currentUser && SB) SB.from('profiles').update({battle_pass:battlePass}).eq('id',currentUser.id);
+}
+
+function addBpXpManual(xp){
+  const bpXpPerLv = BP_XP_PER_LEVEL;
+  battlePass.xp += xp;
+  while(battlePass.xp >= bpXpPerLv && battlePass.level < BP_MAX_LEVEL){
+    battlePass.xp -= bpXpPerLv;
+    battlePass.level++;
+    showToast(`⭐ NIVEAU ${battlePass.level} ! Passe de combat`, 'success', 3000);
+  }
+  if(battlePass.level >= BP_MAX_LEVEL) battlePass.xp = 0;
+  saveBP();
+}
+
+function openBP(){
+  loadDailyQuests();
+  renderBP2();
+  show('s-bp');
+  setTimeout(updateMenuBadges, 200);
+}
+
+function bp2Tab(tab, btn){
+  document.querySelectorAll('.bp2-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBP2Content(tab);
+}
+
+function renderBP2(){
+  const lv = battlePass.level;
+  const xp = battlePass.xp;
+  const bpXpPerLv = BP_XP_PER_LEVEL;
+  const pct = lv >= BP_MAX_LEVEL ? 100 : Math.round(xp/bpXpPerLv*100);
+
+  // Anneau de progression
+  const ring = document.getElementById('bp2-ring');
+  if(ring) ring.style.setProperty('--prog', pct+'%');
+  const el_lv = document.getElementById('bp2-level');
+  if(el_lv) el_lv.textContent = lv;
+
+  // XP bar
+  const xpFill = document.getElementById('bp2-xp-fill');
+  if(xpFill) xpFill.style.width = pct+'%';
+  const xpLbl = document.getElementById('bp2-xp-label');
+  if(xpLbl) xpLbl.textContent = lv>=BP_MAX_LEVEL ? 'MAX' : `${xp} / ${bpXpPerLv} XP`;
+  const pctLbl = document.getElementById('bp2-progress-pct');
+  if(pctLbl) pctLbl.textContent = lv>=BP_MAX_LEVEL ? '100%' : pct+'%';
+
+  // Saison
+  const snLbl = document.getElementById('bp2-season-name');
+  const snBadge = document.getElementById('bp2-season-badge');
+  const season = typeof BP_SEASON_CURRENT !== 'undefined' ? BP_SEASON_CURRENT : 1;
+  const SEASON_NAMES = ['NEON CITY','BLOOD MOON','VOID WALKER','CYBER DAWN','STORM BREAK'];
+  const sName = SEASON_NAMES[(season-1)%SEASON_NAMES.length] || 'SAISON '+season;
+  if(snLbl) snLbl.textContent = '⭐ SAISON '+season+' — '+sName;
+  const endLbl = document.getElementById('bp2-season-end');
+  if(endLbl && typeof formatSeasonEnd === 'function') endLbl.textContent = formatSeasonEnd();
+
+  // Prochain récompense hint
+  const nextHint = document.getElementById('bp2-next-hint');
+  if(nextHint){
+    const nextReward = BP_REWARDS.find(r=>r.lv > lv && r.track==='free');
+    if(nextReward){
+      const xpNeeded = (nextReward.lv - lv - 1)*bpXpPerLv + (bpXpPerLv - xp);
+      nextHint.textContent = `Prochain : ${nextReward.icon} ${nextReward.label} (encore ${xpNeeded} XP)`;
+    } else nextHint.textContent = '';
+  }
+
+  // Premium badge
+  const pb = document.getElementById('bp2-prem-badge');
+  const pbLbl = document.getElementById('bp2-prem-lbl');
+  const pbPrice = document.getElementById('bp2-prem-price');
+  const pbIcon = document.getElementById('bp2-prem-icon');
+  if(pb){
+    if(hasPremiumPass.owned){
+      pb.classList.add('owned');
+      if(pbLbl) pbLbl.textContent = 'PREMIUM ACTIF';
+      if(pbPrice) pbPrice.textContent = '✓';
+      if(pbIcon) pbIcon.textContent = '👑';
+    } else {
+      pb.classList.remove('owned');
+      if(pbLbl) pbLbl.textContent = 'PREMIUM';
+      if(pbPrice) pbPrice.textContent = '1500🪙';
+      if(pbIcon) pbIcon.textContent = '⭐';
+    }
+  }
+
+  // Unclaimed button
+  const unclaimedBtn = document.getElementById('bp-unclaimed-btn');
+  const unclaimedCount = BP_REWARDS.filter(r=>{
+    const key=r.lv+':'+r.track;
+    return r.lv<=lv && !battlePass.claimed[key] && (r.track==='free'||hasPremiumPass.owned);
+  }).length;
+  if(unclaimedBtn) unclaimedBtn.style.display = unclaimedCount > 0 ? '' : 'none';
+
+  // Onglet quêtes badge
+  loadDailyQuests();
+  const questsReady = dailyQuests ? Object.entries(dailyQuests.quests).filter(([id,s])=>s.done&&!s.claimed).length : 0;
+  const qTab = document.getElementById('bp2-tab-quests');
+  if(qTab) qTab.innerHTML = `📋 QUÊTES${questsReady>0?` <span style="background:var(--c2);color:#fff;border-radius:8px;padding:1px 5px;font-size:6px;margin-left:4px;">${questsReady}</span>`:''}`;
+
+  renderBP2Content('rewards');
+}
+
+function renderBP2Content(tab){
+  const el = document.getElementById('bp2-content');
+  if(!el) return;
+
+  if(tab === 'rewards'){
+    const lv = battlePass.level;
+    const MILESTONES = [5,10,15,20,25,30];
+    let html = '';
+    // Header colonnes
+    html += `<div style="display:grid;grid-template-columns:40px 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);">
+      <div style="padding:6px;font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.15em;color:var(--dim);text-align:center;border-right:1px solid rgba(255,255,255,.05);">NIV</div>
+      <div style="padding:6px 10px;font-size:6px;letter-spacing:.12em;color:var(--txt2);border-right:1px solid rgba(255,255,255,.04);">🆓 GRATUIT</div>
+      <div style="padding:6px 10px;font-size:6px;letter-spacing:.12em;color:var(--c4);">⭐ PREMIUM</div>
+    </div>`;
+
+    for(let lvNum=1; lvNum<=BP_MAX_LEVEL; lvNum++){
+      const isMilestone = MILESTONES.includes(lvNum);
+      const freeR  = BP_REWARDS.find(r=>r.lv===lvNum&&r.track==='free');
+      const premR  = BP_REWARDS.find(r=>r.lv===lvNum&&r.track==='premium');
+      const unlocked = lv >= lvNum;
+
+      if(isMilestone){
+        html += `<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:8px;padding:5px;background:linear-gradient(90deg,transparent,rgba(255,190,11,.05),transparent);border-top:1px solid rgba(255,190,11,.15);border-bottom:1px solid rgba(255,190,11,.15);">
+          <span style="font-size:8px;">✦</span>
+          <span style="font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.2em;color:var(--c3);">NIVEAU PALIER ${lvNum}</span>
+          <span style="font-size:8px;">✦</span>
+        </div>`;
+      }
+
+      const renderCell = (r, isPrem) => {
+        if(!r) return `<div style="padding:8px 10px;border-right:${!isPrem?'1px solid rgba(255,255,255,.04)':'none'};background:rgba(255,255,255,.01);"></div>`;
+        const key = r.lv+':'+r.track;
+        const claimed = battlePass.claimed[key];
+        const premLocked = isPrem && !hasPremiumPass.owned;
+        const claimable = unlocked && !claimed && !premLocked;
+        const typeClass = r.type==='coins'?'coins':r.type==='skin'?'skin':r.type==='relic'?'relic':'perma';
+        const rarityColors = {legendary:'var(--c3)',epic:'var(--c4)',rare:'#00bbf9',common:'var(--dim)'};
+        const col = rarityColors[r.rarity]||'var(--dim)';
+        return `<div style="padding:8px 10px;display:flex;align-items:center;gap:8px;border-right:${!isPrem?'1px solid rgba(255,255,255,.04)':'none'};${claimed?'opacity:.5;filter:saturate(.25);':''}${premLocked?'opacity:.3;filter:grayscale(.9);':''}${claimable&&!isPrem?'background:rgba(0,245,212,.03);':''}${claimable&&isPrem?'background:rgba(180,79,255,.03);':''}">
+          <div style="font-size:clamp(16px,3.5vmin,22px);flex-shrink:0;${premLocked?'filter:grayscale(1);':''}">${r.icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:clamp(7px,1.5vmin,9px);color:${unlocked?'var(--txt)':'var(--dim)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.label}</div>
+            <div style="display:flex;gap:4px;align-items:center;margin-top:2px;flex-wrap:wrap;">
+              <span class="bp2-r-type ${typeClass}">${typeClass.toUpperCase()}</span>
+              ${r.rarity&&r.rarity!=='common'?`<span style="font-size:5px;color:${col};letter-spacing:.08em;">${r.rarity==='legendary'?'★ LÉGEND':r.rarity==='epic'?'◆ ÉPIQUE':'✦ RARE'}</span>`:''}
+            </div>
+            ${claimable?`<button class="bp2-r-btn" onclick="event.stopPropagation();claimBpReward(${lvNum},'${r.track}')" style="margin-top:4px;">⬇ RÉCLAMER</button>`:''}
+            ${claimed?`<span style="font-size:6px;color:var(--c1);letter-spacing:.1em;">✓ RÉCLAMÉ</span>`:''}
+            ${!unlocked&&!premLocked?`<span style="font-size:6px;color:var(--dim);">NIV ${lvNum} requis</span>`:''}
+            ${premLocked?`<span style="font-size:6px;color:var(--c4);">🔒 PREMIUM</span>`:''}
+          </div>
+        </div>`;
+      };
+
+      html += `<div style="display:grid;grid-template-columns:40px 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04);">
+        <div style="display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:${isMilestone?'10':'8'}px;color:${unlocked?'var(--c1)':isMilestone?'var(--c3)':'var(--dim)'};border-right:1px solid rgba(255,255,255,.05);${isMilestone?'font-weight:700;':''}">${lvNum}</div>
+        ${renderCell(freeR, false)}
+        ${renderCell(premR, true)}
+      </div>`;
+    }
+    el.innerHTML = html;
+
+    // Scroller vers le niveau actuel
+    setTimeout(()=>{
+      const rows = el.querySelectorAll('[style*="grid-template-columns:40px"]');
+      const lv = battlePass.level;
+      const target = rows[Math.min(lv, rows.length-1)];
+      if(target) target.scrollIntoView({behavior:'smooth',block:'center'});
+    },100);
+
+  } else if(tab === 'quests'){
+    loadDailyQuests();
+    const today = new Date().toISOString().slice(0,10);
+    const questIds = Object.keys(dailyQuests?.quests||{});
+    const resetTime = new Date();
+    resetTime.setDate(resetTime.getDate()+1);
+    resetTime.setHours(0,0,0,0);
+    const msLeft = resetTime-Date.now();
+    const hLeft = Math.floor(msLeft/3600000);
+    const mLeft = Math.floor((msLeft%3600000)/60000);
+
+    let html = `<div class="quest-list">`;
+    html += `<div class="quest-reset">⏰ Reset dans ${hLeft}h ${mLeft}min — ${today}</div>`;
+
+    for(const id of questIds){
+      const def = QUEST_DEFS.find(q=>q.id===id);
+      if(!def) continue;
+      const state = dailyQuests.quests[id];
+      const pct = Math.min(100, Math.round(state.progress/def.target*100));
+      html += `<div class="quest-card${state.done?' done':''}">
+        <div class="quest-icon">${def.icon}</div>
+        <div class="quest-info">
+          <div class="quest-name">${def.name}</div>
+          <div class="quest-desc">${def.desc}</div>
+          <div class="quest-progress">
+            <div class="quest-bar"><div class="quest-bar-fill${state.done?' done':''}" style="width:${pct}%"></div></div>
+            <div class="quest-pct">${state.progress}/${def.target}</div>
+          </div>
+        </div>
+        <div class="quest-reward">
+          ${state.done&&!state.claimed
+            ?`<button class="bp2-r-btn" onclick="claimQuestReward('${id}')" style="white-space:nowrap;">+${def.xp} XP</button>`
+            :state.claimed
+            ?`<div class="quest-check">✓</div>`
+            :`<div class="quest-xp">+${def.xp}</div><div class="quest-xp-lbl">XP</div>`}
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+
+    // Bonus streaks
+    html += `<div style="padding:10px 0;border-top:1px solid var(--border);margin-top:8px;">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--txt2);margin-bottom:8px;">🔥 STREAK DE CONNEXION</div>
+      ${renderLoginStreak()}
+    </div>`;
+
+    el.innerHTML = html;
+
+  } else if(tab === 'info'){
+    const season = typeof BP_SEASON_CURRENT !== 'undefined' ? BP_SEASON_CURRENT : 1;
+    el.innerHTML = `<div style="padding:12px 0;display:flex;flex-direction:column;gap:10px;">
+      <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;padding:14px;">
+        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;color:var(--c1);margin-bottom:8px;">COMMENT GAGNER DE L'XP ?</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:7px;color:var(--txt2);line-height:1.8;">
+          <div>🎮 <strong>Partie terminée</strong> — 50 à 200 XP selon le score</div>
+          <div>🌊 <strong>Vagues parcourues</strong> — 12 XP par vague</div>
+          <div>💀 <strong>Kills</strong> — 5 XP tous les 4 kills</div>
+          <div>📋 <strong>Quêtes journalières</strong> — 60 à 400 XP</div>
+          <div>🔥 <strong>Connexion quotidienne</strong> — 50 XP / jour</div>
+          <div>🏆 <strong>Tournoi hebdo</strong> — jusqu'à 500 XP</div>
+        </div>
+      </div>
+      <div style="background:rgba(180,79,255,.05);border:1px solid rgba(180,79,255,.2);border-radius:4px;padding:14px;">
+        <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.15em;color:var(--c4);margin-bottom:8px;">⭐ PASSE PREMIUM</div>
+        <div style="font-size:7px;color:var(--txt2);line-height:1.8;">
+          Débloque la piste PREMIUM et ses récompenses exclusives.<br>
+          Achat unique pour toute la saison ${season} — 1500 🪙 seulement.
+        </div>
+        ${!hasPremiumPass.owned?`<button class="btn btn-g" onclick="buyPremiumPass()" style="margin-top:10px;width:100%;"><span>⭐ ACHETER POUR 1500🪙</span></button>`
+          :`<div style="margin-top:8px;font-size:7px;color:var(--c1);">✓ Déjà possédé pour cette saison</div>`}
+      </div>
+    </div>`;
+  }
+}
+
+function renderLoginStreak(){
+  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
+  const today = new Date().toISOString().slice(0,10);
+  const days = Math.min(streak.streak||0, 7);
+  let html = `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">`;
+  for(let i=0;i<7;i++){
+    const active = i < days;
+    html += `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;${active?'background:rgba(255,190,11,.15);border:2px solid rgba(255,190,11,.5);':'background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);'}">
+      ${active?'🔥':'○'}
+    </div>`;
+  }
+  html += `</div>`;
+  html += `<div style="text-align:center;font-size:7px;color:var(--txt2);letter-spacing:.1em;">🔥 ${days} jour${days>1?'s':''} de suite — +${days*10} XP bonus/partie</div>`;
+  return html;
+}
+
+// Hook fin de partie → update quêtes
+const _origShowGo = typeof showGoScreen === 'function' ? showGoScreen : null;
+function _updateQuestsEndGame(){
+  if(!G) return;
+  updateQuestProgress('kills', G.totalKills||0);
+  updateQuestProgress('wave', G.wave||0);
+  updateQuestProgress('score', G.score||0);
+  updateQuestProgress('combo', G.maxComboThisRun||0);
+  updateQuestProgress('boss', G.bossKillsThisRun||0);
+  updateQuestProgress('games', 1);
+  if(_rageActive || G._rageActivated) updateQuestProgress('rage', 1);
+  // Login streak
+  const today = new Date().toISOString().slice(0,10);
+  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  if(streak.lastDate === today){
+    // déjà joué aujourd'hui, ok
+  } else if(streak.lastDate === yStr){
+    streak.streak = (streak.streak||0)+1;
+    streak.lastDate = today;
+    saveData('pulse_login_streak_v1', streak);
+    if(streak.streak % 7 === 0) showToast('🔥 7 jours de suite ! Bonus +100 XP !','success',4000);
+  } else {
+    streak.streak = 1;
+    streak.lastDate = today;
+    saveData('pulse_login_streak_v1', streak);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLANS
+// ═══════════════════════════════════════════════════════════════
+let _myClans = null;
+let _myClanData = null;
+
+async function openClan(){
+  show('s-clan');
+  await loadClanData();
+}
+
+async function loadClanData(){
+  const el = document.getElementById('clan-main-content');
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
+
+  if(!currentUser || !SB){
+    el.innerHTML = renderClanGuestView();
+    return;
+  }
+
+  try {
+    // Récupérer le profil pour voir si j'ai un clan
+    const {data:profile} = await SB.from('profiles').select('clan_id,pseudo').eq('id',currentUser.id).single();
+    if(!profile) { el.innerHTML = renderClanGuestView(); return; }
+
+    if(profile.clan_id){
+      // Je suis dans un clan
+      const {data:clan} = await SB.from('clans').select('*').eq('id',profile.clan_id).single();
+      const {data:members} = await SB.from('clan_members').select('*,profiles(pseudo,stats,equipped_skin)').eq('clan_id',profile.clan_id).order('contribution',{ascending:false});
+      _myClanData = {clan, members, myRole: members?.find(m=>m.user_id===currentUser.id)?.role||'membre'};
+      el.innerHTML = renderMyClan(_myClanData);
+    } else {
+      // Pas de clan — afficher liste + créer
+      const {data:clans} = await SB.from('clans').select('*').order('total_score',{ascending:false}).limit(20);
+      el.innerHTML = renderClanBrowser(clans||[], profile.pseudo);
+    }
+  } catch(e){
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--c2);">Erreur : ${e.message}</div>`;
+  }
+}
+
+function renderClanGuestView(){
+  return `<div style="text-align:center;padding:30px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+    <div style="font-size:40px;">⚔</div>
+    <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--txt);">REJOINS UN CLAN !</div>
+    <div style="font-size:8px;color:var(--txt2);max-width:280px;line-height:1.7;">Crée ou rejoins un clan pour combattre avec tes alliés, participer aux guerres de clans et grimper dans les classements.</div>
+    <button class="btn btn-g" onclick="show('s-auth')"><span>SE CONNECTER</span></button>
+  </div>`;
+}
+
+function renderClanBrowser(clans, pseudo){
+  let html = `
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <button class="btn btn-g" style="flex:1;" onclick="document.getElementById('clan-create-modal').style.display='flex'">
+        <span>⚔ CRÉER UN CLAN</span>
+      </button>
+    </div>
+    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin-bottom:8px;">CLANS ACTIFS</div>`;
+
+  if(!clans.length){
+    html += `<div style="text-align:center;padding:20px;color:var(--dim);">Aucun clan pour l'instant — sois le premier !</div>`;
+  } else {
+    for(const clan of clans){
+      html += `<div class="clan-member-row" style="cursor:pointer;border:1px solid var(--border);border-radius:4px;margin-bottom:6px;" onclick="joinClan('${clan.id}','${(clan.name||'').replace(/'/g,"\\'")}')">
+        <div class="clan-tag-big" style="width:40px;height:40px;font-size:12px;">${clan.tag||'??'}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.12em;color:var(--txt);">${clan.name||'Clan'}</div>
+          <div style="font-size:7px;color:var(--txt2);margin-top:2px;">${clan.members_count||0} membres · ${(clan.total_score||0).toLocaleString('fr-FR')} pts totaux</div>
+          ${clan.description?`<div style="font-size:6px;color:var(--dim);margin-top:2px;">${clan.description.slice(0,60)}</div>`:''}
+        </div>
+        <button class="btn btn-s" style="font-size:7px;padding:6px 10px;"><span>REJOINDRE</span></button>
+      </div>`;
+    }
+  }
+  return html;
+}
+
+function renderMyClan({clan, members, myRole}){
+  const isChef = myRole==='chef';
+  let html = `
+    <div class="clan-hero">
+      <div class="clan-tag-big">${clan.tag||'??'}</div>
+      <div>
+        <div class="clan-name-big">${clan.name||'Mon Clan'}</div>
+        <div class="clan-stats-row">
+          <div class="clan-stat">👥 <span>${clan.members_count||members?.length||0}</span> membres</div>
+          <div class="clan-stat">🏆 <span>${(clan.total_score||0).toLocaleString('fr-FR')}</span> pts</div>
+          <div class="clan-stat">⚔ <span>${clan.war_wins||0}</span> guerres gagnées</div>
+        </div>
+        ${clan.description?`<div style="font-size:7px;color:var(--txt2);margin-top:4px;">${clan.description}</div>`:''}
+      </div>
+    </div>
+    <div class="clan-tabs">
+      <button class="clan-tab active" onclick="clanTab('members',this)">👥 MEMBRES</button>
+      <button class="clan-tab" onclick="clanTab('war',this)">⚔ GUERRE</button>
+      ${isChef?`<button class="clan-tab" onclick="clanTab('manage',this)">⚙ GÉRER</button>`:''}
+    </div>
+    <div id="clan-tab-content">`;
+
+  // Membres tab par défaut
+  html += renderClanMembersTab(members||[]);
+  html += `</div>`;
+
+  if(!isChef){
+    html += `<button class="btn btn-s" style="margin-top:12px;color:var(--c2);border-color:rgba(255,26,110,.3);" onclick="leaveClan()"><span>🚪 QUITTER LE CLAN</span></button>`;
+  }
+  return html;
+}
+
+function renderClanMembersTab(members){
+  let html = '';
+  members.forEach((m,i)=>{
+    const pseudo = m.profiles?.pseudo || m.user_id?.slice(0,8)||'Joueur';
+    const score = m.profiles?.stats?.maxScore||0;
+    html += `<div class="clan-member-row">
+      <div class="clan-member-rank">${i===0?'👑':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="clan-member-name">${pseudo}</div>
+      <div class="clan-member-score">${score.toLocaleString('fr-FR')}</div>
+      <div class="clan-member-role ${m.role||'membre'}">${(m.role||'membre').toUpperCase()}</div>
+    </div>`;
+  });
+  return html||`<div style="text-align:center;padding:20px;color:var(--dim);">Aucun membre</div>`;
+}
+
+function clanTab(tab, btn){
+  document.querySelectorAll('.clan-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById('clan-tab-content');
+  if(!el || !_myClanData) return;
+  if(tab==='members') el.innerHTML = renderClanMembersTab(_myClanData.members||[]);
+  else if(tab==='war') el.innerHTML = renderClanWarTab(_myClanData);
+  else if(tab==='manage') el.innerHTML = renderClanManageTab(_myClanData);
+}
+
+function renderClanWarTab({clan, members}){
+  // Guerre de clans simplifiée — score cumulé de la semaine
+  const weekScore = members?.reduce((s,m)=>s+(m.week_score||0),0)||0;
+  return `<div style="padding:10px 0;">
+    <div class="clan-war-card">
+      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c2);margin-bottom:8px;">⚔ GUERRE DE LA SEMAINE</div>
+      <div class="clan-war-vs">
+        <div class="clan-war-team">
+          <div class="clan-war-tag">${clan.tag||'??'}</div>
+          <div class="clan-war-score winning">${weekScore.toLocaleString('fr-FR')}</div>
+        </div>
+        <div class="clan-war-divider">VS</div>
+        <div class="clan-war-team">
+          <div class="clan-war-tag" id="war-enemy-tag">???</div>
+          <div class="clan-war-score" id="war-enemy-score" style="color:var(--dim);">—</div>
+        </div>
+      </div>
+      <div class="clan-war-timer" id="war-timer">Reset lundi à minuit</div>
+    </div>
+    <div style="font-size:7px;color:var(--txt2);padding:8px 0;line-height:1.8;">
+      💡 Chaque partie que tu joues contribue au score de guerre de ton clan.<br>
+      Le meilleur score de la semaine est comptabilisé automatiquement.
+    </div>
+    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin:8px 0 4px;">CONTRIBUTIONS CETTE SEMAINE</div>
+    ${members?.slice(0,5).map((m,i)=>`<div class="clan-member-row">
+      <div class="clan-member-rank">${i+1}</div>
+      <div class="clan-member-name">${m.profiles?.pseudo||'Joueur'}</div>
+      <div class="clan-member-score">${(m.week_score||0).toLocaleString('fr-FR')}</div>
+    </div>`).join('')||''}
+  </div>`;
+}
+
+function renderClanManageTab({clan}){
+  return `<div style="padding:10px 0;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);">GESTION DU CLAN</div>
+    <div class="acc-row">
+      <label class="acc-lbl">Tag du clan</label>
+      <input class="acc-input" id="manage-tag" value="${clan.tag||''}" maxlength="4" placeholder="TAG" style="text-transform:uppercase;width:80px;">
+    </div>
+    <div class="acc-row">
+      <label class="acc-lbl">Description</label>
+      <textarea class="acc-input" id="manage-desc" maxlength="120" style="width:100%;height:50px;resize:none;">${clan.description||''}</textarea>
+    </div>
+    <button class="btn btn-g" onclick="saveClanSettings()"><span>💾 SAUVEGARDER</span></button>
+    <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+    <button class="btn btn-s" style="color:var(--c2);border-color:rgba(255,26,110,.3);" onclick="disbandClan()"><span>💀 DISSOUDRE LE CLAN</span></button>
+  </div>`;
+}
+
+async function createClan(){
+  if(!currentUser||!SB){ showToast('Connexion requise','error',2000); return; }
+  const name = (document.getElementById('clan-create-name')?.value||'').trim();
+  const tag  = (document.getElementById('clan-create-tag')?.value||'').trim().toUpperCase().slice(0,4);
+  const desc = (document.getElementById('clan-create-desc')?.value||'').trim();
+  if(name.length<3||name.length>24){ showToast('Nom : 3 à 24 caractères','error',2000); return; }
+  if(tag.length<2||tag.length>4){ showToast('Tag : 2 à 4 lettres','error',2000); return; }
+  try {
+    const {data:clan, error} = await SB.from('clans').insert({
+      name, tag, description:desc, owner_id:currentUser.id,
+      members_count:1, total_score:0, war_wins:0,
+      created_at:new Date().toISOString()
+    }).select().single();
+    if(error) throw error;
+    await SB.from('clan_members').insert({clan_id:clan.id,user_id:currentUser.id,role:'chef',contribution:0,week_score:0,joined_at:new Date().toISOString()});
+    await SB.from('profiles').update({clan_id:clan.id}).eq('id',currentUser.id);
+    document.getElementById('clan-create-modal').style.display='none';
+    showToast('⚔ Clan créé !','success',3000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function joinClan(clanId, clanName){
+  if(!currentUser||!SB){ show('s-auth'); return; }
+  if(!confirm(`Rejoindre ${clanName} ?`)) return;
+  try {
+    await SB.from('clan_members').insert({clan_id:clanId,user_id:currentUser.id,role:'membre',contribution:0,week_score:0,joined_at:new Date().toISOString()});
+    await SB.from('profiles').update({clan_id:clanId}).eq('id',currentUser.id);
+    await SB.from('clans').update({members_count:SB.rpc('increment',{x:1})}).eq('id',clanId);
+    showToast('⚔ Tu as rejoint le clan !','success',3000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function leaveClan(){
+  if(!currentUser||!SB||!_myClanData) return;
+  if(!confirm('Quitter le clan ?')) return;
+  try {
+    await SB.from('clan_members').delete().eq('clan_id',_myClanData.clan.id).eq('user_id',currentUser.id);
+    await SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id);
+    showToast('Tu as quitté le clan','info',2000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function disbandClan(){
+  if(!_myClanData||!currentUser||!SB) return;
+  if(!confirm('Dissoudre définitivement le clan ?')) return;
+  try {
+    const clanId = _myClanData.clan.id;
+    await SB.from('clan_members').delete().eq('clan_id',clanId);
+    await SB.from('profiles').update({clan_id:null}).eq('clan_id',clanId);
+    await SB.from('clans').delete().eq('id',clanId);
+    showToast('Clan dissous','info',2000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function saveClanSettings(){
+  if(!_myClanData||!currentUser||!SB) return;
+  const tag = (document.getElementById('manage-tag')?.value||'').toUpperCase().slice(0,4);
+  const desc = (document.getElementById('manage-desc')?.value||'').trim();
+  try {
+    await SB.from('clans').update({tag,description:desc}).eq('id',_myClanData.clan.id);
+    showToast('Sauvegardé ✓','success',2000);
+  } catch(e){ showToast('Erreur','error',2000); }
+}
+
+// Contribution clan en fin de partie
+async function updateClanContribution(score){
+  if(!currentUser||!SB) return;
+  try {
+    const {data:member} = await SB.from('clan_members').select('clan_id,contribution,week_score').eq('user_id',currentUser.id).single();
+    if(!member) return;
+    const newContrib = (member.contribution||0)+score;
+    const newWeek = Math.max(member.week_score||0, score);
+    await SB.from('clan_members').update({contribution:newContrib,week_score:newWeek}).eq('user_id',currentUser.id);
+    await SB.from('clans').update({total_score:newContrib}).eq('id',member.clan_id);
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CHAT GLOBAL (Supabase Realtime)
+// ═══════════════════════════════════════════════════════════════
+let _chatChannel = null;
+let _chatMessages = [];
+const CHAT_MAX = 80;
+
+async function openChat(){
+  show('s-chat');
+  if(!_chatChannel) await connectChat();
+}
+
+async function connectChat(){
+  const el = document.getElementById('chat-messages');
+  if(!el) return;
+  el.innerHTML = '<div class="chat-system-msg">Connexion au chat…</div>';
+
+  if(!SB){
+    el.innerHTML = '<div class="chat-system-msg">Connexion requise pour le chat</div>';
+    return;
+  }
+
+  try {
+    // Charger les derniers messages
+    const {data:msgs} = await SB.from('chat_messages')
+      .select('id,user_id,pseudo,content,created_at,rarity')
+      .order('created_at',{ascending:false}).limit(50);
+    _chatMessages = (msgs||[]).reverse();
+    renderChatMessages();
+
+    // Subscribe realtime
+    _chatChannel = SB.channel('global-chat')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'}, payload=>{
+        _chatMessages.push(payload.new);
+        if(_chatMessages.length > CHAT_MAX) _chatMessages.shift();
+        renderChatMessages();
+        updateChatNotif();
+      })
+      .subscribe(status=>{
+        const countEl = document.getElementById('chat-online-count');
+        if(countEl) countEl.textContent = status==='SUBSCRIBED'?'• En ligne':'• Connexion…';
+      });
+  } catch(e){
+    if(el) el.innerHTML = `<div class="chat-system-msg">Erreur : ${e.message}</div>`;
+  }
+}
+
+function disconnectChat(){
+  if(_chatChannel){ _chatChannel.unsubscribe(); _chatChannel = null; }
+}
+
+function renderChatMessages(){
+  const el = document.getElementById('chat-messages');
+  if(!el) return;
+  const myId = currentUser?.id;
+  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
+  el.innerHTML = _chatMessages.map(msg=>{
+    const isMe = msg.user_id===myId;
+    const time = new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const badge = msg.rarity==='legendary'?'<span class="chat-msg-badge chef">★ LÉGEND</span>':
+                  msg.rarity==='premium'?'<span class="chat-msg-badge prem">⭐ PREM</span>':'';
+    return `<div class="chat-msg${isMe?' me':''}">
+      <div class="chat-msg-avatar">${(msg.pseudo||'?')[0].toUpperCase()}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-header">
+          <span class="chat-msg-name" onclick="viewProfile('${msg.user_id}')">${msg.pseudo||'Anonyme'}</span>
+          ${badge}
+          <span class="chat-msg-time">${time}</span>
+        </div>
+        <div class="chat-msg-text">${escapeHtml(msg.content||'')}</div>
+      </div>
+    </div>`;
+  }).join('') + '<div id="chat-bottom"></div>';
+  document.getElementById('chat-bottom')?.scrollIntoView();
+}
+
+async function sendChatMsg(){
+  const input = document.getElementById('chat-input');
+  const text = (input?.value||'').trim();
+  if(!text||!SB||!currentUser){ return; }
+  if(!loadData('pulse_pseudo_v3','')){ showToast('Choisis un pseudo d\'abord','error',2000); return; }
+  input.value='';
+  const pseudo = loadData('pulse_pseudo_v3','');
+  const rarity = battlePass.level>=25?'legendary':hasPremiumPass.owned?'premium':'common';
+  try {
+    await SB.from('chat_messages').insert({
+      user_id:currentUser.id, pseudo, content:text,
+      created_at:new Date().toISOString(), rarity
+    });
+  } catch(e){ showToast('Envoi échoué','error',2000); }
+}
+
+function updateChatNotif(){
+  const notif = document.getElementById('hub-chat-notif');
+  if(notif && document.querySelector('#s-chat.on') === null){
+    notif.classList.add('on');
+  }
+}
+
+function escapeHtml(text){
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOURNOIS HEBDOMADAIRES
+// ═══════════════════════════════════════════════════════════════
+let _currentTournament = null;
+let _tournTimer = null;
+
+async function openTournament(){
+  show('s-tournament');
+  await loadTournamentData();
+}
+
+async function loadTournamentData(){
+  const el = document.getElementById('tournament-content');
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
+
+  // Tournoi local simulé si pas de Supabase
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=dim, 1=lun...
+  const daysUntilMonday = (8 - dayOfWeek) % 7 || 7;
+  const nextReset = new Date(now);
+  nextReset.setDate(nextReset.getDate() + daysUntilMonday);
+  nextReset.setHours(0,0,0,0);
+  const msLeft = nextReset - now;
+  const dLeft = Math.floor(msLeft/86400000);
+  const hLeft = Math.floor((msLeft%86400000)/3600000);
+  const mLeft = Math.floor((msLeft%3600000)/60000);
+
+  const SEASON_NAMES = ['NEON CITY','BLOOD MOON','VOID WALKER','CYBER DAWN'];
+  const weekNum = Math.floor(Date.now()/604800000);
+  const tournName = SEASON_NAMES[weekNum%SEASON_NAMES.length] + ' WEEKLY';
+
+  // Mon meilleur score de la semaine
+  const weekKey = 'pulse_tourn_week_'+weekNum;
+  const myEntry = loadData(weekKey, {score:0,wave:0,submitted:false});
+
+  let leaderboard = [];
+  if(SB){
+    try {
+      const {data} = await SB.from('tournament_scores')
+        .select('user_id,pseudo,score,wave,submitted_at')
+        .eq('week',weekNum)
+        .order('score',{ascending:false})
+        .limit(20);
+      leaderboard = data||[];
+    } catch(e){}
+  }
+
+  const myRank = leaderboard.findIndex(r=>r.user_id===currentUser?.id)+1||0;
+
+  _currentTournament = {weekNum, weekKey, myEntry, leaderboard, myRank};
+
+  // Démarrer le timer de compte à rebours
+  if(_tournTimer) clearInterval(_tournTimer);
+  _tournTimer = setInterval(()=>{
+    const el2 = document.getElementById('tourn-timer-display');
+    if(!el2) return;
+    const ms = nextReset - Date.now();
+    if(ms<=0){ el2.textContent='Fin du tournoi'; clearInterval(_tournTimer); return; }
+    const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    el2.textContent=`${d}j ${h}h ${m}m ${s}s`;
+  },1000);
+
+  let html = `
+    <div class="tourn-hero">
+      <div class="tourn-name">${tournName}</div>
+      <div class="tourn-timer-lbl">TEMPS RESTANT</div>
+      <div class="tourn-timer-big" id="tourn-timer-display">${dLeft}j ${hLeft}h ${mLeft}m</div>
+      <div class="tourn-status active">● EN COURS</div>
+      <div class="tourn-rewards-row">
+        <div class="tourn-reward-pill">🥇 TOP 1 — 2000🪙 + Skin Exclusif</div>
+        <div class="tourn-reward-pill">🥈 TOP 3 — 800🪙</div>
+        <div class="tourn-reward-pill">🥉 TOP 10 — 300🪙</div>
+        <div class="tourn-reward-pill">🏅 TOP 50 — 100🪙 + 500 XP BP</div>
+      </div>
+    </div>`;
+
+  // Mon score
+  html += `<div class="tourn-my-score">
+    <div class="tourn-my-rank">${myRank>0?'#'+myRank:'—'}</div>
+    <div class="tourn-my-info">
+      <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c3);">${(myEntry.score||0).toLocaleString('fr-FR')}</div>
+      <div style="font-size:7px;color:var(--txt2);margin-top:3px;">Vague ${myEntry.wave||0} · Mon meilleur cette semaine</div>
+      ${myEntry.score>0?`<div style="font-size:6px;color:var(--dim);margin-top:2px;">Soumis · mise à jour automatique</div>`:'<div style="font-size:6px;color:var(--dim);margin-top:2px;">Joue une partie pour participer !</div>'}
+    </div>
+  </div>`;
+
+  // Leaderboard
+  html += `<div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin:8px 0 4px;">CLASSEMENT</div>`;
+  if(!leaderboard.length){
+    html += `<div style="text-align:center;padding:20px;color:var(--dim);">Sois le premier à soumettre un score !</div>`;
+  } else {
+    leaderboard.forEach((entry,i)=>{
+      const rank = i+1;
+      const isMe = entry.user_id===currentUser?.id;
+      const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+      html += `<div class="tourn-lb-row${isMe?' me':''}">
+        <div class="tourn-lb-rank ${rankClass}">${rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank}</div>
+        <div class="tourn-lb-name">${isMe?'<strong>'+entry.pseudo+'</strong>':entry.pseudo||'Anonyme'}</div>
+        <div class="tourn-lb-score">${(entry.score||0).toLocaleString('fr-FR')}</div>
+        <div style="font-size:6px;color:var(--dim);padding:0 4px;">V${entry.wave||0}</div>
+      </div>`;
+    });
+  }
+  html += `<div style="height:12px;"></div>`;
+  el.innerHTML = html;
+}
+
+// Soumettre score tournoi en fin de partie
+async function submitTournamentScore(score, wave){
+  if(!SB||!currentUser) return;
+  const weekNum = Math.floor(Date.now()/604800000);
+  const weekKey = 'pulse_tourn_week_'+weekNum;
+  const existing = loadData(weekKey,{score:0,wave:0});
+  if(score <= existing.score) return; // pas meilleur
+  saveData(weekKey, {score,wave,submitted:true});
+  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
+  try {
+    await SB.from('tournament_scores').upsert({
+      user_id:currentUser.id, pseudo, score, wave, week:weekNum,
+      submitted_at:new Date().toISOString()
+    }, {onConflict:'user_id,week'});
+    showToast('🏆 Score soumis au tournoi !','success',3000);
+    // XP BP bonus si top 50
+    const {data:rank_data} = await SB.from('tournament_scores').select('score').eq('week',weekNum).gt('score',score).limit(50);
+    if(rank_data&&rank_data.length<50){ addBpXpManual(50); }
+    // Hub notif
+    const notif = document.getElementById('hub-tourn-notif');
+    if(notif) notif.classList.add('on');
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SYSTÈME DE REPLAY
+// ═══════════════════════════════════════════════════════════════
+const REPLAY_MAX_FRAMES = 3600; // 60s max
+let _replayRecording = false;
+let _replayBuffer = [];
+let _replayMeta = {};
+let _replayPlaying = false;
+let _replayFrameIdx = 0;
+let _replayTimer = null;
+let _savedReplays = [];
+
+function startReplayRecording(){
+  _replayRecording = true;
+  _replayBuffer = [];
+  _replayMeta = {startTime:Date.now(), score:0, wave:0, kills:0};
+}
+
+function recordReplayFrame(){
+  if(!_replayRecording || !G) return;
+  if(_replayBuffer.length >= REPLAY_MAX_FRAMES){ _replayRecording=false; return; }
+  // Snapshot compact de l'état
+  const snap = {
+    f: frame,
+    px: Math.round(G.player.x), py: Math.round(G.player.y),
+    ph: G.player.hp,
+    s: G.score, w: G.wave,
+    e: G.enemies.filter(e=>!e.dead).map(e=>({x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':e.mini?'m':'n',hp:Math.round(e.hp)})).slice(0,30),
+    b: G.bullets.slice(0,50).map(b=>({x:Math.round(b.x),y:Math.round(b.y),en:b.enemy})),
+    pu: G.powerups.map(p=>({x:Math.round(p.x),y:Math.round(p.y),t:p.type?.id?.slice(0,3)||'?'})).slice(0,10),
+  };
+  _replayBuffer.push(snap);
+  _replayMeta.score = G.score;
+  _replayMeta.wave = G.wave;
+  _replayMeta.kills = G.totalKills;
+}
+
+function stopReplayRecording(){
+  _replayRecording = false;
+  if(_replayBuffer.length < 60) return; // trop court
+  const replay = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    score: _replayMeta.score,
+    wave: _replayMeta.wave,
+    kills: _replayMeta.kills,
+    duration: _replayBuffer.length,
+    frames: _replayBuffer,
+  };
+  let replays = loadData('pulse_replays_v1',[]);
+  replays.unshift(replay);
+  if(replays.length > 5) replays = replays.slice(0,5); // garder 5 max
+  saveData('pulse_replays_v1', replays);
+  _savedReplays = replays;
+  showToast('⏮ Replay sauvegardé !','success',2000);
+}
+
+function openReplays(){
+  _savedReplays = loadData('pulse_replays_v1',[]);
+  renderReplayList();
+  show('s-replay');
+}
+
+function renderReplayList(){
+  const el = document.getElementById('replay-list-content');
+  if(!el) return;
+  if(!_savedReplays.length){
+    el.innerHTML = `<div style="text-align:center;padding:40px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+      <div style="font-size:40px;">⏮</div>
+      <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:.2em;color:var(--dim);">AUCUN REPLAY</div>
+      <div style="font-size:7px;color:var(--dim);max-width:220px;text-align:center;line-height:1.7;">Tes 5 meilleures parties sont automatiquement enregistrées.</div>
+    </div>`;
+    return;
+  }
+
+  let html = '<div style="display:flex;flex-direction:column;gap:8px;padding:4px 0;">';
+  _savedReplays.forEach((rep,i)=>{
+    const date = new Date(rep.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const dur = Math.floor(rep.duration/60) + 's';
+    html += `<div class="replay-card" onclick="playReplay(${i})">
+      <div class="replay-thumb">🎮</div>
+      <div class="replay-info">
+        <div class="replay-score">${(rep.score||0).toLocaleString('fr-FR')} pts</div>
+        <div class="replay-meta">Vague ${rep.wave||0} · ${rep.kills||0} kills · ${dur} · ${date}</div>
+      </div>
+      <button class="replay-btn" onclick="event.stopPropagation();playReplay(${i})">▶ VOIR</button>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function playReplay(idx){
+  const rep = _savedReplays[idx];
+  if(!rep||!rep.frames) return;
+  _replayPlaying = true;
+  _replayFrameIdx = 0;
+
+  // Setup canvas pour replay
+  setupCanvas();
+  show('__none__');
+  const hud = document.getElementById('replay-hud-overlay');
+  if(hud) hud.classList.add('on');
+  document.body.classList.add('game-active');
+
+  function step(){
+    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){
+      stopReplay();
+      return;
+    }
+    const snap = rep.frames[_replayFrameIdx];
+    drawReplayFrame(snap, rep);
+
+    // Mettre à jour le HUD replay
+    const rhScore = document.getElementById('rh-score');
+    const rhWave  = document.getElementById('rh-wave');
+    const rhTime  = document.getElementById('rh-time');
+    if(rhScore) rhScore.textContent = (snap.s||0).toLocaleString('fr-FR');
+    if(rhWave)  rhWave.textContent = snap.w||1;
+    if(rhTime){
+      const sec = Math.floor(_replayFrameIdx/60);
+      rhTime.textContent = Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');
+    }
+    _replayFrameIdx++;
+    _replayTimer = requestAnimationFrame(step);
+  }
+  _replayTimer = requestAnimationFrame(step);
+}
+
+function drawReplayFrame(snap, rep){
+  if(!ctx||!W||!H) return;
+  drawBg(Date.now()*.001);
+  ctx.save();
+
+  // Obstacles (simplifiés)
+  ctx.fillStyle='rgba(0,245,212,.12)';
+  ctx.strokeStyle='rgba(0,245,212,.3)';
+
+  // Powerups
+  (snap.pu||[]).forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,245,212,.4)';ctx.fill();
+  });
+
+  // Ennemis
+  (snap.e||[]).forEach(e=>{
+    const r=e.t==='b'?24:e.t==='m'?16:10;
+    ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);
+    ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':e.t==='m'?'rgba(255,100,0,.6)':'rgba(255,26,110,.5)';
+    ctx.fill();
+  });
+
+  // Balles
+  (snap.b||[]).forEach(b=>{
+    ctx.beginPath();ctx.arc(b.x,b.y,b.en?5:4,0,Math.PI*2);
+    ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill();
+  });
+
+  // Joueur
+  ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.stroke();
+
+  // Barre HP
+  const hpPct = Math.max(0,Math.min(1,(snap.ph||0)/100));
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(snap.px-20,snap.py-22,40,4);
+  ctx.fillStyle=hpPct>0.5?'#2ecc71':hpPct>0.25?'#f1c40f':'#e74c3c';
+  ctx.fillRect(snap.px-20,snap.py-22,40*hpPct,4);
+
+  // Badge REPLAY
+  ctx.fillStyle='rgba(0,245,212,.15)';
+  ctx.fillRect(4,4,90,22);
+  ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px Orbitron,monospace';
+  ctx.fillText('▶ REPLAY',10,17);
+
+  ctx.restore();
+}
+
+function stopReplay(){
+  _replayPlaying = false;
+  if(_replayTimer){ cancelAnimationFrame(_replayTimer); _replayTimer=null; }
+  const hud = document.getElementById('replay-hud-overlay');
+  if(hud) hud.classList.remove('on');
+  document.body.classList.remove('game-active');
+  openReplays();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HOOKS — Intégration dans la game loop existante
+// ═══════════════════════════════════════════════════════════════
+
+// Hook dans startGame pour démarrer l'enregistrement
+const _origStartGame = typeof startGame === 'function' ? null : null;
+document.addEventListener('_pulse_startgame', ()=>{ startReplayRecording(); });
+
+// Hook dans la game loop pour enregistrer les frames
+const _origDraw = null; // on patch draw() ci-dessous
+
+// Patch léger — on appelle recordReplayFrame dans draw()
+const __replayPatchDraw = true;
+
+// Hook fin de partie
+const _origShowGoScore = null;
+
+// ═══════════════════════════════════════════════════════════════
+//  MISE À JOUR DU PROFIL — Onglet clan + badges améliorés
+// ═══════════════════════════════════════════════════════════════
+async function renderProfileClanBadge(el, profileData){
+  if(!el) return;
+  const isMe = !profileData;
+  if(!isMe||!currentUser||!SB) return;
+  try {
+    const {data:member} = await SB.from('clan_members').select('clan_id,role,clans(name,tag)').eq('user_id',currentUser.id).maybeSingle();
+    if(member?.clans){
+      el.innerHTML += `<div class="profile-clan-badge" onclick="openClan()">
+        ⚔ [${member.clans.tag}] ${member.clans.name} <span style="margin-left:4px;opacity:.6;">(${member.role})</span>
+      </div>`;
+    }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUPABASE — Création des tables (SQL à exécuter dans dashboard)
+// ═══════════════════════════════════════════════════════════════
+/*
+-- Coller ce SQL dans le dashboard Supabase > SQL Editor
+
+CREATE TABLE IF NOT EXISTS clans (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  tag text NOT NULL,
+  description text,
+  owner_id uuid REFERENCES auth.users(id),
+  members_count int DEFAULT 1,
+  total_score bigint DEFAULT 0,
+  war_wins int DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS clan_members (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  clan_id uuid REFERENCES clans(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  role text DEFAULT 'membre',
+  contribution bigint DEFAULT 0,
+  week_score bigint DEFAULT 0,
+  joined_at timestamptz DEFAULT now(),
+  UNIQUE(user_id)
+);
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS clan_id uuid REFERENCES clans(id);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id),
+  pseudo text,
+  content text NOT NULL,
+  rarity text DEFAULT 'common',
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS tournament_scores (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id),
+  pseudo text,
+  score bigint DEFAULT 0,
+  wave int DEFAULT 0,
+  week int NOT NULL,
+  submitted_at timestamptz DEFAULT now(),
+  UNIQUE(user_id, week)
+);
+
+-- Activer Realtime sur chat_messages
+ALTER TABLE chat_messages REPLICA IDENTITY FULL;
+
+-- RLS policies (simplifiées — adapter selon tes besoins)
+ALTER TABLE clans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clan_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tournament_scores ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read clans" ON clans FOR SELECT USING (true);
+CREATE POLICY "Auth insert clans" ON clans FOR INSERT WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY "Chef update clan" ON clans FOR UPDATE USING (auth.uid() = owner_id);
+CREATE POLICY "Owner delete clan" ON clans FOR DELETE USING (auth.uid() = owner_id);
+
+CREATE POLICY "Public read members" ON clan_members FOR SELECT USING (true);
+CREATE POLICY "Auth join clan" ON clan_members FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Update own membership" ON clan_members FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Leave clan" ON clan_members FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Public read chat" ON chat_messages FOR SELECT USING (true);
+CREATE POLICY "Auth send message" ON chat_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Public read tournament" ON tournament_scores FOR SELECT USING (true);
+CREATE POLICY "Auth submit score" ON tournament_scores FOR UPSERT WITH CHECK (auth.uid() = user_id);
+*/
+
 
 </script>
 <!-- SKIN DETAIL MODAL -->
@@ -14223,6 +15423,93 @@ setTimeout(function(){
   </div>
 </div>
 
+
+<!-- ═══════════════════ ÉCRAN CLANS ═══════════════════ -->
+<div class="scr" id="s-clan">
+  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+    <div class="clan-wrap">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
+        <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
+        <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c1);flex:1;">⚔ CLANS</div>
+        <div id="clan-online-count" style="font-size:7px;color:var(--txt2);"></div>
+      </div>
+
+      <!-- Mon clan / pas de clan -->
+      <div id="clan-main-content"></div>
+
+      <!-- Modal créer clan -->
+      <div id="clan-create-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;display:none;align-items:center;justify-content:center;">
+        <div style="background:var(--bg);border:1px solid rgba(0,245,212,.3);border-radius:6px;padding:20px;width:min(320px,90vw);display:flex;flex-direction:column;gap:10px;">
+          <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c1);">CRÉER UN CLAN</div>
+          <input id="clan-create-name" class="acc-input" placeholder="NOM DU CLAN (3-24 caractères)" maxlength="24" style="width:100%;">
+          <input id="clan-create-tag" class="acc-input" placeholder="TAG [2-4 lettres]" maxlength="4" style="width:100%;text-transform:uppercase;">
+          <textarea id="clan-create-desc" class="acc-input" placeholder="Description (optionnelle)" maxlength="120" style="width:100%;height:60px;resize:none;"></textarea>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-g" style="flex:1;" onclick="createClan()"><span>✓ CRÉER</span></button>
+            <button class="btn btn-s" style="flex:1;" onclick="document.getElementById('clan-create-modal').style.display='none'"><span>ANNULER</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ÉCRAN CHAT ═══════════════════ -->
+<div class="scr" id="s-chat">
+  <div class="scr-inner" style="padding:0;height:100%;">
+    <div class="chat-wrap">
+      <div class="chat-header">
+        <button class="btn btn-s back-btn" onclick="show('s-title');disconnectChat()" style="padding:6px 12px;min-width:0;font-size:7px;"><span>←</span></button>
+        <div class="chat-online"></div>
+        <div class="chat-title">CHAT GLOBAL</div>
+        <div class="chat-online-count" id="chat-online-count">• 0 en ligne</div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-system-msg">Connexion au chat…</div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" placeholder="Écris un message…" maxlength="200" onkeydown="if(event.key==='Enter')sendChatMsg()">
+        <button class="chat-send" onclick="sendChatMsg()">ENVOYER</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ÉCRAN TOURNOIS ═══════════════════ -->
+<div class="scr" id="s-tournament">
+  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+    <div class="tourn-wrap">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
+        <button class="btn btn-s back-btn" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
+        <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c3);flex:1;">🏆 TOURNOIS</div>
+      </div>
+      <div id="tournament-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ÉCRAN REPLAY ═══════════════════ -->
+<div class="scr" id="s-replay">
+  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
+    <div class="replay-wrap">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
+        <button class="btn btn-s back-btn" onclick="stopReplay();show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
+        <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c1);flex:1;">⏮ REPLAYS</div>
+      </div>
+      <div id="replay-list-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HUD REPLAY ═══════════════════ -->
+<div id="replay-hud-overlay">
+  <div><div class="replay-hud-val" id="rh-score">0</div><div class="replay-hud-lbl">SCORE</div></div>
+  <div style="width:1px;height:24px;background:var(--border);"></div>
+  <div><div class="replay-hud-val" id="rh-wave">1</div><div class="replay-hud-lbl">VAGUE</div></div>
+  <div style="width:1px;height:24px;background:var(--border);"></div>
+  <div><div class="replay-hud-val" id="rh-time">0:00</div><div class="replay-hud-lbl">TEMPS</div></div>
+  <button onclick="stopReplay()" style="margin-left:8px;font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;background:rgba(255,26,110,.1);border:1px solid rgba(255,26,110,.3);color:var(--c2);cursor:pointer;border-radius:3px;">■ STOP</button>
+</div>
 
 <!-- ═══ BOUTON SECOURS CACHE — visible si écran noir ═══ -->
 <div id="emergency-cache-btn" style="
