@@ -3847,6 +3847,37 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
 <script>
 // ═══════════════════════════════════════════════════════
+//  AUTO-HEAL : détecte un cache corrompu et force le rechargement
+//  Ce bloc doit rester EN TOUT PREMIER dans le script.
+// ═══════════════════════════════════════════════════════
+(function(){
+  var CURRENT_BUILD = '31.1';
+  var storedBuild = localStorage.getItem('pulse_build_v1');
+  if(storedBuild !== CURRENT_BUILD){
+    // Nouvelle version détectée — purger SW + caches puis recharger
+    localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
+    var doNuke = function(){
+      if('caches' in window){
+        caches.keys().then(function(keys){
+          return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+        }).then(function(){ location.reload(true); }).catch(function(){ location.reload(true); });
+      } else {
+        location.reload(true);
+      }
+    };
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        return Promise.all(regs.map(function(r){ return r.unregister(); }));
+      }).then(doNuke).catch(doNuke);
+    } else {
+      doNuke();
+    }
+    // Arrêt immédiat — le reste du script ne s'exécute pas
+    throw new Error('__PULSE_CACHE_RESET__');
+  }
+})();
+
+// ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
 const VERSION = '31.0';
@@ -3977,14 +4008,10 @@ if(window.visualViewport){
 }
 
 async function hardReload(){
-  const btn = event.currentTarget;
-  btn.textContent = '⏳ Nettoyage…';
-  btn.style.pointerEvents = 'none';
+  try { localStorage.removeItem('pulse_sw_version'); } catch(e){}
+  try { localStorage.removeItem('pulse_build_v1'); } catch(e){}
   try {
     if('serviceWorker' in navigator){
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    if(e.data && e.data.type === 'SW_UPDATED'){ location.reload(); }
-  });
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
     }
