@@ -1,4 +1,4 @@
-// PULSE — Service Worker v31.2
+// PULSE — Service Worker v31.0
 const CACHE_NAME = 'pulse-v31.2';
 const ASSETS = [
   'index.html',
@@ -22,6 +22,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => {
+      // Notifie tous les onglets ouverts pour qu'ils rechargent
       return self.clients.matchAll({ includeUncontrolled: true, type: 'window' })
         .then(clients => {
           clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
