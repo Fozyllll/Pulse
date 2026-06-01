@@ -4609,7 +4609,7 @@ function setBadge(id, count){
       if(label){
         const allBtns=document.querySelectorAll('.btn');
         for(const btn of allBtns){
-          if(btn.textContent.includes(label)){
+          if((btn.textContent||"").includes(label)){
             el=document.createElement('div'); el.id=id; el.className='notif-badge';
             btn.appendChild(el); break;
           }
