@@ -4085,6 +4085,33 @@ async function playAsGuest(){
   await afterLogin(false); // maybeShowOnboard will check localStorage
 }
 
+var coins = loadData('pulse_coins_v3', 0);
+var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
+var equippedSkin  = loadData('pulse_equipped_v3', 'default');
+var permaUpgrades = loadData('pulse_perma_v3', {});
+var scores     = loadData('pulse_scores_v2',   []);
+var achDone    = loadData('pulse_ach_v2',      {});
+var UPDATE_NOTES = [
+  '📱 Mode portrait corrigé — scroll activé sur le menu principal',
+  '💥 Effets de mort améliorés — plus de particules, anneaux d\'impact',
+  '⚡ Dash repensé — trail lumineux, afterimages, anneau d\'explosion',
+  '🎯 DOUBLE/TRIPLE/QUAD KILL — animations plus grandes et vibrantes',
+  '🌊 Banner de vague — animation plus dynamique et percutante',
+  '⭐ Level-up banner — animation améliorée avec dégradé animé',
+  '🔥 Combo ×5/×20/×75 — nouveaux paliers avec effets visuels',
+  '💨 Speed boost — lignes de vitesse autour du joueur',
+  '🎆 Boss kill — freeze frame + anneaux d\'explosion multiples',
+  '📊 Score — animation pulse sur les gros gains de points',
+];
+var LAST_UPDATE_VERSION = 'v30.0';
+var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
+var userPseudo = loadData('pulse_pseudo_v3', '');
+var battlePass = loadData('pulse_bp_v2', {
+  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
+});
+var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
+var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
+
 async function afterLogin(isNewAccount=false){
   // Load cloud data if logged in
   if(currentUser&&SB){
@@ -4596,8 +4623,6 @@ function setBadge(id, count){
 // ═══════════════════════════════════════════════════════
 //  COINS SYSTEM
 // ═══════════════════════════════════════════════════════
-var coins = loadData('pulse_coins_v3', 0);
-
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
   const base = Math.floor(score/160) + Math.floor(wave*2.1) + Math.floor(kills/5);
@@ -4645,9 +4670,6 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 //  SKINS SYSTEM
 // ═══════════════════════════════════════════════════════
-var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
-var equippedSkin  = loadData('pulse_equipped_v3', 'default');
-
 // ── CURSOR SKIN SYSTEM ──
 var CURSOR_DEFS = [
   {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
@@ -5043,8 +5065,6 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 //  PERMANENT UPGRADES
 // ═══════════════════════════════════════════════════════
-var permaUpgrades = loadData('pulse_perma_v3', {});
-
 var PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
@@ -5606,23 +5626,7 @@ var TIPS = [
 function loadData(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
 
-var scores     = loadData('pulse_scores_v2',   []);
-var achDone    = loadData('pulse_ach_v2',      {});
 var achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
-var UPDATE_NOTES = [
-  '📱 Mode portrait corrigé — scroll activé sur le menu principal',
-  '💥 Effets de mort améliorés — plus de particules, anneaux d\'impact',
-  '⚡ Dash repensé — trail lumineux, afterimages, anneau d\'explosion',
-  '🎯 DOUBLE/TRIPLE/QUAD KILL — animations plus grandes et vibrantes',
-  '🌊 Banner de vague — animation plus dynamique et percutante',
-  '⭐ Level-up banner — animation améliorée avec dégradé animé',
-  '🔥 Combo ×5/×20/×75 — nouveaux paliers avec effets visuels',
-  '💨 Speed boost — lignes de vitesse autour du joueur',
-  '🎆 Boss kill — freeze frame + anneaux d\'explosion multiples',
-  '📊 Score — animation pulse sur les gros gains de points',
-];
-var LAST_UPDATE_VERSION = 'v30.0';
-
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE NOTIFICATIONS
 // ═══════════════════════════════════════════════════════
@@ -5700,7 +5704,6 @@ function _notifAgo(ts){
   return Math.floor(s/86400)+'j';
 }
 
-var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 var settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
 var newAchThisRun = [];
 
@@ -8984,8 +8987,6 @@ function showAuthFrom(from){
 // ═══════════════════════════════════════════════════════
 //  PSEUDO & COMPTE
 // ═══════════════════════════════════════════════════════
-var userPseudo = loadData('pulse_pseudo_v3', '');
-
 function getPseudo(){
   return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
 }
@@ -9621,16 +9622,12 @@ var BP_REWARDS = [
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
 ];
 
-var battlePass = loadData('pulse_bp_v2', {
-  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
-});
 if(battlePass.season !== BP_SEASON_CURRENT){
   battlePass = {level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{}};
   saveData('pulse_bp_v2', battlePass);
 }
 
 var PREMIUM_PASS_COST = 1500;
-var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
   saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
@@ -12216,8 +12213,6 @@ function getDifficultyMult(){
 //  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
-var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
-
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
