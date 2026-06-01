@@ -4113,6 +4113,7 @@ var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
 
 async function afterLogin(isNewAccount=false){
+  try {
   // Load cloud data if logged in
   if(currentUser&&SB){
     const profile=await loadCloudProfile();
@@ -4173,10 +4174,15 @@ async function afterLogin(isNewAccount=false){
   // Notif mise a jour si nouvelle version
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   if(lastSeenVer !== LAST_UPDATE_VERSION){
-    pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', UPDATE_NOTES.slice(0,3).join(' · '), 'VOIR', null);
+    pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', (Array.isArray(UPDATE_NOTES)?UPDATE_NOTES:[]).slice(0,3).join(' · '), 'VOIR', null);
     saveData('pulse_last_seen_ver', LAST_UPDATE_VERSION);
   }
   maybeShowOnboard(isNewAccount);
+  } catch(e) {
+    console.error('[afterLogin] Erreur:', e);
+    isGuest = !currentUser;
+    maybeShowOnboard(isNewAccount);
+  }
 }
 
 async function doLogout(){
@@ -4300,7 +4306,7 @@ function renderProfileTab(tab, profileData){
     : '<div style="font-size:8px;color:var(--txt2);text-align:center;padding:30px;letter-spacing:.15em;">Aucune partie enregistrée.</div>';
 
   } else if(tab==='skins'){
-    const owned = SKIN_DEFS.filter(function(sk){ return skins.includes(sk.id); });
+    const owned = SKIN_DEFS.filter(function(sk){ return (Array.isArray(skins)?skins:[]).includes(sk.id); });
     const equippedId = isMe ? equippedSkin : ((profileData && profileData.equipped_skin) || 'default');
     const grid = document.createElement('div');
     grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;';
@@ -4723,7 +4729,7 @@ function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURS
 function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
 function buyCursor(id){
   const def=CURSOR_DEFS.find(c=>c.id===id);
-  if(!def||ownedCursors.includes(id)) return;
+  if(!def||(Array.isArray(ownedCursors)?ownedCursors:[]).includes(id)) return;
   if(def.price>0&&!spendCoins(def.price)) return;
   ownedCursors.push(id); saveData('pulse_owned_cursors_v1',ownedCursors);
   equipCursor(id);
@@ -5019,7 +5025,7 @@ function equipSkin(id){
 }
 
 function grantSkin(id){
-  if(ownedSkins.includes(id)) return;
+  if((Array.isArray(ownedSkins)?ownedSkins:[]).includes(id)) return;
   // Skins premium: seulement via claimBpReward (cette stack)
   const sk=SKIN_DEFS.find(s=>s.id===id);
   if(sk?.premium && !_bpClaimInProgress){
@@ -5034,7 +5040,7 @@ var _bpClaimInProgress=false;
 
 function buySkin(id){
   const sk=SKIN_DEFS.find(s=>s.id===id);
-  if(!sk||ownedSkins.includes(id)) return;
+  if(!sk||(Array.isArray(ownedSkins)?ownedSkins:[]).includes(id)) return;
   if(sk.price>0 && !spendCoins(sk.price)) return;
   grantSkin(id);
   if(sk.price>0 && currentUser&&SB) saveCloudProfile({coins});
@@ -5123,8 +5129,8 @@ function renderInventory(){
   const grid=document.getElementById('inv-grid');
   if(!grid) return;
   grid.innerHTML='';
-  const mine=SKIN_DEFS.filter(s=>ownedSkins.includes(s.id));
-  const locked=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
+  const mine=SKIN_DEFS.filter(s=>(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id));
+  const locked=SKIN_DEFS.filter(s=>!(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id)&&s.price>0);
   const addSec=(title,skins,isLocked)=>{
     if(!skins.length) return;
     const hdr=document.createElement('div');hdr.className='inv-sec-hdr';hdr.textContent=title;grid.appendChild(hdr);
@@ -5187,7 +5193,7 @@ function renderShop(tab){
   if(tab!=='lottery') grid.className='shop-grid';
   if(tab==='skins'){
     for(const sk of SKIN_DEFS){
-      const owned=ownedSkins.includes(sk.id);
+      const owned=(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id);
       const equipped=equippedSkin===sk.id;
       const card=document.createElement('div');
       card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
@@ -5220,7 +5226,7 @@ function renderShop(tab){
     grid.className='shop-grid';
     grid.style.cssText='';
     for(const def of CURSOR_DEFS){
-      const owned=ownedCursors.includes(def.id);
+      const owned=(Array.isArray(ownedCursors)?ownedCursors:[]).includes(def.id);
       const equipped=equippedCursor===def.id;
       const card=document.createElement('div');
       card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
@@ -5304,12 +5310,12 @@ var LOTTERY_PRIZES=[
   // Rares (~4%)
   {w:3,  ico:'✨', lbl:'Relique aleatoire',        fn:()=>{
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    const avail=RELIC_DEFS.filter(r=>!r.premium&&!ul.includes(r.id));
+    const avail=RELIC_DEFS.filter(r=>!r.premium&&!(Array.isArray(ul)?ul:[]).includes(r.id));
     if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); showToast('✨ '+r.name+' débloquée !','warn',3000,'#ffbe0b'); }
     else awardCoins(400);
   }},
   {w:2,  ico:'🎨', lbl:'Skin aleatoire',           fn:()=>{
-    const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0&&!s.premium);
+    const avail=SKIN_DEFS.filter(s=>!(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id)&&s.price>0&&!s.premium);
     if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; _bpClaimInProgress=true; grantSkin(sk.id); _bpClaimInProgress=false; showToast('🎨 Skin '+sk.name+' obtenu !','success',3000,'#b44fff'); }
     else awardCoins(600);
   }},
@@ -8838,7 +8844,7 @@ function renderGiftUI(pseudoPreset=''){
     el.innerHTML=`<div style="text-align:center;color:var(--txt2);font-size:8px;letter-spacing:.15em;padding:30px;border:1px solid var(--border);background:rgba(0,245,212,.02);">Connecte-toi pour envoyer des cadeaux.</div>`;
     return;
   }
-  const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&ownedSkins.includes(sk.id)&&sk.id!=='default');
+  const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id)&&sk.id!=='default');
   el.innerHTML=`
     <div style="border:1px solid rgba(0,245,212,.15);background:rgba(0,245,212,.03);padding:14px 16px;position:relative;">
       <div style="position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--c1),transparent);"></div>
@@ -8913,7 +8919,7 @@ async function sendGift(){
     const ok = await pulseConfirm(`Offrir le skin ${skinDef?.name||skinId} a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     const tgtSkins = tgt.owned_skins||['default'];
-    if(!tgtSkins.includes(skinId)) tgtSkins.push(skinId);
+    if(!(Array.isArray(tgtSkins)?tgtSkins:[]).includes(skinId)) tgtSkins.push(skinId);
     await SB.from('profiles').update({owned_skins:tgtSkins}).eq('id',tgt.id);
     if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
@@ -8924,7 +8930,7 @@ async function sendGift(){
     const relicDef = RELIC_DEFS.find(r=>r.id===relicId);
     const {data:tgtR} = await SB.from('profiles').select('id,pseudo,unlocked_relics').eq('id',tgt.id).maybeSingle();
     const curRelics = tgtR?.unlocked_relics || [];
-    if(curRelics.includes(relicId)){ if(msg){msg.textContent='Ce joueur possede deja cette relique.';msg.className='acc-msg err';} return; }
+    if((Array.isArray(curRelics)?curRelics:[]).includes(relicId)){ if(msg){msg.textContent='Ce joueur possede deja cette relique.';msg.className='acc-msg err';} return; }
     const ok = await pulseConfirm(`Offrir ${relicDef?.ico||''} ${relicDef?.name||relicId} a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     curRelics.push(relicId);
@@ -9695,7 +9701,7 @@ function claimBpReward(level, track){
     if(def){ const lvl=getPermaLvl(reward.value); if(lvl<def.maxLvl){ permaUpgrades[reward.value]=(lvl+1); saveData('pulse_perma_v3',permaUpgrades); if(currentUser&&SB) saveCloudProfile({perma_upgrades:permaUpgrades}); } }
   } else if(reward.type==='relic'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    if(!ul.includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); }
+    if(!(Array.isArray(ul)?ul:[]).includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); }
   }
 
   _bpClaimInProgress=false;
@@ -9746,7 +9752,7 @@ function claimAllBp(){
     if(r.type==='coins'){coins+=r.value;saveData('pulse_coins_v3',coins);updateCoinsHUD();}
     else if(r.type==='skin') grantSkin(r.value);
     else if(r.type==='perma'){const def=PERMA_DEFS.find(d=>d.id===r.value);if(def){const lvl=getPermaLvl(r.value);if(lvl<def.maxLvl){permaUpgrades[r.value]=(lvl+1);saveData('pulse_perma_v3',permaUpgrades);}}}
-    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);if(currentUser&&SB)saveCloudProfile({unlocked_relics:ul});}}
+    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!(Array.isArray(ul)?ul:[]).includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);if(currentUser&&SB)saveCloudProfile({unlocked_relics:ul});}}
   }
   saveBP();
   if(currentUser&&SB) saveCloudProfile({coins});
@@ -10183,7 +10189,7 @@ function applyArenaReward(reward){
     if(upgDef && G) upgDef.apply(G.player);
   } else if(reward.type==='relic_unlock'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    if(!ul.includes(reward.value)){ul.push(reward.value);saveData('pulse_unlocked_relics_v1',ul);}
+    if(!(Array.isArray(ul)?ul:[]).includes(reward.value)){ul.push(reward.value);saveData('pulse_unlocked_relics_v1',ul);}
     showPopup('✨ RELIQUE DEBLOQUEE !','#ffbe0b');
   } else if(reward.type==='skin_unlock'){
     grantSkin(reward.value);
@@ -11333,7 +11339,7 @@ async function adminClearNotifsByType(){
     statusEl.className='admin-status ok';
     // Effacer les nôtres aussi
     if(clearAll){ clearAllNotifs(); }
-    else { const notifs=loadNotifs().filter(n=>!typesToClear.includes(n.type)); saveNotifs(notifs); updateNotifBadge(); }
+    else { const notifs=loadNotifs().filter(n=>!(Array.isArray(typesToClear)?typesToClear:[]).includes(n.type)); saveNotifs(notifs); updateNotifBadge(); }
     setTimeout(adminCloseNotifModal, 1800);
   } catch(e){
     statusEl.textContent='Erreur: '+e.message; statusEl.className='admin-status err';
@@ -11414,14 +11420,14 @@ function adminPlayerCard(p){
   const stats = p.stats || {};
 
   const skinPills = SKIN_DEFS.map(sk=>
-    `<div class="admin-skin-pill${ownedSkins.includes(sk.id)?' owned':''}"
+    `<div class="admin-skin-pill${(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id)?' owned':''}"
       onclick="adminToggleSkin('${p.id}','${sk.id}',this)">${sk.name}</div>`
   ).join('');
 
   const ownedRelics = p.unlocked_relics || [];
   const relicPills = RELIC_DEFS.map(r=>
-    `<div class="admin-skin-pill${ownedRelics.includes(r.id)?' owned':''}"
-      style="color:${ownedRelics.includes(r.id)?'var(--c3)':'var(--dim)'}"
+    `<div class="admin-skin-pill${(Array.isArray(ownedRelics)?ownedRelics:[]).includes(r.id)?' owned':''}"
+      style="color:${(Array.isArray(ownedRelics)?ownedRelics:[]).includes(r.id)?'var(--c3)':'var(--dim)'}"
       onclick="adminToggleRelic('${p.id}','${r.id}',this)">${r.ico} ${r.name}</div>`
   ).join('');
 
@@ -11554,7 +11560,7 @@ async function adminSave(playerId){
     const name = p.textContent;
     return SKIN_DEFS.find(s=>s.name===name)?.id;
   }).filter(Boolean);
-  if(!ownedSkins.includes('default')) ownedSkins.unshift('default');
+  if(!(Array.isArray(ownedSkins)?ownedSkins:[]).includes('default')) ownedSkins.unshift('default');
   // Collect relics from pills
   const relicPillsEl = document.querySelectorAll('#adm-relics-'+playerId+' .admin-skin-pill');
   const unlockedRelics = Array.from(relicPillsEl).filter(p=>p.classList.contains('owned')).map(p=>{
@@ -11746,7 +11752,7 @@ function initAdminBroadcastListener(){
       if(!payload) return;
       if(payload.types==='all'){ clearAllNotifs(); showPopup('🔔 Notifs effacées par l\'admin','#ffbe0b'); }
       else if(Array.isArray(payload.types)){
-        const notifs=loadNotifs().filter(n=>!payload.types.includes(n.type));
+        const notifs=loadNotifs().filter(n=>!(Array.isArray(payload.types)?payload.types:[]).includes(n.type));
         saveNotifs(notifs); updateNotifBadge();
         if(typeof renderNotifs==='function'){ try{renderNotifs();}catch(e){} }
       }
@@ -11758,7 +11764,7 @@ function initAdminBroadcastListener(){
       setTimeout(async ()=>{
         try {
           if(!_adminBcChannel) adminInitBroadcast();
-          const msg = '🆕 PULSE '+LAST_UPDATE_VERSION+' est disponible ! Rechargez la page pour profiter des nouveautés : '+UPDATE_NOTES.slice(0,4).join(' · ');
+          const msg = '🆕 PULSE '+LAST_UPDATE_VERSION+' est disponible ! Rechargez la page pour profiter des nouveautés : '+(Array.isArray(UPDATE_NOTES)?UPDATE_NOTES:[]).slice(0,4).join(' · ');
           await _adminBcChannel.send({
             type:'broadcast', event:'admin_msg',
             payload:{ txt: msg, ts:Date.now(), from:'Admin' }
@@ -11872,7 +11878,7 @@ function offerRelic(){
   const available = RELIC_DEFS.filter(r=>
     !activeRelics.find(a=>a.id===r.id) &&
     (!r.premium || hasPremiumPass.owned) &&
-    unlockedIds.includes(r.id)
+    (Array.isArray(unlockedIds)?unlockedIds:[]).includes(r.id)
   );
   if(available.length === 0){ pendingRelicOffer=false; G.paused=false; countdown(3,startWave); return; }
   const shuffled = available.sort(()=>Math.random()-.5).slice(0,3);
@@ -12411,7 +12417,7 @@ function renderRelicEquip(){
   // Sort: equipped first, then owned, then by rarity (epic→rare→common)
   const rarityOrder={epic:0,rare:1,common:2};
   const sorted=[...RELIC_DEFS].sort((a,b)=>{
-    const aEq=equipped.includes(a.id), bEq=equipped.includes(b.id);
+    const aEq=(Array.isArray(equipped)?equipped:[]).includes(a.id), bEq=(Array.isArray(equipped)?equipped:[]).includes(b.id);
     if(aEq&&!bEq) return -1; if(bEq&&!aEq) return 1;
     const aOwn=unlocked.includes(a.id), bOwn=unlocked.includes(b.id);
     if(aOwn&&!bOwn) return -1; if(bOwn&&!aOwn) return 1;
@@ -12423,7 +12429,7 @@ function renderRelicEquip(){
 
   sorted.forEach(r=>{
     const owned=unlocked.includes(r.id)||(r.premium&&hasPremiumPass.owned);
-    const isEq=equipped.includes(r.id);
+    const isEq=(Array.isArray(equipped)?equipped:[]).includes(r.id);
     const rc=rarityCol[r.rarity]||'var(--c3)';
     const rl=rarityLbl[r.rarity]||'COMMUN';
     const borderCol=isEq?'rgba(255,190,11,.7)':owned?(r.rarity==='epic'?'rgba(180,79,255,.4)':r.rarity==='rare'?'rgba(0,187,249,.35)':'var(--border)'):'rgba(255,255,255,.05)';
@@ -12455,7 +12461,7 @@ function renderRelicEquip(){
         pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
           if(!ok) return;
           coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!(Array.isArray(ul)?ul:[]).includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
           showPopup('✨ '+r.name+' debloquee !','#ffbe0b');
           renderRelicEquip();
         });
@@ -12463,7 +12469,7 @@ function renderRelicEquip(){
       }
       // Equip / unequip — re-read from localStorage to avoid stale state
       const eq2=loadData('pulse_eq_relics_v1',[]);
-      if(eq2.includes(r.id)){
+      if((Array.isArray(eq2)?eq2:[]).includes(r.id)){
         saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
       } else {
         if(eq2.length>=loadData('pulse_relic_slots_v1',1)){showPopup('Achete un slot supplementaire pour equiper plus de reliques !','#ff1a6e');return;}
@@ -15533,3 +15539,9 @@ CREATE POLICY "Auth submit score" ON tournament_scores FOR UPSERT WITH CHECK (au
 
 </body>
 </html>
+
+  } catch(e) {
+    console.error('[afterLogin] Erreur:', e);
+    // Continuer quand même — afficher l'écran titre en mode dégradé
+    isGuest = !currentUser;
+  }
