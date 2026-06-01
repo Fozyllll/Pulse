@@ -3847,61 +3847,9 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
 <script>
 // ═══════════════════════════════════════════════════════
-//  AUTO-HEAL : détecte un cache corrompu et force le rechargement
-//  Ce bloc doit rester EN TOUT PREMIER dans le script.
-// ═══════════════════════════════════════════════════════
-(function(){
-  var CURRENT_BUILD = '31.2';
-
-  function nukeAndReload(){
-    var nuke = function(){
-      if('caches' in window){
-        caches.keys().then(function(keys){
-          return Promise.all(keys.map(function(k){ return caches.delete(k); }));
-        }).then(function(){ location.reload(true); }).catch(function(){ location.reload(true); });
-      } else { location.reload(true); }
-    };
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        return Promise.all(regs.map(function(r){ return r.unregister(); }));
-      }).then(nuke).catch(nuke);
-    } else { nuke(); }
-  }
-
-  // Un SW actif = page peut-être servie depuis l'ancien cache
-  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
-    var storedBuild = localStorage.getItem('pulse_build_v1');
-    if(storedBuild !== CURRENT_BUILD){
-      localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
-      nukeAndReload();
-      throw new Error('__PULSE_CACHE_RESET__');
-    }
-  } else {
-    // Pas de SW actif = servi depuis le réseau = version fraîche
-    localStorage.setItem('pulse_build_v1', CURRENT_BUILD);
-  }
-})();
-
-// ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
 const VERSION = '31.0';
-
-// ── BATTLE PASS — fonctions saison déplacées ici pour éviter TDZ ──
-function getCurrentSeason(){
-  const d=new Date();
-  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
-}
-function getSeasonEndDate(){
-  const d=new Date();
-  return new Date(d.getFullYear(), d.getMonth()+1, 1);
-}
-function formatSeasonEnd(){
-  const end=getSeasonEndDate();
-  const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
-  return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
-}
-const BP_SEASON_CURRENT = getCurrentSeason();
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -3910,6 +3858,16 @@ const AIM_R   = 44;
 // ═══════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://kyqureoaiobyersjrosm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_KcEXNeipkIRziDVyVq7Cmw_If3A0kFo';
+function getCurrentSeason(){
+  const d=new Date();
+  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
+}
+function getSeasonEndDate(){
+  const d=new Date();
+  return new Date(d.getFullYear(), d.getMonth()+1, 1); // 1er du mois suivant
+}
+const BP_SEASON_CURRENT = getCurrentSeason();
+
 let SB = null;
 let currentUser = null;
 let isGuest = false;
@@ -4013,10 +3971,14 @@ if(window.visualViewport){
 }
 
 async function hardReload(){
-  try { localStorage.removeItem('pulse_sw_version'); } catch(e){}
-  try { localStorage.removeItem('pulse_build_v1'); } catch(e){}
+  const btn = event.currentTarget;
+  btn.textContent = '⏳ Nettoyage…';
+  btn.style.pointerEvents = 'none';
   try {
     if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if(e.data && e.data.type === 'SW_UPDATED'){ location.reload(); }
+  });
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
     }
@@ -9538,8 +9500,12 @@ document.getElementById('mb-dash').addEventListener('touchstart',e=>{ e.preventD
 //  BATTLE PASS — SAISON MENSUELLE + DUAL TRACK
 // ═══════════════════════════════════════════════════════
 
-// getCurrentSeason / getSeasonEndDate / formatSeasonEnd / BP_SEASON_CURRENT
-// déplacés en haut du script pour éviter l'erreur TDZ (temporal dead zone)
+function formatSeasonEnd(){
+  const end=getSeasonEndDate();
+  const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
+  return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
+}
+
 const BP_MAX_LEVEL = 30;
 const BP_XP_PER_LEVEL = 500;
 
@@ -14087,7 +14053,7 @@ if('serviceWorker' in navigator){
       localStorage.setItem(swVersionKey, APP_VERSION);
       console.log('[SW] Cache purge — version', APP_VERSION);
     }
-    navigator.serviceWorker.register('sw.js?v=31.2')
+    navigator.serviceWorker.register('sw.js?v=31.0')
       .then(reg=>{ reg.update(); console.log('[SW] Enregistre v31.0'); })
       .catch(err=>console.warn('[SW] Erreur:',err));
   });

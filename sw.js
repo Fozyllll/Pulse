@@ -1,5 +1,5 @@
 // PULSE — Service Worker v31.0
-const CACHE_NAME = 'pulse-v31.2';
+const CACHE_NAME = 'pulse-v31.0';
 const ASSETS = [
   'index.html',
   'manifest.json',
