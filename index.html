@@ -4596,7 +4596,7 @@ function setBadge(id, count){
 // ═══════════════════════════════════════════════════════
 //  COINS SYSTEM
 // ═══════════════════════════════════════════════════════
-let coins = loadData('pulse_coins_v3', 0);
+var coins = loadData('pulse_coins_v3', 0);
 
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
@@ -4645,8 +4645,8 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 //  SKINS SYSTEM
 // ═══════════════════════════════════════════════════════
-let ownedSkins    = loadData('pulse_skins_v3',    ['default']);
-let equippedSkin  = loadData('pulse_equipped_v3', 'default');
+var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
+var equippedSkin  = loadData('pulse_equipped_v3', 'default');
 
 // ── CURSOR SKIN SYSTEM ──
 const CURSOR_DEFS = [
@@ -5043,7 +5043,7 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 //  PERMANENT UPGRADES
 // ═══════════════════════════════════════════════════════
-let permaUpgrades = loadData('pulse_perma_v3', {});
+var permaUpgrades = loadData('pulse_perma_v3', {});
 
 const PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
@@ -5606,8 +5606,8 @@ const TIPS = [
 function loadData(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
 
-let scores     = loadData('pulse_scores_v2',   []);
-let achDone    = loadData('pulse_ach_v2',      {});
+var scores     = loadData('pulse_scores_v2',   []);
+var achDone    = loadData('pulse_ach_v2',      {});
 let achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
 const UPDATE_NOTES = [
   '📱 Mode portrait corrigé — scroll activé sur le menu principal',
@@ -5700,7 +5700,7 @@ function _notifAgo(ts){
   return Math.floor(s/86400)+'j';
 }
 
-let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
+var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
 let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
 let newAchThisRun = [];
 
@@ -8984,7 +8984,7 @@ function showAuthFrom(from){
 // ═══════════════════════════════════════════════════════
 //  PSEUDO & COMPTE
 // ═══════════════════════════════════════════════════════
-let userPseudo = loadData('pulse_pseudo_v3', '');
+var userPseudo = loadData('pulse_pseudo_v3', '');
 
 function getPseudo(){
   return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
@@ -9621,7 +9621,7 @@ const BP_REWARDS = [
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
 ];
 
-let battlePass = loadData('pulse_bp_v2', {
+var battlePass = loadData('pulse_bp_v2', {
   level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
 });
 if(battlePass.season !== BP_SEASON_CURRENT){
@@ -9630,7 +9630,7 @@ if(battlePass.season !== BP_SEASON_CURRENT){
 }
 
 const PREMIUM_PASS_COST = 1500;
-let hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
+var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
   saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
@@ -12216,7 +12216,7 @@ function getDifficultyMult(){
 //  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
-let skinPerkLevels = loadData('pulse_skin_perks_v1', {});
+var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
 
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
@@ -12502,7 +12502,7 @@ const KB_ACTION_LABELS = {
   pause: '⏸ PAUSE',
 };
 // Deep clone default
-let kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
+var kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
 
 // Keyboard remap state
 let kbRemapTarget = null;
@@ -12704,7 +12704,7 @@ function gpBtnLabels(layout){
 
 // Nintendo swaps A/B and X/Y vs standard
 const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
-let gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
+var gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
 let gpRemapTarget=null, gpRemapListener=null;
 const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
