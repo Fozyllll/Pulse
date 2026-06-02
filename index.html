@@ -2554,7 +2554,13 @@ input:focus, select:focus, textarea:focus {
 .bp-claim-rarity.rare{background:rgba(0,187,249,.1);color:#00bbf9;border:1px solid rgba(0,187,249,.4);}
 .bp-claim-rarity.common{background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid rgba(255,255,255,.15);}
 
-to{opacity:1;transform:scale(1.18);}}
+/* ── Edge Threats ── */
+#edge-threats{position:fixed;inset:0;pointer-events:none;z-index:90;}
+.edge-arrow{position:absolute;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:12px;width:20px;height:20px;border-radius:50%;background:rgba(255,26,110,.12);border:1px solid rgba(255,26,110,.35);animation:edgePulse .8s ease-in-out infinite alternate;}
+.edge-arrow.boss{font-size:14px;background:rgba(255,190,11,.15);border-color:rgba(255,190,11,.5);animation:edgePulseBoss .5s ease-in-out infinite alternate;}
+.edge-arrow.powerup{background:rgba(0,245,212,.1);border-color:rgba(0,245,212,.4);}
+@keyframes edgePulse{from{opacity:.45;}to{opacity:.9;}}
+@keyframes edgePulseBoss{from{opacity:.7;transform:scale(1);}to{opacity:1;transform:scale(1.18);}}
 
 /* ── Rage Mode ── */
 #rage-bar-wrap{position:fixed;bottom:clamp(54px,10vw,68px);left:50%;transform:translateX(-50%);z-index:91;display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;transition:opacity .3s;}
@@ -2585,7 +2591,6 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 #wave-threat-preview.on{opacity:1;}
 .wtp-line{font-size:clamp(7px,1.5vw,9px);letter-spacing:.1em;color:var(--txt2);display:flex;align-items:center;gap:4px;}
 .wtp-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.15em;color:var(--dim);margin-bottom:1px;}
-
 
 /* ═══════════════════════════════════════════════════════════════
    NOUVELLES FEATURES RÉVOLUTIONNAIRES — PULSE v31
@@ -2877,6 +2882,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 .tourn-past-name{font-family:'Orbitron',monospace;font-size:8px;color:var(--txt2);letter-spacing:.1em;}
 .tourn-past-result{font-family:'Orbitron',monospace;font-size:12px;color:var(--c3);margin:4px 0;}
 
+
 </style>
 </head>
 <body>
@@ -3035,7 +3041,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 
     <div class="logo">PULSE</div>
     <div class="logo-sub">TWIN-STICK SURVIVOR</div>
-    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v31.0</div>
+    <div class="logo-ver" style="letter-spacing:.22em;opacity:.6;">v30.0</div>
 
     <div class="title-user-pill" id="title-user-pill"></div>
 
@@ -3079,8 +3085,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       <button class="btn btn-s title-sec-btn" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
       <button class="btn btn-s title-sec-btn" style="position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
     </div>
-
-    <!-- HUB social — nouvelles features -->
+    <!-- HUB social -->
     <div class="hub-nav">
       <button class="hub-btn" onclick="openClan()">
         <div class="hub-btn-icon">⚔</div>
@@ -3101,8 +3106,6 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
         <div class="hub-btn-icon">⏮</div>
         <div class="hub-btn-label">REPLAYS</div>
       </button>
-    </div>
-
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint" style="border-radius:3px;border-color:rgba(0,245,212,.1);line-height:2;max-width:min(420px,90vw);">
@@ -3849,7 +3852,7 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '31.0';
+const VERSION = '30.0';
 const JOY_R   = 40;
 const AIM_R   = 44;
 
@@ -3858,16 +3861,6 @@ const AIM_R   = 44;
 // ═══════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://kyqureoaiobyersjrosm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_KcEXNeipkIRziDVyVq7Cmw_If3A0kFo';
-function getCurrentSeason(){
-  const d=new Date();
-  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
-}
-function getSeasonEndDate(){
-  const d=new Date();
-  return new Date(d.getFullYear(), d.getMonth()+1, 1); // 1er du mois suivant
-}
-const BP_SEASON_CURRENT = getCurrentSeason();
-
 let SB = null;
 let currentUser = null;
 let isGuest = false;
@@ -4085,35 +4078,7 @@ async function playAsGuest(){
   await afterLogin(false); // maybeShowOnboard will check localStorage
 }
 
-var coins = loadData('pulse_coins_v3', 0);
-var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
-var equippedSkin  = loadData('pulse_equipped_v3', 'default');
-var permaUpgrades = loadData('pulse_perma_v3', {});
-var scores     = loadData('pulse_scores_v2',   []);
-var achDone    = loadData('pulse_ach_v2',      {});
-var UPDATE_NOTES = [
-  '📱 Mode portrait corrigé — scroll activé sur le menu principal',
-  '💥 Effets de mort améliorés — plus de particules, anneaux d\'impact',
-  '⚡ Dash repensé — trail lumineux, afterimages, anneau d\'explosion',
-  '🎯 DOUBLE/TRIPLE/QUAD KILL — animations plus grandes et vibrantes',
-  '🌊 Banner de vague — animation plus dynamique et percutante',
-  '⭐ Level-up banner — animation améliorée avec dégradé animé',
-  '🔥 Combo ×5/×20/×75 — nouveaux paliers avec effets visuels',
-  '💨 Speed boost — lignes de vitesse autour du joueur',
-  '🎆 Boss kill — freeze frame + anneaux d\'explosion multiples',
-  '📊 Score — animation pulse sur les gros gains de points',
-];
-var LAST_UPDATE_VERSION = 'v30.0';
-var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
-var userPseudo = loadData('pulse_pseudo_v3', '');
-var battlePass = loadData('pulse_bp_v2', {
-  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
-});
-var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
-var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
-
 async function afterLogin(isNewAccount=false){
-  try {
   // Load cloud data if logged in
   if(currentUser&&SB){
     const profile=await loadCloudProfile();
@@ -4174,15 +4139,10 @@ async function afterLogin(isNewAccount=false){
   // Notif mise a jour si nouvelle version
   const lastSeenVer = loadData('pulse_last_seen_ver','0');
   if(lastSeenVer !== LAST_UPDATE_VERSION){
-    pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', (Array.isArray(UPDATE_NOTES)?UPDATE_NOTES:[]).slice(0,3).join(' · '), 'VOIR', null);
+    pushNotif('update', '🆕 PULSE '+LAST_UPDATE_VERSION+' DISPONIBLE', UPDATE_NOTES.slice(0,3).join(' · '), 'VOIR', null);
     saveData('pulse_last_seen_ver', LAST_UPDATE_VERSION);
   }
   maybeShowOnboard(isNewAccount);
-  } catch(e) {
-    console.error('[afterLogin] Erreur:', e);
-    isGuest = !currentUser;
-    maybeShowOnboard(isNewAccount);
-  }
 }
 
 async function doLogout(){
@@ -4199,7 +4159,7 @@ async function doLogout(){
 }
 
 // ── Profil actuel affiche (null = soi-meme, sinon {id,pseudo,stats,...}) ──
-var _viewingProfile = null;
+let _viewingProfile = null;
 
 function profileTab(tab, btn){
   document.querySelectorAll('#s-profile .shop-tab').forEach(b=>b.classList.remove('active'));
@@ -4306,7 +4266,7 @@ function renderProfileTab(tab, profileData){
     : '<div style="font-size:8px;color:var(--txt2);text-align:center;padding:30px;letter-spacing:.15em;">Aucune partie enregistrée.</div>';
 
   } else if(tab==='skins'){
-    const owned = SKIN_DEFS.filter(function(sk){ return (Array.isArray(skins)?skins:[]).includes(sk.id); });
+    const owned = SKIN_DEFS.filter(function(sk){ return skins.includes(sk.id); });
     const equippedId = isMe ? equippedSkin : ((profileData && profileData.equipped_skin) || 'default');
     const grid = document.createElement('div');
     grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;';
@@ -4356,7 +4316,7 @@ function renderProfileTab(tab, profileData){
 }
 
 // ── AMIS ─────────────────────────────────────────────────────────
-var _sdmCurrentSkin = '';
+let _sdmCurrentSkin = '';
 
 function openSkinDetail(skinId){
   _sdmCurrentSkin = skinId;
@@ -4615,7 +4575,7 @@ function setBadge(id, count){
       if(label){
         const allBtns=document.querySelectorAll('.btn');
         for(const btn of allBtns){
-          if((btn.textContent||"").includes(label)){
+          if(btn.textContent.includes(label)){
             el=document.createElement('div'); el.id=id; el.className='notif-badge';
             btn.appendChild(el); break;
           }
@@ -4629,6 +4589,8 @@ function setBadge(id, count){
 // ═══════════════════════════════════════════════════════
 //  COINS SYSTEM
 // ═══════════════════════════════════════════════════════
+let coins = loadData('pulse_coins_v3', 0);
+
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
   const base = Math.floor(score/160) + Math.floor(wave*2.1) + Math.floor(kills/5);
@@ -4676,8 +4638,11 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 //  SKINS SYSTEM
 // ═══════════════════════════════════════════════════════
+let ownedSkins    = loadData('pulse_skins_v3',    ['default']);
+let equippedSkin  = loadData('pulse_equipped_v3', 'default');
+
 // ── CURSOR SKIN SYSTEM ──
-var CURSOR_DEFS = [
+const CURSOR_DEFS = [
   {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
     ctx.strokeStyle=col; ctx.lineWidth=1.5;
     const g=s*.14, arm=s*.46;
@@ -4722,20 +4687,20 @@ var CURSOR_DEFS = [
     ctx.fillStyle=col; ctx.beginPath(); ctx.arc(c,c,2,0,Math.PI*2); ctx.fill();
   }},
 ];
-var equippedCursor = loadData('pulse_cursor_v1','crosshair');
-var ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
+let equippedCursor = loadData('pulse_cursor_v1','crosshair');
+let ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
 
 function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURSOR_DEFS[0]; }
 function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
 function buyCursor(id){
   const def=CURSOR_DEFS.find(c=>c.id===id);
-  if(!def||(Array.isArray(ownedCursors)?ownedCursors:[]).includes(id)) return;
+  if(!def||ownedCursors.includes(id)) return;
   if(def.price>0&&!spendCoins(def.price)) return;
   ownedCursors.push(id); saveData('pulse_owned_cursors_v1',ownedCursors);
   equipCursor(id);
 }
 
-var _xhairCanvas=null;
+let _xhairCanvas=null;
 function drawXhair(){
   if(!_xhairCanvas) _xhairCanvas=document.getElementById('xhair');
   const cvs=_xhairCanvas; if(!cvs) return;
@@ -4760,7 +4725,7 @@ document.addEventListener('click',e=>{
     sfxClick&&sfxClick();
 },{passive:true});
 
-var SKIN_DEFS = [
+const SKIN_DEFS = [
   {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4'},
   {id:'crimson',  name:'CRIMSON',       price:80,  color:'#ff1a6e', shape:'hex',      sides:6, trail:'#ff1a6e', glow:'#ff1a6e'},
   {id:'gold',     name:'OR PUR',        price:120, color:'#ffbe0b', shape:'hex',      sides:6, trail:'#ffbe0b', glow:'#ffbe0b'},
@@ -5025,7 +4990,7 @@ function equipSkin(id){
 }
 
 function grantSkin(id){
-  if((Array.isArray(ownedSkins)?ownedSkins:[]).includes(id)) return;
+  if(ownedSkins.includes(id)) return;
   // Skins premium: seulement via claimBpReward (cette stack)
   const sk=SKIN_DEFS.find(s=>s.id===id);
   if(sk?.premium && !_bpClaimInProgress){
@@ -5036,11 +5001,11 @@ function grantSkin(id){
   saveData('pulse_skins_v3',ownedSkins);
   if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
 }
-var _bpClaimInProgress=false;
+let _bpClaimInProgress=false;
 
 function buySkin(id){
   const sk=SKIN_DEFS.find(s=>s.id===id);
-  if(!sk||(Array.isArray(ownedSkins)?ownedSkins:[]).includes(id)) return;
+  if(!sk||ownedSkins.includes(id)) return;
   if(sk.price>0 && !spendCoins(sk.price)) return;
   grantSkin(id);
   if(sk.price>0 && currentUser&&SB) saveCloudProfile({coins});
@@ -5071,7 +5036,9 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 //  PERMANENT UPGRADES
 // ═══════════════════════════════════════════════════════
-var PERMA_DEFS = [
+let permaUpgrades = loadData('pulse_perma_v3', {});
+
+const PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
   {id:'p_spd',   ico:'💨', name:'AGILITE+',       desc:'+3% vitesse de depart par niveau.',   maxLvl:5, costs:[40,70,100,140,190], apply:(p,lvl)=>{ p.speed*=(1+.03*lvl); }},
@@ -5118,7 +5085,7 @@ function applyPermaUpgrades(player, gameState){
 // ═══════════════════════════════════════════════════════
 //  SHOP RENDERER
 // ═══════════════════════════════════════════════════════
-var currentShopTab = 'skins';
+let currentShopTab = 'skins';
 
 
 function openInventory(){
@@ -5129,8 +5096,8 @@ function renderInventory(){
   const grid=document.getElementById('inv-grid');
   if(!grid) return;
   grid.innerHTML='';
-  const mine=SKIN_DEFS.filter(s=>(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id));
-  const locked=SKIN_DEFS.filter(s=>!(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id)&&s.price>0);
+  const mine=SKIN_DEFS.filter(s=>ownedSkins.includes(s.id));
+  const locked=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0);
   const addSec=(title,skins,isLocked)=>{
     if(!skins.length) return;
     const hdr=document.createElement('div');hdr.className='inv-sec-hdr';hdr.textContent=title;grid.appendChild(hdr);
@@ -5193,7 +5160,7 @@ function renderShop(tab){
   if(tab!=='lottery') grid.className='shop-grid';
   if(tab==='skins'){
     for(const sk of SKIN_DEFS){
-      const owned=(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id);
+      const owned=ownedSkins.includes(sk.id);
       const equipped=equippedSkin===sk.id;
       const card=document.createElement('div');
       card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
@@ -5226,7 +5193,7 @@ function renderShop(tab){
     grid.className='shop-grid';
     grid.style.cssText='';
     for(const def of CURSOR_DEFS){
-      const owned=(Array.isArray(ownedCursors)?ownedCursors:[]).includes(def.id);
+      const owned=ownedCursors.includes(def.id);
       const equipped=equippedCursor===def.id;
       const card=document.createElement('div');
       card.className='skin-card'+(owned?' owned':'')+(equipped?' equipped':'');
@@ -5295,8 +5262,8 @@ function renderShop(tab){
 }
 
 // ─── LOTTERY ───
-var LOTTERY_COST=75; // Coute 75, esperance negative = realiste
-var LOTTERY_PRIZES=[
+const LOTTERY_COST=75; // Coute 75, esperance negative = realiste
+const LOTTERY_PRIZES=[
   // Pertes (~55%) — tu perds ta mise
   {w:30, ico:'💸', lbl:'PERDU — +0 pieces',       loss:true, fn:()=>{}},
   {w:15, ico:'💸', lbl:'PERDU — +0 pieces',        loss:true, fn:()=>{}},
@@ -5310,12 +5277,12 @@ var LOTTERY_PRIZES=[
   // Rares (~4%)
   {w:3,  ico:'✨', lbl:'Relique aleatoire',        fn:()=>{
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    const avail=RELIC_DEFS.filter(r=>!r.premium&&!(Array.isArray(ul)?ul:[]).includes(r.id));
+    const avail=RELIC_DEFS.filter(r=>!r.premium&&!ul.includes(r.id));
     if(avail.length){ const r=avail[Math.floor(Math.random()*avail.length)]; ul.push(r.id); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); showToast('✨ '+r.name+' débloquée !','warn',3000,'#ffbe0b'); }
     else awardCoins(400);
   }},
   {w:2,  ico:'🎨', lbl:'Skin aleatoire',           fn:()=>{
-    const avail=SKIN_DEFS.filter(s=>!(Array.isArray(ownedSkins)?ownedSkins:[]).includes(s.id)&&s.price>0&&!s.premium);
+    const avail=SKIN_DEFS.filter(s=>!ownedSkins.includes(s.id)&&s.price>0&&!s.premium);
     if(avail.length){ const sk=avail[Math.floor(Math.random()*avail.length)]; _bpClaimInProgress=true; grantSkin(sk.id); _bpClaimInProgress=false; showToast('🎨 Skin '+sk.name+' obtenu !','success',3000,'#b44fff'); }
     else awardCoins(600);
   }},
@@ -5497,7 +5464,7 @@ function showLotteryRewardOverlay(prize){
 
 
 // ─── ENEMY DEFINITIONS ───
-var ENEMY_DEFS = [
+const ENEMY_DEFS = [
   {id:'grunt',    col:'#ff1a6e', r:10, hp:3,   spd:1.4,  pts:10,  dmg:8,  lbl:'GRUNT',    shape:'circle'},
   {id:'runner',   col:'#ff9f1c', r:7,  hp:2,   spd:3.1,  pts:15,  dmg:6,  lbl:'RUNNER',   shape:'circle'},
   {id:'tank',     col:'#9b5de5', r:20, hp:15,  spd:0.58, pts:45,  dmg:22, lbl:'TANK',     shape:'hex', ranged:true, shootInterval:240},
@@ -5522,7 +5489,7 @@ var ENEMY_DEFS = [
 ];
 
 // ─── POWER-UP DROPS ───
-var POWERUP_DEFS = [
+const POWERUP_DEFS = [
   {id:'heal',    col:'#00f5d4', icon:'❤',  lbl:'+25 VIE',       ch:.07, apply:(p)=>{ p.hp=Math.min(p.maxHp,p.hp+25); flashHeal(); }},
   {id:'speed',   col:'#ffbe0b', icon:'⚡', lbl:'SPEED BOOST',   ch:.06, apply:(p)=>{ p.speedBoost=360; }},
   {id:'shield',  col:'#b44fff', icon:'🛡', lbl:'BOUCLIER ×3',   ch:.04, apply:(p)=>{ p.tempShield=true; p.tempShieldHp=3; }},
@@ -5538,7 +5505,7 @@ var POWERUP_DEFS = [
 ];
 
 // ─── UPGRADES ───
-var UPGRADE_DEFS = [
+const UPGRADE_DEFS = [
   {id:'dmg',      ico:'🔴', n:'Balle Rouge',    d:'+40% degats.',                   tier:'common',     stacks:true,  apply:s=>{ s.bulletDmg=+(s.bulletDmg*1.4).toFixed(2); }},
   {id:'fire',     ico:'⚡', n:'Cadence+',       d:'-22% delai entre tirs.',         tier:'common',     stacks:true,  apply:s=>{ s.fireRate=Math.max(38,Math.round(s.fireRate*.78)); }},
   {id:'spd',      ico:'💨', n:'Overdrive',      d:'+28% vitesse.',                  tier:'common',     stacks:true,  apply:s=>{ s.speed*=1.28; }},
@@ -5570,7 +5537,7 @@ var UPGRADE_DEFS = [
 ];
 
 // ─── CURSE DEFINITIONS ───
-var CURSE_DEFS = [
+const CURSE_DEFS = [
   {id:'c_speed',    ico:'🐌', n:'LENTEUR',         d:'Ta vitesse est reduite de 35%.',            reward:'🔴 Degats ×1.5',    apply:(p)=>{ p.speed*=0.65; }, rewardApply:(p)=>{ p.bulletDmg*=1.5; }, weight:3},
   {id:'c_armor',    ico:'💔', n:'FRAGILE',          d:'Tu recois 30% de degats en plus.',          reward:'❤️ PV max +50',      apply:(p)=>{ p.cursedArmor=true; }, rewardApply:(p)=>{ p.maxHp+=50; p.hp+=50; }, weight:3},
   {id:'c_fire',     ico:'🔥', n:'SURCHAUFFE',       d:'Ton arme surchauffe (arret 1s/5s).',        reward:'⚡ Cadence ×1.4',   apply:(p)=>{ p.overheatCurse=true; }, rewardApply:(p)=>{ p.fireRate=Math.max(28,Math.round(p.fireRate*.72)); }, weight:2},
@@ -5580,7 +5547,7 @@ var CURSE_DEFS = [
 ];
 
 // ─── ACHIEVEMENTS ───
-var ACH_DEFS = [
+const ACH_DEFS = [
   {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',       d:'Tuer son premier ennemi.',              goal:1,      stat:'totalKills',     reward:25},
   {id:'kills_100',    ico:'💀',  n:'Centurion',           d:'Tuer 100 ennemis en une partie.',       goal:100,    stat:'sessionKills',   reward:50},
   {id:'kills_500',    ico:'☣️',  n:'Exterminateur',       d:'Tuer 500 ennemis en une partie.',       goal:500,    stat:'sessionKills',   reward:150},
@@ -5606,7 +5573,7 @@ var ACH_DEFS = [
 ];
 
 // ─── TIP MESSAGES ───
-var TIPS = [
+const TIPS = [
   'Le dash te rend invincible pendant 7 frames !',
   'Les bombers explosent — eloigne-toi quand ils sont faibles.',
   'Les guardians ont un bouclier — tire dessus d\'abord.',
@@ -5632,7 +5599,23 @@ var TIPS = [
 function loadData(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
 
-var achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
+let scores     = loadData('pulse_scores_v2',   []);
+let achDone    = loadData('pulse_ach_v2',      {});
+let achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
+const UPDATE_NOTES = [
+  '📱 Mode portrait corrigé — scroll activé sur le menu principal',
+  '💥 Effets de mort améliorés — plus de particules, anneaux d\'impact',
+  '⚡ Dash repensé — trail lumineux, afterimages, anneau d\'explosion',
+  '🎯 DOUBLE/TRIPLE/QUAD KILL — animations plus grandes et vibrantes',
+  '🌊 Banner de vague — animation plus dynamique et percutante',
+  '⭐ Level-up banner — animation améliorée avec dégradé animé',
+  '🔥 Combo ×5/×20/×75 — nouveaux paliers avec effets visuels',
+  '💨 Speed boost — lignes de vitesse autour du joueur',
+  '🎆 Boss kill — freeze frame + anneaux d\'explosion multiples',
+  '📊 Score — animation pulse sur les gros gains de points',
+];
+const LAST_UPDATE_VERSION = 'v30.0';
+
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE NOTIFICATIONS
 // ═══════════════════════════════════════════════════════
@@ -5710,8 +5693,9 @@ function _notifAgo(ts){
   return Math.floor(s/86400)+'j';
 }
 
-var settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
-var newAchThisRun = [];
+let gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
+let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
+let newAchThisRun = [];
 
 function saveScores(){
   saveData('pulse_scores_v2',scores);
@@ -5743,7 +5727,7 @@ function resetGlobalStats(){ gStats={totalKills:0,gamesPlayed:0,totalScore:0,tot
 // ═══════════════════════════════════════════════════════
 //  AUDIO  (Web Audio API — generative sounds)
 // ═══════════════════════════════════════════════════════
-var AC = null;
+let AC = null;
 function getAC(){ if(!AC&&settings.sfx){ try{ AC=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
 function resumeAC(){ if(AC&&AC.state==='suspended') AC.resume(); }
 
@@ -5785,7 +5769,7 @@ function sfxShoot(){
 }
 
 // ── SFX hit ennemi ──────────────────────────────────────
-var _lastSfxHit=0;
+let _lastSfxHit=0;
 function sfxHit(){
   const now=Date.now(); if(now-_lastSfxHit<30) return; _lastSfxHit=now;
   const ac=getAC(); if(!ac||!settings.sfx) return;
@@ -5799,7 +5783,7 @@ function sfxHit(){
 }
 
 // ── SFX mort ennemi — crunch + bruit ───────────────────
-var _lastSfxDeath=0;
+let _lastSfxDeath=0;
 function sfxDeath(){
   const now=Date.now(); if(now-_lastSfxDeath<45) return; _lastSfxDeath=now;
   const ac=getAC(); if(!ac||!settings.sfx) return;
@@ -5923,10 +5907,10 @@ function sfxClick(){
 // ═══════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════
-var G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
+let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
 
 // ── DOM Element Cache (queried once, never inside the frame loop) ──
-var _dom={};
+let _dom={};
 function initDomCache(){
   const ids=['hv-score','hv-kills','hv-enemies','hv-wave','hv-hp','hv-lv',
     'bfhp','bfxp','bfsp','bfcd','wave-bar-fill','frz-fx',
@@ -6002,8 +5986,8 @@ function mkState(){
 // ═══════════════════════════════════════════════════════
 //  CANVAS
 // ═══════════════════════════════════════════════════════
-var bCtx, gCtx, W, H, bgStars=[];
-var canvasOffsetX=0, canvasOffsetY=0, canvasScale=1;
+let bCtx, gCtx, W, H, bgStars=[];
+let canvasOffsetX=0, canvasOffsetY=0, canvasScale=1;
 
 function setupCanvas(){
   const bc=document.getElementById('cvs-bg'), gc=document.getElementById('cvs-game');
@@ -6046,7 +6030,7 @@ function setupCanvas(){
 }
 
 // Static bg canvas — redrawn at a low rate (6fps) since it barely changes
-var _bgLastT=-99, _bgLastCombo=-1, _bgLastHp=-1;
+let _bgLastT=-99, _bgLastCombo=-1, _bgLastHp=-1;
 function drawBg(t){
   const comboIntensity = G ? Math.min(G.combo/20,1) : 0;
   const hpRatio = G ? G.player.hp/G.player.maxHp : 1;
@@ -6309,7 +6293,7 @@ function showBanner(num,sub,tip=''){
   }
 }
 
-var cdTm=null;
+let cdTm=null;
 function countdown(n,cb){
   if(G) G._countingDown=true;
   clearTimeout(cdTm);
@@ -6830,7 +6814,7 @@ function update(now){
     if(!blocked(nx,p.y,p.r)) p.x=nx;
     if(!blocked(p.x,ny,p.r)) p.y=ny;
     p.dashFrames--;
-    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; updateQuestProgress('dashes',1); }
+    if(p.dashFrames<=0){ p.dashing=false; p.invincible=22; p._dashJustEnded=true; }
     // dashTrail relic: damage enemies touched during dash
     if(p.dashTrail){
       for(const e of G.enemies){
@@ -7947,10 +7931,10 @@ function draw(){
   ctx.restore();
   if(_duoActive) drawP2();
   if(currentMode==='online') olDrawPeers();
+  updateEdgeThreats();
   updateRageMode();
   if(G && G.running && !G.paused) checkScoreMilestones(G.score);
   drawMinimap();
-  if(frame%2===0) recordReplayFrame();
   // Redraw crosshair canvas each frame (keeps colour in sync with skin)
   if(frame%12===0) drawXhair();
 }
@@ -7958,9 +7942,9 @@ function draw(){
 // ═══════════════════════════════════════════════════════
 //  MAIN LOOP
 // ═══════════════════════════════════════════════════════
-var _lastLoopTime=0;
-var _TARGET_FPS=60;
-var _FRAME_MS=1000/_TARGET_FPS;
+let _lastLoopTime=0;
+const _TARGET_FPS=60;
+const _FRAME_MS=1000/_TARGET_FPS;
 
 function loop(now){
   if(!G) return;
@@ -7975,7 +7959,7 @@ function loop(now){
 }
 
 // Gamepad poll runs independently — works in menus AND in game
-var _gpPollRaf=null;
+let _gpPollRaf=null;
 function _gpMenuLoop(){
   // Always poll gamepad regardless of game state
   pollGamepad();
@@ -7987,7 +7971,7 @@ _gpPollRaf=requestAnimationFrame(_gpMenuLoop);
 // ═══════════════════════════════════════════════════════
 //  UPGRADES SCREEN
 // ═══════════════════════════════════════════════════════
-var rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
+let rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
 
 function showUpgrades(){
   if(document.getElementById('s-upg').classList.contains('on')) return;
@@ -8364,11 +8348,6 @@ function gameOver(){
   }, 500);
 
   show('s-go');
-  // Hooks nouvelles features
-  stopReplayRecording();
-  _updateQuestsEndGame();
-  if(G) submitTournamentScore(G.score||0, G.wave||0);
-  if(G) updateClanContribution(G.score||0);
   // Show share button (always — clipboard is universally supported)
   const shareBtn = document.getElementById('go-share-btn');
   if(shareBtn) shareBtn.style.display = 'flex';
@@ -8844,7 +8823,7 @@ function renderGiftUI(pseudoPreset=''){
     el.innerHTML=`<div style="text-align:center;color:var(--txt2);font-size:8px;letter-spacing:.15em;padding:30px;border:1px solid var(--border);background:rgba(0,245,212,.02);">Connecte-toi pour envoyer des cadeaux.</div>`;
     return;
   }
-  const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id)&&sk.id!=='default');
+  const gifSkins = SKIN_DEFS.filter(sk=>!sk.premium&&ownedSkins.includes(sk.id)&&sk.id!=='default');
   el.innerHTML=`
     <div style="border:1px solid rgba(0,245,212,.15);background:rgba(0,245,212,.03);padding:14px 16px;position:relative;">
       <div style="position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--c1),transparent);"></div>
@@ -8919,7 +8898,7 @@ async function sendGift(){
     const ok = await pulseConfirm(`Offrir le skin ${skinDef?.name||skinId} a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     const tgtSkins = tgt.owned_skins||['default'];
-    if(!(Array.isArray(tgtSkins)?tgtSkins:[]).includes(skinId)) tgtSkins.push(skinId);
+    if(!tgtSkins.includes(skinId)) tgtSkins.push(skinId);
     await SB.from('profiles').update({owned_skins:tgtSkins}).eq('id',tgt.id);
     if(msg){msg.textContent=`✓ Skin ${skinDef?.name||skinId} offert a ${tgt.pseudo||target} !`;msg.className='acc-msg ok';}
     setTimeout(()=>{if(msg)msg.textContent='';},4000);
@@ -8930,7 +8909,7 @@ async function sendGift(){
     const relicDef = RELIC_DEFS.find(r=>r.id===relicId);
     const {data:tgtR} = await SB.from('profiles').select('id,pseudo,unlocked_relics').eq('id',tgt.id).maybeSingle();
     const curRelics = tgtR?.unlocked_relics || [];
-    if((Array.isArray(curRelics)?curRelics:[]).includes(relicId)){ if(msg){msg.textContent='Ce joueur possede deja cette relique.';msg.className='acc-msg err';} return; }
+    if(curRelics.includes(relicId)){ if(msg){msg.textContent='Ce joueur possede deja cette relique.';msg.className='acc-msg err';} return; }
     const ok = await pulseConfirm(`Offrir ${relicDef?.ico||''} ${relicDef?.name||relicId} a ${tgt.pseudo||target} ?`);
     if(!ok) return;
     curRelics.push(relicId);
@@ -8993,6 +8972,8 @@ function showAuthFrom(from){
 // ═══════════════════════════════════════════════════════
 //  PSEUDO & COMPTE
 // ═══════════════════════════════════════════════════════
+let userPseudo = loadData('pulse_pseudo_v3', '');
+
 function getPseudo(){
   return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
 }
@@ -9054,7 +9035,7 @@ async function fetchGlobalLeaderboard(){
   } catch(e){ return null; }
 }
 
-var currentLbTab = 'local';
+let currentLbTab = 'local';
 function lbTab(tab, btnEl){
   document.querySelectorAll('.lb-tab').forEach(b=>b.classList.remove('active'));
   btnEl.classList.add('active');
@@ -9110,15 +9091,15 @@ async function renderLeaderboard(){
 // ═══════════════════════════════════════════════════════
 //  SCREEN NAV
 // ═══════════════════════════════════════════════════════
-var BACK_MAP = {
+const BACK_MAP = {
   's-bp':'s-title','s-shop':'s-title','s-lb':'s-title','s-ach':'s-title',
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
   's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
-  's-admin':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-replay':'s-title',
+  's-admin':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-replay':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
 };
-var _backBtn=null;
+let _backBtn=null;
 function _initBackBtn(){
   if(_backBtn) return;
   _backBtn=document.createElement('button');
@@ -9190,8 +9171,6 @@ function startGame(){
   newAchThisRun=[];
   resetMilestones();
   _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
-  startReplayRecording();
-  loadDailyQuests();
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
@@ -9388,15 +9367,15 @@ document.addEventListener('keyup',e=>{
 // ═══════════════════════════════════════════════════════
 //  INPUT — MOBILE TWIN-STICK (THE FIXED VERSION)
 // ═══════════════════════════════════════════════════════
-var joyTouchId=null, joyBx=0, joyBy=0;
-var aimTouchId=null, aimCx=0, aimCy=0;
-var _aimLastTap=0; // for double-tap bomb detection
+let joyTouchId=null, joyBx=0, joyBy=0;
+let aimTouchId=null, aimCx=0, aimCy=0;
+let _aimLastTap=0; // for double-tap bomb detection
 
-var joyZone  = document.getElementById('joy-zone');
-var joyBase  = document.getElementById('joy-base');
-var joyKnob  = document.getElementById('joy-knob');
-var aimZone  = document.getElementById('aim-zone');
-var aimKnob  = document.getElementById('aim-knob');
+const joyZone  = document.getElementById('joy-zone');
+const joyBase  = document.getElementById('joy-base');
+const joyKnob  = document.getElementById('joy-knob');
+const aimZone  = document.getElementById('aim-zone');
+const aimKnob  = document.getElementById('aim-knob');
 
 // ── LEFT STICK: movement ──
 joyZone.addEventListener('touchstart', e=>{
@@ -9507,17 +9486,26 @@ document.getElementById('mb-dash').addEventListener('touchstart',e=>{ e.preventD
 //  BATTLE PASS — SAISON MENSUELLE + DUAL TRACK
 // ═══════════════════════════════════════════════════════
 
+function getCurrentSeason(){
+  const d=new Date();
+  return Math.max(1,(d.getFullYear()-2025)*12+d.getMonth()+1);
+}
+function getSeasonEndDate(){
+  const d=new Date();
+  return new Date(d.getFullYear(), d.getMonth()+1, 1); // 1er du mois suivant
+}
 function formatSeasonEnd(){
   const end=getSeasonEndDate();
   const diff=Math.ceil((end-Date.now())/(1000*60*60*24));
   return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
 }
 
-var BP_MAX_LEVEL = 30;
-var BP_XP_PER_LEVEL = 500;
+const BP_SEASON_CURRENT = getCurrentSeason();
+const BP_MAX_LEVEL = 30;
+const BP_XP_PER_LEVEL = 500;
 
 // ── THEMES SAISONNIERS ──
-var SEASON_THEMES = [
+const SEASON_THEMES = [
   {name:'NEON CITY',   accent:[0,245,212],  bg:'#03030a', effect:'scanlines'},
   {name:'BLOOD MOON',  accent:[255,26,110], bg:'#120308', effect:'radial'},
   {name:'VOID',        accent:[180,79,255], bg:'#080810', effect:'scanlines'},
@@ -9535,7 +9523,7 @@ function getSeasonTheme(){return SEASON_THEMES[(BP_SEASON_CURRENT-1)%SEASON_THEM
 
 // ── RECOMPENSES DUAL-TRACK ──
 // track: 'free' ou 'premium'
-var BP_REWARDS = [
+const BP_REWARDS = [
   // NIV 1
   {lv:1,  track:'free',    type:'coins',  value:50,          label:'+50 pieces',          icon:'🪙', rarity:'common'},
   {lv:1,  track:'premium', type:'coins',  value:150,         label:'+150 pieces',          icon:'🪙', rarity:'rare'},
@@ -9628,12 +9616,16 @@ var BP_REWARDS = [
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
 ];
 
+let battlePass = loadData('pulse_bp_v2', {
+  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
+});
 if(battlePass.season !== BP_SEASON_CURRENT){
   battlePass = {level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{}};
   saveData('pulse_bp_v2', battlePass);
 }
 
-var PREMIUM_PASS_COST = 1500;
+const PREMIUM_PASS_COST = 1500;
+let hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
   saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
@@ -9701,7 +9693,7 @@ function claimBpReward(level, track){
     if(def){ const lvl=getPermaLvl(reward.value); if(lvl<def.maxLvl){ permaUpgrades[reward.value]=(lvl+1); saveData('pulse_perma_v3',permaUpgrades); if(currentUser&&SB) saveCloudProfile({perma_upgrades:permaUpgrades}); } }
   } else if(reward.type==='relic'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    if(!(Array.isArray(ul)?ul:[]).includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); }
+    if(!ul.includes(reward.value)){ ul.push(reward.value); saveData('pulse_unlocked_relics_v1',ul); if(currentUser&&SB) saveCloudProfile({unlocked_relics:ul}); }
   }
 
   _bpClaimInProgress=false;
@@ -9752,14 +9744,14 @@ function claimAllBp(){
     if(r.type==='coins'){coins+=r.value;saveData('pulse_coins_v3',coins);updateCoinsHUD();}
     else if(r.type==='skin') grantSkin(r.value);
     else if(r.type==='perma'){const def=PERMA_DEFS.find(d=>d.id===r.value);if(def){const lvl=getPermaLvl(r.value);if(lvl<def.maxLvl){permaUpgrades[r.value]=(lvl+1);saveData('pulse_perma_v3',permaUpgrades);}}}
-    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!(Array.isArray(ul)?ul:[]).includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);if(currentUser&&SB)saveCloudProfile({unlocked_relics:ul});}}
+    else if(r.type==='relic'){const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.value)){ul.push(r.value);saveData('pulse_unlocked_relics_v1',ul);if(currentUser&&SB)saveCloudProfile({unlocked_relics:ul});}}
   }
   saveBP();
   if(currentUser&&SB) saveCloudProfile({coins});
   claimBpReward(eligible[eligible.length-1].lv, eligible[eligible.length-1].track);
 }
 
-function openBP_legacy(){
+function openBP(){
   renderBP();
   show('s-bp');
   setTimeout(updateMenuBadges, 200);
@@ -9906,28 +9898,20 @@ function makeBpCell(r, lv, playerLv, premiumLocked){
 }
 
 function grantBpXp(score, wave, kills){
-  // score/150 + wave*12 + kills/4*5 + streak bonus, cap 600
-  const baseXp = Math.floor(score/150) + wave*12 + Math.floor(kills/4)*5;
-  // Streak bonus
-  const streak = loadData('pulse_login_streak_v1',{streak:0}).streak||0;
-  const streakBonus = Math.min(streak,7)*10;
-  const xp = baseXp + streakBonus;
-  addBpXp(Math.max(15, Math.min(xp, 600)));
-  // Mettre à jour quêtes XP 
-  updateQuestProgress('score', score);
-  updateQuestProgress('wave', wave);
-  updateQuestProgress('kills', kills);
+  // More rewarding: score/150 + wave*12 + kills/4*5, cap 500 (roughly 50-200 XP/run)
+  const xp = Math.floor(score/150) + wave*12 + Math.floor(kills/4)*5;
+  addBpXp(Math.max(15, Math.min(xp, 500)));
 }
 
 // ═══════════════════════════════════════════════════════
 //  DUO LOCAL — Touches configurables P2
 // ═══════════════════════════════════════════════════════
-var P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
-var p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
-var duoRemapTarget=null, duoRemapBtn=null;
+const P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
+let p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
+let duoRemapTarget=null, duoRemapBtn=null;
 
-var DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
-var P1_DEFAULT_DISPLAY = {up:'W / ↑',down:'S / ↓',left:'A / ←',right:'D / →',dash:'ESPACE',bomb:'Q'};
+const DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
+const P1_DEFAULT_DISPLAY = {up:'W / ↑',down:'S / ↓',left:'A / ←',right:'D / →',dash:'ESPACE',bomb:'Q'};
 
 function renderDuoConfig(){
   renderDuoPlayer1();
@@ -10007,8 +9991,8 @@ document.addEventListener('mousedown',function(e){
   duoRemapTarget=null; duoRemapBtn=null;
 },true);
 
-var duoMode = 'classic';
-var _duoActive = false;
+let duoMode = 'classic';
+let _duoActive = false;
 
 function selectDuoMode(mode){
   duoMode = mode;
@@ -10035,9 +10019,9 @@ function launchDuo(){
 // ═══════════════════════════════════════════════════════
 //  GAME MODES
 // ═══════════════════════════════════════════════════════
-var currentMode = 'classic';
-var modeTimer = 0;
-var P2 = null;
+let currentMode = 'classic';
+let modeTimer = 0;
+let P2 = null;
 
 function showModeSelect(){
   show('s-mode');
@@ -10116,10 +10100,10 @@ function updateModeLogic(){
 // ═══════════════════════════════════════════════════════
 //  ARENE — SYSTEME DE NIVEAUX PROGRESSIFS
 // ═══════════════════════════════════════════════════════
-var arenaLevel = loadData('pulse_arena_level_v1', 1);
-var arenaBestLevel = loadData('pulse_arena_best_v1', 0);
+let arenaLevel = loadData('pulse_arena_level_v1', 1);
+let arenaBestLevel = loadData('pulse_arena_best_v1', 0);
 
-var ARENA_LEVELS = [
+const ARENA_LEVELS = [
   // {n: nom, desc, enemies: [{id, count}], reward: {type, value, label, icon, desc}}
   {n:'ECHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
     enemies:[{id:'grunt',n:15},{id:'runner',n:8},{id:'swarm',n:10}],
@@ -10189,7 +10173,7 @@ function applyArenaReward(reward){
     if(upgDef && G) upgDef.apply(G.player);
   } else if(reward.type==='relic_unlock'){
     const ul=loadData('pulse_unlocked_relics_v1',[]);
-    if(!(Array.isArray(ul)?ul:[]).includes(reward.value)){ul.push(reward.value);saveData('pulse_unlocked_relics_v1',ul);}
+    if(!ul.includes(reward.value)){ul.push(reward.value);saveData('pulse_unlocked_relics_v1',ul);}
     showPopup('✨ RELIQUE DEBLOQUEE !','#ffbe0b');
   } else if(reward.type==='skin_unlock'){
     grantSkin(reward.value);
@@ -10431,13 +10415,13 @@ function renderArenaMap(){
 }
 
 // Replay mode vars
-var _arenaReplayMode=false;
-var _arenaReplaySavedLevel=1;
+let _arenaReplayMode=false;
+let _arenaReplaySavedLevel=1;
 
-var P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
+const P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
 
 // Mouse button state for P2 remap support
-var _mouseButtons = {};
+const _mouseButtons = {};
 document.addEventListener('mousedown', e=>{ _mouseButtons['Mouse'+e.button]=true; });
 document.addEventListener('mouseup',   e=>{ _mouseButtons['Mouse'+e.button]=false; });
 
@@ -10642,21 +10626,21 @@ function drawP2(){
 //  MULTIJOUEUR EN LIGNE — Supabase Realtime
 //  Rooms publiques visibles par tous + rooms privees par code
 // ═══════════════════════════════════════════════════════
-var OL_MAX_PLAYERS = 4;
-var OL_SYNC_MS = 120;
-var OL_ROOMS_CHANNEL = 'pulse_public_rooms';
+const OL_MAX_PLAYERS = 4;
+const OL_SYNC_MS = 120;
+const OL_ROOMS_CHANNEL = 'pulse_public_rooms';
 
-var olChannel = null;       // game channel
-var olLobbyChannel = null;  // lobby/discovery channel
-var olPlayers = {};
-var olMyUid = null;
-var olRoomCode = null;
-var olRoomName = null;
-var olIsHost = false;
-var olStarted = false;
-var olSyncTimer = null;
-var olTab = 'browse';
-var olPublicRooms = {};     // {code: {name, players, host}}
+let olChannel = null;       // game channel
+let olLobbyChannel = null;  // lobby/discovery channel
+let olPlayers = {};
+let olMyUid = null;
+let olRoomCode = null;
+let olRoomName = null;
+let olIsHost = false;
+let olStarted = false;
+let olSyncTimer = null;
+let olTab = 'browse';
+let olPublicRooms = {};     // {code: {name, players, host}}
 
 function olInit(){
   olMyUid = currentUser?.id || ('g_'+Math.random().toString(36).slice(2,9));
@@ -10730,7 +10714,7 @@ function olRenderRoomList(){
 }
 
 // ── CREATE ──
-var olMode = 'classic'; // 'classic' | 'chrono' | 'arena' | 'duo'
+let olMode = 'classic'; // 'classic' | 'chrono' | 'arena' | 'duo'
 
 function selectOlMode(mode){
   olMode = mode;
@@ -10917,17 +10901,17 @@ function olUpdateHud(){
 // ═══════════════════════════════════════════════════════
 //  MODE DUEL PvP
 // ═══════════════════════════════════════════════════════
-var duelChannel = null;
-var duelCode = null;
-var duelIsHost = false;
-var duelOpponent = null; // {uid, name, hp, x, y, score}
-var duelMyUid = null;
-var duelTimer = null;
-var duelTimeLeft = 90;
-var duelActive = false;
-var duelMyHp = 100;
-var DUEL_MAX_HP = 100;
-var DUEL_DURATION = 90;
+let duelChannel = null;
+let duelCode = null;
+let duelIsHost = false;
+let duelOpponent = null; // {uid, name, hp, x, y, score}
+let duelMyUid = null;
+let duelTimer = null;
+let duelTimeLeft = 90;
+let duelActive = false;
+let duelMyHp = 100;
+const DUEL_MAX_HP = 100;
+const DUEL_DURATION = 90;
 
 function duelStatus(msg, cls){
   const el=document.getElementById('ol-duel-status');
@@ -11076,7 +11060,7 @@ function duelLaunch(){
   if(duelSyncInt) clearInterval(duelSyncInt);
   duelSyncInt=setInterval(duelSyncPosition,50);
 }
-var duelSyncInt=null;
+let duelSyncInt=null;
 
 function duelSyncPosition(){
   if(!G||!G.running||!duelActive) return;
@@ -11195,8 +11179,8 @@ function adminTabSwitch(tab){
 }
 
 // ── Admin Logs ──
-var ADMIN_LOG_KEY = 'pulse_admin_logs_v1';
-var ADMIN_LOG_MAX = 100;
+const ADMIN_LOG_KEY = 'pulse_admin_logs_v1';
+const ADMIN_LOG_MAX = 100;
 
 function adminLog(action, detail=''){
   if(!isAdmin()) return;
@@ -11339,7 +11323,7 @@ async function adminClearNotifsByType(){
     statusEl.className='admin-status ok';
     // Effacer les nôtres aussi
     if(clearAll){ clearAllNotifs(); }
-    else { const notifs=loadNotifs().filter(n=>!(Array.isArray(typesToClear)?typesToClear:[]).includes(n.type)); saveNotifs(notifs); updateNotifBadge(); }
+    else { const notifs=loadNotifs().filter(n=>!typesToClear.includes(n.type)); saveNotifs(notifs); updateNotifBadge(); }
     setTimeout(adminCloseNotifModal, 1800);
   } catch(e){
     statusEl.textContent='Erreur: '+e.message; statusEl.className='admin-status err';
@@ -11349,7 +11333,7 @@ async function adminClearNotifsByType(){
 //  ADMIN PANEL
 //  Accessible uniquement pour fozyllll.yt@gmail.com
 // ═══════════════════════════════════════════════════════
-var ADMIN_EMAILS = ['fozyllll.yt@gmail.com','tcb.theo@gmail.com'];
+const ADMIN_EMAILS = ['fozyllll.yt@gmail.com','tcb.theo@gmail.com'];
 function isAdmin(){ return currentUser && ADMIN_EMAILS.includes(currentUser.email); }
 
 function openAdmin(){
@@ -11420,14 +11404,14 @@ function adminPlayerCard(p){
   const stats = p.stats || {};
 
   const skinPills = SKIN_DEFS.map(sk=>
-    `<div class="admin-skin-pill${(Array.isArray(ownedSkins)?ownedSkins:[]).includes(sk.id)?' owned':''}"
+    `<div class="admin-skin-pill${ownedSkins.includes(sk.id)?' owned':''}"
       onclick="adminToggleSkin('${p.id}','${sk.id}',this)">${sk.name}</div>`
   ).join('');
 
   const ownedRelics = p.unlocked_relics || [];
   const relicPills = RELIC_DEFS.map(r=>
-    `<div class="admin-skin-pill${(Array.isArray(ownedRelics)?ownedRelics:[]).includes(r.id)?' owned':''}"
-      style="color:${(Array.isArray(ownedRelics)?ownedRelics:[]).includes(r.id)?'var(--c3)':'var(--dim)'}"
+    `<div class="admin-skin-pill${ownedRelics.includes(r.id)?' owned':''}"
+      style="color:${ownedRelics.includes(r.id)?'var(--c3)':'var(--dim)'}"
       onclick="adminToggleRelic('${p.id}','${r.id}',this)">${r.ico} ${r.name}</div>`
   ).join('');
 
@@ -11560,7 +11544,7 @@ async function adminSave(playerId){
     const name = p.textContent;
     return SKIN_DEFS.find(s=>s.name===name)?.id;
   }).filter(Boolean);
-  if(!(Array.isArray(ownedSkins)?ownedSkins:[]).includes('default')) ownedSkins.unshift('default');
+  if(!ownedSkins.includes('default')) ownedSkins.unshift('default');
   // Collect relics from pills
   const relicPillsEl = document.querySelectorAll('#adm-relics-'+playerId+' .admin-skin-pill');
   const unlockedRelics = Array.from(relicPillsEl).filter(p=>p.classList.contains('owned')).map(p=>{
@@ -11688,9 +11672,9 @@ async function adminFixInconsistencies(){
 }
 
 // ── Admin Broadcast ──
-var ADMIN_CHANNEL = 'pulse_admin_broadcast';
-var _adminBcChannel = null;
-var _adminCtrlChannel = null;
+const ADMIN_CHANNEL = 'pulse_admin_broadcast';
+let _adminBcChannel = null;
+let _adminCtrlChannel = null;
 
 function adminInitBroadcast(){
   if(!SB||!isAdmin()) return;
@@ -11752,7 +11736,7 @@ function initAdminBroadcastListener(){
       if(!payload) return;
       if(payload.types==='all'){ clearAllNotifs(); showPopup('🔔 Notifs effacées par l\'admin','#ffbe0b'); }
       else if(Array.isArray(payload.types)){
-        const notifs=loadNotifs().filter(n=>!(Array.isArray(payload.types)?payload.types:[]).includes(n.type));
+        const notifs=loadNotifs().filter(n=>!payload.types.includes(n.type));
         saveNotifs(notifs); updateNotifBadge();
         if(typeof renderNotifs==='function'){ try{renderNotifs();}catch(e){} }
       }
@@ -11764,7 +11748,7 @@ function initAdminBroadcastListener(){
       setTimeout(async ()=>{
         try {
           if(!_adminBcChannel) adminInitBroadcast();
-          const msg = '🆕 PULSE '+LAST_UPDATE_VERSION+' est disponible ! Rechargez la page pour profiter des nouveautés : '+(Array.isArray(UPDATE_NOTES)?UPDATE_NOTES:[]).slice(0,4).join(' · ');
+          const msg = '🆕 PULSE '+LAST_UPDATE_VERSION+' est disponible ! Rechargez la page pour profiter des nouveautés : '+UPDATE_NOTES.slice(0,4).join(' · ');
           await _adminBcChannel.send({
             type:'broadcast', event:'admin_msg',
             payload:{ txt: msg, ts:Date.now(), from:'Admin' }
@@ -11781,7 +11765,7 @@ function initAdminBroadcastListener(){
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE RELIQUES
 // ═══════════════════════════════════════════════════════
-var RELIC_DEFS = [
+const RELIC_DEFS = [
   {id:'dash_trail',   ico:'💫', name:'TRAINE DE DASH',      desc:'Chaque dash laisse une traîne qui inflige 15 dégâts aux ennemis traversés. Stacks avec les dégâts normaux.', tag:'MOBILITE',  rarity:'common',  price:600,
     apply:(p)=>{ p.dashTrail=true; }},
   {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'+2 PV par ennemi tué. Désactivé en mode Hardcore.', tag:'SURVIE',     rarity:'common',  price:600,
@@ -11837,7 +11821,7 @@ var RELIC_DEFS = [
 // ═══════════════════════════════════════════════════════
 //  CONFIRM PERSONNALISE
 // ═══════════════════════════════════════════════════════
-var _pcResolve = null;
+let _pcResolve = null;
 (function(){
   function init(){
     const el = document.getElementById('pulse-confirm');
@@ -11861,8 +11845,8 @@ function pulseConfirm(msg){
   });
 }
 
-var activeRelics = [];
-var pendingRelicOffer = false;
+let activeRelics = [];
+let pendingRelicOffer = false;
 
 function shouldOfferRelic(wave){
   return wave>0 && wave%5===0 && wave<=30; // every 5 waves up to 30
@@ -11878,7 +11862,7 @@ function offerRelic(){
   const available = RELIC_DEFS.filter(r=>
     !activeRelics.find(a=>a.id===r.id) &&
     (!r.premium || hasPremiumPass.owned) &&
-    (Array.isArray(unlockedIds)?unlockedIds:[]).includes(r.id)
+    unlockedIds.includes(r.id)
   );
   if(available.length === 0){ pendingRelicOffer=false; G.paused=false; countdown(3,startWave); return; }
   const shuffled = available.sort(()=>Math.random()-.5).slice(0,3);
@@ -11950,7 +11934,7 @@ function resetRelics(){
 // ═══════════════════════════════════════════════════════
 //  DEFI QUOTIDIEN
 // ═══════════════════════════════════════════════════════
-var DAILY_MODIFIERS_POOL = [
+const DAILY_MODIFIERS_POOL = [
   {id:'fast_enemies',  ico:'💨', name:'ENNEMIS RAPIDES',   desc:'Vitesse ennemis +40%', apply:(g)=>{ g._dailyMod_fastEnemies=true; }},
   {id:'no_powerups',   ico:'🚫', name:'SANS BONUS',         desc:'Aucun powerup au sol', apply:(g)=>{ g._dailyMod_noPowerups=true; }},
   {id:'double_enemies',ico:'👥', name:'DOUBLE VAGUE',       desc:'2× plus d\'ennemis par vague', apply:(g)=>{ g._dailyMod_doubleEnemies=true; }},
@@ -11960,7 +11944,7 @@ var DAILY_MODIFIERS_POOL = [
   {id:'fog_always',    ico:'🌫', name:'BROUILLARD TOTAL',   desc:'Visibilite permanente reduite', apply:(g)=>{ g.player.fogCurse=true; }},
 ];
 
-var dailyState = {played:false, score:0, date:''};
+let dailyState = {played:false, score:0, date:''};
 
 function getDailyDateStr(){
   const d=new Date();
@@ -12156,7 +12140,7 @@ async function checkDailyRankReward(){
 // ═══════════════════════════════════════════════════════
 //  HISTORIQUE DES PARTIES
 // ═══════════════════════════════════════════════════════
-var gameHistory = loadData('pulse_history_v1', []);
+let gameHistory = loadData('pulse_history_v1', []);
 
 function addToHistory(entry){
   gameHistory.unshift(entry);
@@ -12219,13 +12203,15 @@ function getDifficultyMult(){
 //  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
+let skinPerkLevels = loadData('pulse_skin_perks_v1', {});
+
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
 // Cout dupgrade par niveau (0→1, 1→2, 2→3)
-var SKIN_PERK_COSTS = [200, 500, 1000];
+const SKIN_PERK_COSTS = [200, 500, 1000];
 
-var SKIN_PERKS = {
+const SKIN_PERKS = {
   // ── SKINS CLASSIQUES ──
   'default': {
     ico:'🔋', name:'SURCHARGE HEX',
@@ -12417,7 +12403,7 @@ function renderRelicEquip(){
   // Sort: equipped first, then owned, then by rarity (epic→rare→common)
   const rarityOrder={epic:0,rare:1,common:2};
   const sorted=[...RELIC_DEFS].sort((a,b)=>{
-    const aEq=(Array.isArray(equipped)?equipped:[]).includes(a.id), bEq=(Array.isArray(equipped)?equipped:[]).includes(b.id);
+    const aEq=equipped.includes(a.id), bEq=equipped.includes(b.id);
     if(aEq&&!bEq) return -1; if(bEq&&!aEq) return 1;
     const aOwn=unlocked.includes(a.id), bOwn=unlocked.includes(b.id);
     if(aOwn&&!bOwn) return -1; if(bOwn&&!aOwn) return 1;
@@ -12429,7 +12415,7 @@ function renderRelicEquip(){
 
   sorted.forEach(r=>{
     const owned=unlocked.includes(r.id)||(r.premium&&hasPremiumPass.owned);
-    const isEq=(Array.isArray(equipped)?equipped:[]).includes(r.id);
+    const isEq=equipped.includes(r.id);
     const rc=rarityCol[r.rarity]||'var(--c3)';
     const rl=rarityLbl[r.rarity]||'COMMUN';
     const borderCol=isEq?'rgba(255,190,11,.7)':owned?(r.rarity==='epic'?'rgba(180,79,255,.4)':r.rarity==='rare'?'rgba(0,187,249,.35)':'var(--border)'):'rgba(255,255,255,.05)';
@@ -12461,7 +12447,7 @@ function renderRelicEquip(){
         pulseConfirm('Acheter '+r.name+' pour '+r.price+' 🪙 ?').then(ok=>{
           if(!ok) return;
           coins-=r.price;saveData('pulse_coins_v3',coins);if(currentUser&&SB)saveCloudProfile({coins});updateCoinsHUD();
-          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!(Array.isArray(ul)?ul:[]).includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
+          const ul=loadData('pulse_unlocked_relics_v1',[]);if(!ul.includes(r.id)){ul.push(r.id);saveData('pulse_unlocked_relics_v1',ul);}
           showPopup('✨ '+r.name+' debloquee !','#ffbe0b');
           renderRelicEquip();
         });
@@ -12469,7 +12455,7 @@ function renderRelicEquip(){
       }
       // Equip / unequip — re-read from localStorage to avoid stale state
       const eq2=loadData('pulse_eq_relics_v1',[]);
-      if((Array.isArray(eq2)?eq2:[]).includes(r.id)){
+      if(eq2.includes(r.id)){
         saveData('pulse_eq_relics_v1',eq2.filter(x=>x!==r.id));
       } else {
         if(eq2.length>=loadData('pulse_relic_slots_v1',1)){showPopup('Achete un slot supplementaire pour equiper plus de reliques !','#ff1a6e');return;}
@@ -12484,7 +12470,7 @@ function renderRelicEquip(){
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
 // ═══════════════════════════════════════════════════════
-var KB_DEFAULT = {
+const KB_DEFAULT = {
   up:    ['w','ArrowUp'],
   down:  ['s','ArrowDown'],
   left:  ['a','ArrowLeft'],
@@ -12493,7 +12479,7 @@ var KB_DEFAULT = {
   bomb:  ['q','Q'],
   pause: ['p','P','Escape'],
 };
-var KB_ACTION_LABELS = {
+const KB_ACTION_LABELS = {
   up:    '⬆ MONTER',
   down:  '⬇ DESCENDRE',
   left:  '⬅ GAUCHE',
@@ -12503,11 +12489,11 @@ var KB_ACTION_LABELS = {
   pause: '⏸ PAUSE',
 };
 // Deep clone default
-var kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
+let kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
 
 // Keyboard remap state
-var kbRemapTarget = null;
-var kbRemapListener = null;
+let kbRemapTarget = null;
+let kbRemapListener = null;
 
 function kbKeyName(key){
   const names = {
@@ -12556,7 +12542,7 @@ function openKeybinds(){
 }
 
 // Track which physical keys are currently pressed for the tester
-var _kbTesterPressed = new Set();
+const _kbTesterPressed = new Set();
 
 function startKbTester(){
   const keysEl = document.getElementById('kb-tester-keys');
@@ -12682,11 +12668,11 @@ function kbIsMove(key, dir){
 // ═══════════════════════════════════════════════════════
 //  GAMEPAD — Anti-lag BT + Remapping
 // ═══════════════════════════════════════════════════════
-var gpIndex=null, gpPrev={};
-var _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
+let gpIndex=null, gpPrev={};
+let _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
 
 // Deadzone reduite a 0.12 pour meilleure reactivite (surtout BT)
-var GP_DEADZONE=0.12;
+const GP_DEADZONE=0.12;
 
 // Auto-detect gamepad layout from id string
 function detectGpLayout(id=''){
@@ -12704,10 +12690,10 @@ function gpBtnLabels(layout){
 }
 
 // Nintendo swaps A/B and X/Y vs standard
-var GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
-var gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
-var gpRemapTarget=null, gpRemapListener=null;
-var GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
+const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
+let gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
+let gpRemapTarget=null, gpRemapListener=null;
+const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
 function gpVal(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.value:b):0; }
 function gpPressed(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.pressed:!!b):false; }
@@ -12718,8 +12704,8 @@ function gpAxis(gp,axIdx){ const v=gpAxisRaw(gp,axIdx); return Math.abs(v)>GP_DE
 // BT gamepads can have 8–30ms hardware latency. Chrome/Firefox only update
 // gamepad state when getGamepads() is called inside rAF, but we can call it
 // more often via setInterval to capture the freshest state possible.
-var _gpSnap=null; // latest snapshot, written by interval, read by rAF
-var _gpPrevSnap=null; // previous snapshot for edge detection outside game loop
+let _gpSnap=null; // latest snapshot, written by interval, read by rAF
+let _gpPrevSnap=null; // previous snapshot for edge detection outside game loop
 function safeGetGamepads(){ try{ return navigator.getGamepads?navigator.getGamepads():[]; }catch(e){ return []; } }
 
 // Poll at ~250Hz — handles remap detection AND game-loop-independent button reading
@@ -12728,7 +12714,7 @@ document.addEventListener('visibilitychange',()=>{
   if(_gpInterval) clearInterval(_gpInterval);
   // restart handled by reassignment below — this is declarative, skip restart
 });
-var _gpInterval=setInterval(()=>{
+const _gpInterval=setInterval(()=>{
   if(gpIndex===null){ _gpSnap=null; return; }
   const gps=safeGetGamepads();
   const gp=gps[gpIndex];
@@ -12964,7 +12950,7 @@ function pollGamepad(){
   gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,LT:nLT,RT:nRT,_navCd:gpPrev._navCd,_menuFocusIdx:gpPrev._menuFocusIdx,_menuNavCd:gpPrev._menuNavCd,_scrollCd:gpPrev._scrollCd,_navStart:gpPrev._navStart};
 }
 
-var gpCardIdx=0;
+let gpCardIdx=0;
 function gpNavigateCards(wasConfirm,nowConfirm){
   // Works regardless of whether G is running — covers menus too
   const upg=document.getElementById('s-upg'), curse=document.getElementById('s-curse');
@@ -12998,11 +12984,11 @@ function gpNavigateCards(wasConfirm,nowConfirm){
 // ═══════════════════════════════════════════════════════
 
 // Screens where the card-picker (s-upg / s-curse) takes over — skip general nav
-var GP_CARD_SCREENS = ['s-upg','s-curse'];
+const GP_CARD_SCREENS = ['s-upg','s-curse'];
 // Screens that are overlays on top of the game — don't scroll
-var GP_NO_SCROLL_SCREENS = ['s-upg','s-curse','s-pause'];
+const GP_NO_SCROLL_SCREENS = ['s-upg','s-curse','s-pause'];
 // All navigable menu screens
-var GP_MENU_SCREENS = [
+const GP_MENU_SCREENS = [
   's-title','s-go','s-pause','s-shop','s-lb','s-settings',
   's-stats','s-ach','s-mode','s-relics','s-inventory','s-bp',
   's-keybinds','s-gpmap','s-ob','s-admin','s-gifts'
@@ -13098,7 +13084,7 @@ function gpScrollMenus(){
 }
 
 // Reset menu focus index when changing screens
-var _origShow=window.show;
+const _origShow=window.show;
 // Patch show() to reset menu nav index on screen change
 (function(){
   const orig=show;
@@ -13116,8 +13102,8 @@ var _origShow=window.show;
 // ═══════════════════════════════════════════════════════
 //  ONBOARDING TUTORIAL
 // ═══════════════════════════════════════════════════════
-var OB_TOTAL = 9;
-var obCurrent = 0;
+const OB_TOTAL = 9;
+let obCurrent = 0;
 
 function obInit(){
   // Build dots
@@ -13409,8 +13395,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 // ── FLOATING DAMAGE NUMBERS ─────────────────────────────────────
-var _dmgContainer = document.getElementById('dmg-numbers');
-var _dmgPool = [];
+const _dmgContainer = document.getElementById('dmg-numbers');
+let _dmgPool = [];
 
 function spawnDmgNumber(x, y, text, type='hit'){
   if(!_dmgContainer || !settings.particles) return;
@@ -13433,7 +13419,7 @@ function spawnDmgNumber(x, y, text, type='hit'){
 }
 
 // Patch onKill to show floating kill numbers
-var _origOnKill = typeof onKill === 'function' ? onKill : null;
+const _origOnKill = typeof onKill === 'function' ? onKill : null;
 if(_origOnKill){
   window.onKill = function(e){
     _origOnKill(e);
@@ -13443,12 +13429,12 @@ if(_origOnKill){
 }
 
 // ── ENHANCED COMBO DISPLAY ──────────────────────────────────────
-var _cvalNew = document.getElementById('cval-new');
-var _comboTier = document.getElementById('combo-tier');
-var _comboBarFill = document.getElementById('combo-bar-fill');
-var _comboInner = document.getElementById('combo-inner');
+const _cvalNew = document.getElementById('cval-new');
+const _comboTier = document.getElementById('combo-tier');
+const _comboBarFill = document.getElementById('combo-bar-fill');
+const _comboInner = document.getElementById('combo-inner');
 
-var COMBO_TIERS = [
+const COMBO_TIERS = [
   {min:0,   label:'COMBO',       color:'var(--c3)',   size:'clamp(42px,10vw,66px)'},
   {min:5,   label:'HOT ✦',       color:'#ff9f1c',    size:'clamp(44px,11vw,70px)'},
   {min:10,  label:'BLAZING ✦✦',  color:'var(--c6)',   size:'clamp(46px,12vw,74px)'},
@@ -13456,8 +13442,8 @@ var COMBO_TIERS = [
   {min:50,  label:'⚡ GODLIKE',   color:'var(--c4)',   size:'clamp(52px,14vw,88px)'},
 ];
 
-var _lastCombo = 0;
-var _streakCount = 0;
+let _lastCombo = 0;
+let _streakCount = 0;
 
 function updateEnhancedCombo(val){
   if(!_cvalNew) return;
@@ -13518,7 +13504,7 @@ function showStreakPopup(text, color){
 }
 
 // Patch the combo update if combo tracking exists
-var _origComboUpdate = typeof updateCombo === 'function' ? updateCombo : null;
+const _origComboUpdate = typeof updateCombo === 'function' ? updateCombo : null;
 // We hook via requestAnimationFrame check instead to avoid reference errors
 
 // ── LEVEL UP BANNER ─────────────────────────────────────────────
@@ -13532,9 +13518,9 @@ function showLvupBanner(level){
 }
 
 // ── SPEEDRUN TIMER ───────────────────────────────────────────────
-var _timerEl = null; // lazily initialized
-var _timerStart = 0;
-var _timerRaf = 0;
+let _timerEl = null; // lazily initialized
+let _timerStart = 0;
+let _timerRaf = 0;
 
 function startSpeedrunTimer(){
   if(!_timerEl) _timerEl = document.getElementById('speedrun-timer');
@@ -13625,7 +13611,7 @@ function renderPauseBuildSummary(){
 }
 
 // Hook into the existing pause toggle
-var _origTogglePause = typeof togglePause === 'function' ? togglePause : null;
+const _origTogglePause = typeof togglePause === 'function' ? togglePause : null;
 if(_origTogglePause){
   window.togglePause = function(){
     _origTogglePause();
@@ -13646,7 +13632,7 @@ function updateHPDangerEffect(){
 }
 
 // ── GAME START HOOK ──────────────────────────────────────────────
-var _origStartGame = typeof startGame === 'function' ? startGame : null;
+const _origStartGame = typeof startGame === 'function' ? startGame : null;
 if(_origStartGame){
   window.startGame = function(...args){
     _origStartGame(...args);
@@ -13655,7 +13641,7 @@ if(_origStartGame){
 }
 
 // ── FRAME UPDATE HOOKS (polling approach to avoid reference errors) ──
-var _prevLevel = 0, _prevCombo = 0;
+let _prevLevel = 0, _prevCombo = 0;
 (function patchGameLoop(){
   const _origRaf = window.requestAnimationFrame.bind(window);
   // We use a secondary interval to check game state without touching the RAF
@@ -13695,7 +13681,7 @@ var _prevLevel = 0, _prevCombo = 0;
 
 // ── UPGRADE CARD SYNERGIES ───────────────────────────────────────
 // Inject synergy hints when upgrade screen is rendered
-var _origShowUpgrades = typeof showUpgrades === 'function' ? showUpgrades : null;
+const _origShowUpgrades = typeof showUpgrades === 'function' ? showUpgrades : null;
 if(_origShowUpgrades){
   window.showUpgrades = function(...args){
     _origShowUpgrades(...args);
@@ -13742,7 +13728,7 @@ if(_origShowUpgrades){
 
 // ── GAME OVER ENHANCED STATS ─────────────────────────────────────
 // Adds animated stat bars to game over screen
-var _origShowGO = typeof showGameOver === 'function' ? showGameOver : null;
+const _origShowGO = typeof showGameOver === 'function' ? showGameOver : null;
 if(_origShowGO){
   window.showGameOver = function(...args){
     _origShowGO(...args);
@@ -13815,7 +13801,7 @@ function triggerWaveCinematic(){
 }
 
 // Hook wave complete
-var _origWaveComplete = typeof waveComplete === 'function' ? waveComplete : null;
+const _origWaveComplete = typeof waveComplete === 'function' ? waveComplete : null;
 if(_origWaveComplete){
   window.waveComplete = function(...args){
     _origWaveComplete(...args);
@@ -14063,8 +14049,8 @@ if('serviceWorker' in navigator){
 // ═══════════════════════════════════════════════════════
 //  RAGE MODE
 // ═══════════════════════════════════════════════════════
-var RAGE_THRESHOLD=8,RAGE_DECAY=300;
-var _rageKills=0,_rageTimer=0,_rageMult=1,_rageActive=false;
+const RAGE_THRESHOLD=8,RAGE_DECAY=300;
+let _rageKills=0,_rageTimer=0,_rageMult=1,_rageActive=false;
 
 function onKillRage(){_rageKills=Math.min(_rageKills+1,20);_rageTimer=RAGE_DECAY;}
 
@@ -14076,7 +14062,7 @@ function updateRageMode(){
   const wasActive=_rageActive;
   _rageActive=_rageKills>=RAGE_THRESHOLD;
   _rageMult=_rageActive?Math.min(2,1+pct):1+(pct*0.25);
-  if(_rageActive&&!wasActive){showPopup('🔥 RAGE MODE !','#ff6b1a');if(G)G.shk=8;updateQuestProgress('rage',1);}
+  if(_rageActive&&!wasActive){showPopup('🔥 RAGE MODE !','#ff6b1a');if(G)G.shk=8;}
   const wrap=document.getElementById('rage-bar-wrap');
   const fill=document.getElementById('rage-bar-fill');
   const mult=document.getElementById('rage-mult');
@@ -14092,11 +14078,10 @@ function updateRageMode(){
 // ═══════════════════════════════════════════════════════
 //  PERFECT WAVE
 // ═══════════════════════════════════════════════════════
-var _waveHitCount=0;
+let _waveHitCount=0;
 
 function checkPerfectWave(wave){
   if(_waveHitCount===0&&wave>1){
-    updateQuestProgress('perfectwave', 1);
     const bonus=wave*100+500;
     G.score+=bonus;
     _dom['hv-score'].textContent=G.score.toLocaleString('fr-FR');
@@ -14113,8 +14098,8 @@ function checkPerfectWave(wave){
 // ═══════════════════════════════════════════════════════
 //  SCORE MILESTONES
 // ═══════════════════════════════════════════════════════
-var SCORE_MILESTONES=[1000,2500,5000,10000,25000,50000,100000,250000,500000];
-var _nextMilestoneIdx=0;
+const SCORE_MILESTONES=[1000,2500,5000,10000,25000,50000,100000,250000,500000];
+let _nextMilestoneIdx=0;
 
 function resetMilestones(){_nextMilestoneIdx=0;}
 
@@ -14131,6 +14116,39 @@ function checkScoreMilestones(score){
       if(big&&G)G.shk=6;
     }
     _nextMilestoneIdx++;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDGE THREATS (indicateurs ennemis hors écran)
+// ═══════════════════════════════════════════════════════
+const _edgeMargin=90;
+
+function updateEdgeThreats(){
+  if(!G||!G.running) return;
+  if(frame%4!==0) return;
+  const cont=document.getElementById('edge-threats');
+  if(!cont) return;
+  cont.innerHTML='';
+  const pad=24,half=10;
+  const entities=[
+    ...G.enemies.filter(e=>!e.dead).map(e=>({x:e.x,y:e.y,boss:e.boss,mini:e.mini,type:'enemy'})),
+    ...G.powerups.map(pu=>({x:pu.x,y:pu.y,boss:false,mini:false,type:'powerup'})),
+  ];
+  const arrows=['→','↘','↓','↙','←','↖','↑','↗'];
+  for(const en of entities){
+    if(en.x>=_edgeMargin&&en.x<=W-_edgeMargin&&en.y>=_edgeMargin&&en.y<=H-_edgeMargin) continue;
+    const cx=Math.max(pad+half,Math.min(W-pad-half,en.x));
+    const cy=Math.max(pad+half,Math.min(H-pad-half,en.y));
+    const dx=en.x-G.player.x,dy=en.y-G.player.y;
+    const angle=Math.atan2(dy,dx);
+    const idx=Math.round(((angle/(Math.PI*2))*8+8))%8;
+    const el=document.createElement('div');
+    el.className='edge-arrow'+(en.boss?' boss':en.type==='powerup'?' powerup':'');
+    el.style.left=(cx-half)+'px'; el.style.top=(cy-half)+'px';
+    el.textContent=en.type==='powerup'?'✨':(en.boss?'👑':(en.mini?'💀':arrows[idx]));
+    cont.appendChild(el);
+    if(cont.children.length>=14) break;
   }
 }
 
@@ -14155,19 +14173,6 @@ function showWaveThreatPreview(nextWave){
 }
 
 // ── hardReload (vide cache et recharge) ──
-async function hardReload(){
-  try{
-    if('serviceWorker' in navigator){
-      const regs=await navigator.serviceWorker.getRegistrations();
-      for(const reg of regs) await reg.unregister();
-    }
-    if('caches' in window){
-      const keys=await caches.keys();
-      await Promise.all(keys.map(k=>caches.delete(k)));
-    }
-    location.reload(true);
-  }catch(e){ location.reload(true); }
-}
 
 // ── Secours écran noir : montre le bouton de cache après 3s si rien à l'écran ──
 setTimeout(function(){
@@ -14183,77 +14188,74 @@ setTimeout(function(){
 },6000);
 
 
-// ═══════════════════════════════════════════════════════════════
-//  BATTLE PASS V2 — REFONTE TOTALE
-// ═══════════════════════════════════════════════════════════════
+// ── Clans/Chat/Replay/Tournois (variables nouvelles) ──
 
-// Quêtes journalières
-var QUEST_DEFS = [
-  {id:'q_kills_50',   name:'EXTERMINATION',   desc:'Tuer 50 ennemis en une partie',  icon:'💀', stat:'kills',   target:50,  xp:120},
-  {id:'q_kills_100',  name:'MASSACRE',        desc:'Tuer 100 ennemis en une partie', icon:'☠️', stat:'kills',   target:100, xp:200},
-  {id:'q_wave_10',    name:'SURVIVANT',       desc:'Atteindre la vague 10',          icon:'🌊', stat:'wave',    target:10,  xp:150},
-  {id:'q_wave_20',    name:'VÉTÉRAN',         desc:'Atteindre la vague 20',          icon:'⚡', stat:'wave',    target:20,  xp:300},
-  {id:'q_score_5k',   name:'SCORE ÉLITE',     desc:'Marquer 5000 points',            icon:'⭐', stat:'score',   target:5000,xp:100},
-  {id:'q_score_20k',  name:'MAÎTRE DU SCORE', desc:'Marquer 20 000 points',          icon:'🏆', stat:'score',   target:20000,xp:250},
-  {id:'q_combo_20',   name:'ENCHAÎNEUR',      desc:'Atteindre un combo x20',         icon:'🔥', stat:'combo',   target:20,  xp:180},
-  {id:'q_combo_50',   name:'COMBO DIEU',      desc:'Atteindre un combo x50',         icon:'💥', stat:'combo',   target:50,  xp:350},
-  {id:'q_boss_1',     name:'CHASSEUR',        desc:'Tuer 1 boss',                    icon:'👑', stat:'boss',    target:1,   xp:200},
-  {id:'q_boss_3',     name:'TUEUR DE BOSS',   desc:'Tuer 3 boss',                    icon:'🔮', stat:'boss',    target:3,   xp:400},
-  {id:'q_dash_30',    name:'FANTÔME',         desc:'Dasher 30 fois',                 icon:'👻', stat:'dashes',  target:30,  xp:80},
-  {id:'q_no_hit',     name:'INTOUCHABLE',     desc:'Finir une vague sans dégâts',    icon:'🛡', stat:'perfectwave',target:1, xp:250},
-  {id:'q_rage_mode',  name:'ENRAGÉ',          desc:'Activer le RAGE MODE',           icon:'😡', stat:'rage',    target:1,   xp:150},
-  {id:'q_3_games',    name:'ASSIDU',          desc:'Jouer 3 parties',                icon:'🎮', stat:'games',   target:3,   xp:60},
-  {id:'q_speed_run',  name:'SPEEDRUNNER',     desc:'Passer 5 vagues en moins de 3min',icon:'⏱',stat:'speedwave',target:5,  xp:300},
+// ── Clans / Chat / Tournois ──
+let _myClans=null, _myClanData=null, _chatChannel=null, _chatMessages=[];
+let _currentTournament=null, _tournTimer=null;
+let dailyQuests=null;
+const CHAT_MAX=80;
+
+// ── Quêtes ──
+const QUEST_DEFS=[
+  {id:'q_kills_50',  name:'EXTERMINATION',   desc:'Tuer 50 ennemis',       icon:'💀', stat:'kills',       target:50,   xp:120},
+  {id:'q_kills_100', name:'MASSACRE',        desc:'Tuer 100 ennemis',      icon:'☠️', stat:'kills',       target:100,  xp:200},
+  {id:'q_wave_10',   name:'SURVIVANT',       desc:'Atteindre la vague 10', icon:'🌊', stat:'wave',        target:10,   xp:150},
+  {id:'q_wave_20',   name:'VÉTÉRAN',         desc:'Atteindre la vague 20', icon:'⚡', stat:'wave',        target:20,   xp:300},
+  {id:'q_score_5k',  name:'SCORE ÉLITE',     desc:'Marquer 5000 pts',      icon:'⭐', stat:'score',       target:5000, xp:100},
+  {id:'q_score_20k', name:'MAÎTRE DU SCORE', desc:'Marquer 20 000 pts',    icon:'🏆', stat:'score',       target:20000,xp:250},
+  {id:'q_combo_20',  name:'ENCHAÎNEUR',      desc:'Atteindre combo x20',   icon:'🔥', stat:'combo',       target:20,   xp:180},
+  {id:'q_boss_1',    name:'CHASSEUR',        desc:'Tuer 1 boss',           icon:'👑', stat:'boss',        target:1,    xp:200},
+  {id:'q_no_hit',    name:'INTOUCHABLE',     desc:'Vague sans dégâts',     icon:'🛡', stat:'perfectwave', target:1,    xp:250},
+  {id:'q_rage_mode', name:'ENRAGÉ',          desc:'Activer le RAGE MODE',  icon:'😡', stat:'rage',        target:1,    xp:150},
+  {id:'q_3_games',   name:'ASSIDU',          desc:'Jouer 3 parties',       icon:'🎮', stat:'games',       target:3,    xp:60},
 ];
 
-function getTodayQuestIds(){
-  const now = new Date();
-  const seed = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
-  // Sélection déterministe de 3 quêtes par jour
-  const idxs = [];
-  let s = seed;
-  while(idxs.length < 3){
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
-    const i = Math.abs(s) % QUEST_DEFS.length;
-    if(!idxs.includes(i)) idxs.push(i);
-  }
-  return idxs.map(i=>QUEST_DEFS[i].id);
-}
 
-var dailyQuests = null;
-function loadDailyQuests(){
+function _updateQuestsEndGame(){
+  if(!G) return;
+  updateQuestProgress('kills', G.totalKills||0);
+  updateQuestProgress('wave', G.wave||0);
+  updateQuestProgress('score', G.score||0);
+  updateQuestProgress('combo', G.maxComboThisRun||0);
+  updateQuestProgress('boss', G.bossKillsThisRun||0);
+  updateQuestProgress('games', 1);
+  if(_rageActive || G._rageActivated) updateQuestProgress('rage', 1);
+  // Login streak
   const today = new Date().toISOString().slice(0,10);
-  const saved = loadData('pulse_daily_quests_v1', {date:'',quests:{}});
-  if(saved.date !== today){
-    // Nouveau jour — reset
-    const ids = getTodayQuestIds();
-    dailyQuests = {
-      date: today,
-      quests: Object.fromEntries(ids.map(id=>([id,{progress:0,done:false,claimed:false}])))
-    };
-    saveData('pulse_daily_quests_v1', dailyQuests);
+  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  if(streak.lastDate === today){
+    // déjà joué aujourd'hui, ok
+  } else if(streak.lastDate === yStr){
+    streak.streak = (streak.streak||0)+1;
+    streak.lastDate = today;
+    saveData('pulse_login_streak_v1', streak);
+    if(streak.streak % 7 === 0) showToast('🔥 7 jours de suite ! Bonus +100 XP !','success',4000);
   } else {
-    dailyQuests = saved;
+    streak.streak = 1;
+    streak.lastDate = today;
+    saveData('pulse_login_streak_v1', streak);
   }
 }
 
-function updateQuestProgress(stat, value){
-  if(!dailyQuests) return;
-  let changed = false;
-  for(const [id, state] of Object.entries(dailyQuests.quests)){
-    if(state.done) continue;
-    const def = QUEST_DEFS.find(q=>q.id===id);
-    if(!def || def.stat !== stat) continue;
-    const prev = state.progress;
-    state.progress = Math.max(state.progress, stat==='wave'||stat==='combo'||stat==='score'||stat==='kills'||stat==='boss'
-      ? value : state.progress + 1);
-    if(state.progress >= def.target && !state.done){
-      state.done = true;
-      showToast('📋 Quête terminée : '+def.name+' !','success',3000);
-      changed = true;
-    } else if(state.progress !== prev) changed = true;
+function addBpXpManual(xp){
+  const bpXpPerLv = BP_XP_PER_LEVEL;
+  battlePass.xp += xp;
+  while(battlePass.xp >= bpXpPerLv && battlePass.level < BP_MAX_LEVEL){
+    battlePass.xp -= bpXpPerLv;
+    battlePass.level++;
+    showToast(`⭐ NIVEAU ${battlePass.level} ! Passe de combat`, 'success', 3000);
   }
-  if(changed) saveData('pulse_daily_quests_v1', dailyQuests);
+  if(battlePass.level >= BP_MAX_LEVEL) battlePass.xp = 0;
+  saveBP();
+}
+
+function bp2Tab(tab, btn){
+  document.querySelectorAll('.bp2-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBP2Content(tab);
 }
 
 function claimQuestReward(questId){
@@ -14271,29 +14273,405 @@ function claimQuestReward(questId){
   if(currentUser && SB) SB.from('profiles').update({battle_pass:battlePass}).eq('id',currentUser.id);
 }
 
-function addBpXpManual(xp){
-  const bpXpPerLv = BP_XP_PER_LEVEL;
-  battlePass.xp += xp;
-  while(battlePass.xp >= bpXpPerLv && battlePass.level < BP_MAX_LEVEL){
-    battlePass.xp -= bpXpPerLv;
-    battlePass.level++;
-    showToast(`⭐ NIVEAU ${battlePass.level} ! Passe de combat`, 'success', 3000);
-  }
-  if(battlePass.level >= BP_MAX_LEVEL) battlePass.xp = 0;
-  saveBP();
+function clanTab(tab, btn){
+  document.querySelectorAll('.clan-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById('clan-tab-content');
+  if(!el || !_myClanData) return;
+  if(tab==='members') el.innerHTML = renderClanMembersTab(_myClanData.members||[]);
+  else if(tab==='war') el.innerHTML = renderClanWarTab(_myClanData);
+  else if(tab==='manage') el.innerHTML = renderClanManageTab(_myClanData);
 }
 
-function openBP(){
-  loadDailyQuests();
-  renderBP2();
+async function connectChat(){
+  const el = document.getElementById('chat-messages');
+  if(!el) return;
+  el.innerHTML = '<div class="chat-system-msg">Connexion au chat…</div>';
+
+  if(!SB){
+    el.innerHTML = '<div class="chat-system-msg">Connexion requise pour le chat</div>';
+    return;
+  }
+
+  try {
+    // Charger les derniers messages
+    const {data:msgs} = await SB.from('chat_messages')
+      .select('id,user_id,pseudo,content,created_at,rarity')
+      .order('created_at',{ascending:false}).limit(50);
+    _chatMessages = (msgs||[]).reverse();
+    renderChatMessages();
+
+    // Subscribe realtime
+    _chatChannel = SB.channel('global-chat')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'}, payload=>{
+        _chatMessages.push(payload.new);
+        if(_chatMessages.length > CHAT_MAX) _chatMessages.shift();
+        renderChatMessages();
+        updateChatNotif();
+      })
+      .subscribe(status=>{
+        const countEl = document.getElementById('chat-online-count');
+        if(countEl) countEl.textContent = status==='SUBSCRIBED'?'• En ligne':'• Connexion…';
+      });
+  } catch(e){
+    if(el) el.innerHTML = `<div class="chat-system-msg">Erreur : ${e.message}</div>`;
+  }
+}
+
+async function createClan(){
+  if(!currentUser||!SB){ showToast('Connexion requise','error',2000); return; }
+  const name = (document.getElementById('clan-create-name')?.value||'').trim();
+  const tag  = (document.getElementById('clan-create-tag')?.value||'').trim().toUpperCase().slice(0,4);
+  const desc = (document.getElementById('clan-create-desc')?.value||'').trim();
+  if(name.length<3||name.length>24){ showToast('Nom : 3 à 24 caractères','error',2000); return; }
+  if(tag.length<2||tag.length>4){ showToast('Tag : 2 à 4 lettres','error',2000); return; }
+  try {
+    const {data:clan, error} = await SB.from('clans').insert({
+      name, tag, description:desc, owner_id:currentUser.id,
+      members_count:1, total_score:0, war_wins:0,
+      created_at:new Date().toISOString()
+    }).select().single();
+    if(error) throw error;
+    await SB.from('clan_members').insert({clan_id:clan.id,user_id:currentUser.id,role:'chef',contribution:0,week_score:0,joined_at:new Date().toISOString()});
+    await SB.from('profiles').update({clan_id:clan.id}).eq('id',currentUser.id);
+    document.getElementById('clan-create-modal').style.display='none';
+    showToast('⚔ Clan créé !','success',3000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function disbandClan(){
+  if(!_myClanData||!currentUser||!SB) return;
+  if(!confirm('Dissoudre définitivement le clan ?')) return;
+  try {
+    const clanId = _myClanData.clan.id;
+    await SB.from('clan_members').delete().eq('clan_id',clanId);
+    await SB.from('profiles').update({clan_id:null}).eq('clan_id',clanId);
+    await SB.from('clans').delete().eq('id',clanId);
+    showToast('Clan dissous','info',2000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+function disconnectChat(){
+  if(_chatChannel){ _chatChannel.unsubscribe(); _chatChannel = null; }
+}
+
+function drawReplayFrame(snap, rep){
+  if(!ctx||!W||!H) return;
+  drawBg(Date.now()*.001);
+  ctx.save();
+
+  // Obstacles (simplifiés)
+  ctx.fillStyle='rgba(0,245,212,.12)';
+  ctx.strokeStyle='rgba(0,245,212,.3)';
+
+  // Powerups
+  (snap.pu||[]).forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,245,212,.4)';ctx.fill();
+  });
+
+  // Ennemis
+  (snap.e||[]).forEach(e=>{
+    const r=e.t==='b'?24:e.t==='m'?16:10;
+    ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);
+    ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':e.t==='m'?'rgba(255,100,0,.6)':'rgba(255,26,110,.5)';
+    ctx.fill();
+  });
+
+  // Balles
+  (snap.b||[]).forEach(b=>{
+    ctx.beginPath();ctx.arc(b.x,b.y,b.en?5:4,0,Math.PI*2);
+    ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill();
+  });
+
+  // Joueur
+  ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.stroke();
+
+  // Barre HP
+  const hpPct = Math.max(0,Math.min(1,(snap.ph||0)/100));
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(snap.px-20,snap.py-22,40,4);
+  ctx.fillStyle=hpPct>0.5?'#2ecc71':hpPct>0.25?'#f1c40f':'#e74c3c';
+  ctx.fillRect(snap.px-20,snap.py-22,40*hpPct,4);
+
+  // Badge REPLAY
+  ctx.fillStyle='rgba(0,245,212,.15)';
+  ctx.fillRect(4,4,90,22);
+  ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px Orbitron,monospace';
+  ctx.fillText('▶ REPLAY',10,17);
+
+  ctx.restore();
+}
+
+function escapeHtml(text){
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getTodayQuestIds(){
+  const now = new Date();
+  const seed = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
+  // Sélection déterministe de 3 quêtes par jour
+  const idxs = [];
+  let s = seed;
+  while(idxs.length < 3){
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const i = Math.abs(s) % QUEST_DEFS.length;
+    if(!idxs.includes(i)) idxs.push(i);
+  }
+  return idxs.map(i=>QUEST_DEFS[i].id);
+}
+
+async function joinClan(clanId, clanName){
+  if(!currentUser||!SB){ show('s-auth'); return; }
+  if(!confirm(`Rejoindre ${clanName} ?`)) return;
+  try {
+    await SB.from('clan_members').insert({clan_id:clanId,user_id:currentUser.id,role:'membre',contribution:0,week_score:0,joined_at:new Date().toISOString()});
+    await SB.from('profiles').update({clan_id:clanId}).eq('id',currentUser.id);
+    await SB.from('clans').update({members_count:SB.rpc('increment',{x:1})}).eq('id',clanId);
+    showToast('⚔ Tu as rejoint le clan !','success',3000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function leaveClan(){
+  if(!currentUser||!SB||!_myClanData) return;
+  if(!confirm('Quitter le clan ?')) return;
+  try {
+    await SB.from('clan_members').delete().eq('clan_id',_myClanData.clan.id).eq('user_id',currentUser.id);
+    await SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id);
+    showToast('Tu as quitté le clan','info',2000);
+    await loadClanData();
+  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
+}
+
+async function loadClanData(){
+  const el = document.getElementById('clan-main-content');
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
+
+  if(!currentUser || !SB){
+    el.innerHTML = renderClanGuestView();
+    return;
+  }
+
+  try {
+    // Récupérer le profil pour voir si j'ai un clan
+    const {data:profile} = await SB.from('profiles').select('clan_id,pseudo').eq('id',currentUser.id).single();
+    if(!profile) { el.innerHTML = renderClanGuestView(); return; }
+
+    if(profile.clan_id){
+      // Je suis dans un clan
+      const {data:clan} = await SB.from('clans').select('*').eq('id',profile.clan_id).single();
+      const {data:members} = await SB.from('clan_members').select('*,profiles(pseudo,stats,equipped_skin)').eq('clan_id',profile.clan_id).order('contribution',{ascending:false});
+      _myClanData = {clan, members, myRole: members?.find(m=>m.user_id===currentUser.id)?.role||'membre'};
+      el.innerHTML = renderMyClan(_myClanData);
+    } else {
+      // Pas de clan — afficher liste + créer
+      const {data:clans} = await SB.from('clans').select('*').order('total_score',{ascending:false}).limit(20);
+      el.innerHTML = renderClanBrowser(clans||[], profile.pseudo);
+    }
+  } catch(e){
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--c2);">Erreur : ${e.message}</div>`;
+  }
+}
+
+function loadDailyQuests(){
+  const today = new Date().toISOString().slice(0,10);
+  const saved = loadData('pulse_daily_quests_v1', {date:'',quests:{}});
+  if(saved.date !== today){
+    // Nouveau jour — reset
+    const ids = getTodayQuestIds();
+    dailyQuests = {
+      date: today,
+      quests: Object.fromEntries(ids.map(id=>([id,{progress:0,done:false,claimed:false}])))
+    };
+    saveData('pulse_daily_quests_v1', dailyQuests);
+  } else {
+    dailyQuests = saved;
+  }
+}
+
+async function loadTournamentData(){
+  const el = document.getElementById('tournament-content');
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
+
+  // Tournoi local simulé si pas de Supabase
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=dim, 1=lun...
+  const daysUntilMonday = (8 - dayOfWeek) % 7 || 7;
+  const nextReset = new Date(now);
+  nextReset.setDate(nextReset.getDate() + daysUntilMonday);
+  nextReset.setHours(0,0,0,0);
+  const msLeft = nextReset - now;
+  const dLeft = Math.floor(msLeft/86400000);
+  const hLeft = Math.floor((msLeft%86400000)/3600000);
+  const mLeft = Math.floor((msLeft%3600000)/60000);
+
+  const SEASON_NAMES = ['NEON CITY','BLOOD MOON','VOID WALKER','CYBER DAWN'];
+  const weekNum = Math.floor(Date.now()/604800000);
+  const tournName = SEASON_NAMES[weekNum%SEASON_NAMES.length] + ' WEEKLY';
+
+  // Mon meilleur score de la semaine
+  const weekKey = 'pulse_tourn_week_'+weekNum;
+  const myEntry = loadData(weekKey, {score:0,wave:0,submitted:false});
+
+  let leaderboard = [];
+  if(SB){
+    try {
+      const {data} = await SB.from('tournament_scores')
+        .select('user_id,pseudo,score,wave,submitted_at')
+        .eq('week',weekNum)
+        .order('score',{ascending:false})
+        .limit(20);
+      leaderboard = data||[];
+    } catch(e){}
+  }
+
+  const myRank = leaderboard.findIndex(r=>r.user_id===currentUser?.id)+1||0;
+
+  _currentTournament = {weekNum, weekKey, myEntry, leaderboard, myRank};
+
+  // Démarrer le timer de compte à rebours
+  if(_tournTimer) clearInterval(_tournTimer);
+  _tournTimer = setInterval(()=>{
+    const el2 = document.getElementById('tourn-timer-display');
+    if(!el2) return;
+    const ms = nextReset - Date.now();
+    if(ms<=0){ el2.textContent='Fin du tournoi'; clearInterval(_tournTimer); return; }
+    const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    el2.textContent=`${d}j ${h}h ${m}m ${s}s`;
+  },1000);
+
+  let html = `
+    <div class="tourn-hero">
+      <div class="tourn-name">${tournName}</div>
+      <div class="tourn-timer-lbl">TEMPS RESTANT</div>
+      <div class="tourn-timer-big" id="tourn-timer-display">${dLeft}j ${hLeft}h ${mLeft}m</div>
+      <div class="tourn-status active">● EN COURS</div>
+      <div class="tourn-rewards-row">
+        <div class="tourn-reward-pill">🥇 TOP 1 — 2000🪙 + Skin Exclusif</div>
+        <div class="tourn-reward-pill">🥈 TOP 3 — 800🪙</div>
+        <div class="tourn-reward-pill">🥉 TOP 10 — 300🪙</div>
+        <div class="tourn-reward-pill">🏅 TOP 50 — 100🪙 + 500 XP BP</div>
+      </div>
+    </div>`;
+
+  // Mon score
+  html += `<div class="tourn-my-score">
+    <div class="tourn-my-rank">${myRank>0?'#'+myRank:'—'}</div>
+    <div class="tourn-my-info">
+      <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c3);">${(myEntry.score||0).toLocaleString('fr-FR')}</div>
+      <div style="font-size:7px;color:var(--txt2);margin-top:3px;">Vague ${myEntry.wave||0} · Mon meilleur cette semaine</div>
+      ${myEntry.score>0?`<div style="font-size:6px;color:var(--dim);margin-top:2px;">Soumis · mise à jour automatique</div>`:'<div style="font-size:6px;color:var(--dim);margin-top:2px;">Joue une partie pour participer !</div>'}
+    </div>
+  </div>`;
+
+  // Leaderboard
+  html += `<div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin:8px 0 4px;">CLASSEMENT</div>`;
+  if(!leaderboard.length){
+    html += `<div style="text-align:center;padding:20px;color:var(--dim);">Sois le premier à soumettre un score !</div>`;
+  } else {
+    leaderboard.forEach((entry,i)=>{
+      const rank = i+1;
+      const isMe = entry.user_id===currentUser?.id;
+      const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+      html += `<div class="tourn-lb-row${isMe?' me':''}">
+        <div class="tourn-lb-rank ${rankClass}">${rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank}</div>
+        <div class="tourn-lb-name">${isMe?'<strong>'+entry.pseudo+'</strong>':entry.pseudo||'Anonyme'}</div>
+        <div class="tourn-lb-score">${(entry.score||0).toLocaleString('fr-FR')}</div>
+        <div style="font-size:6px;color:var(--dim);padding:0 4px;">V${entry.wave||0}</div>
+      </div>`;
+    });
+  }
+  html += `<div style="height:12px;"></div>`;
+  el.innerHTML = html;
+}
+
+function openBP_legacy(){
+  renderBP();
   show('s-bp');
   setTimeout(updateMenuBadges, 200);
 }
 
-function bp2Tab(tab, btn){
-  document.querySelectorAll('.bp2-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderBP2Content(tab);
+async function openChat(){
+  show('s-chat');
+  if(!_chatChannel) await connectChat();
+}
+
+async function openClan(){
+  show('s-clan');
+  await loadClanData();
+}
+
+function openReplays(){
+  _savedReplays = loadData('pulse_replays_v1',[]);
+  renderReplayList();
+  show('s-replay');
+}
+
+async function openTournament(){
+  show('s-tournament');
+  await loadTournamentData();
+}
+
+function playReplay(idx){
+  const rep = _savedReplays[idx];
+  if(!rep||!rep.frames) return;
+  _replayPlaying = true;
+  _replayFrameIdx = 0;
+
+  // Setup canvas pour replay
+  setupCanvas();
+  show('__none__');
+  const hud = document.getElementById('replay-hud-overlay');
+  if(hud) hud.classList.add('on');
+  document.body.classList.add('game-active');
+
+  function step(){
+    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){
+      stopReplay();
+      return;
+    }
+    const snap = rep.frames[_replayFrameIdx];
+    drawReplayFrame(snap, rep);
+
+    // Mettre à jour le HUD replay
+    const rhScore = document.getElementById('rh-score');
+    const rhWave  = document.getElementById('rh-wave');
+    const rhTime  = document.getElementById('rh-time');
+    if(rhScore) rhScore.textContent = (snap.s||0).toLocaleString('fr-FR');
+    if(rhWave)  rhWave.textContent = snap.w||1;
+    if(rhTime){
+      const sec = Math.floor(_replayFrameIdx/60);
+      rhTime.textContent = Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');
+    }
+    _replayFrameIdx++;
+    _replayTimer = requestAnimationFrame(step);
+  }
+  _replayTimer = requestAnimationFrame(step);
+}
+
+function recordReplayFrame(){
+  if(!_replayRecording || !G) return;
+  if(_replayBuffer.length >= REPLAY_MAX_FRAMES){ _replayRecording=false; return; }
+  // Snapshot compact de l'état
+  const snap = {
+    f: frame,
+    px: Math.round(G.player.x), py: Math.round(G.player.y),
+    ph: G.player.hp,
+    s: G.score, w: G.wave,
+    e: G.enemies.filter(e=>!e.dead).map(e=>({x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':e.mini?'m':'n',hp:Math.round(e.hp)})).slice(0,30),
+    b: G.bullets.slice(0,50).map(b=>({x:Math.round(b.x),y:Math.round(b.y),en:b.enemy})),
+    pu: G.powerups.map(p=>({x:Math.round(p.x),y:Math.round(p.y),t:p.type?.id?.slice(0,3)||'?'})).slice(0,10),
+  };
+  _replayBuffer.push(snap);
+  _replayMeta.score = G.score;
+  _replayMeta.wave = G.wave;
+  _replayMeta.kills = G.totalKills;
 }
 
 function renderBP2(){
@@ -14517,101 +14895,29 @@ function renderBP2Content(tab){
   }
 }
 
-function renderLoginStreak(){
-  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
-  const today = new Date().toISOString().slice(0,10);
-  const days = Math.min(streak.streak||0, 7);
-  let html = `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">`;
-  for(let i=0;i<7;i++){
-    const active = i < days;
-    html += `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;${active?'background:rgba(255,190,11,.15);border:2px solid rgba(255,190,11,.5);':'background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);'}">
-      ${active?'🔥':'○'}
-    </div>`;
-  }
-  html += `</div>`;
-  html += `<div style="text-align:center;font-size:7px;color:var(--txt2);letter-spacing:.1em;">🔥 ${days} jour${days>1?'s':''} de suite — +${days*10} XP bonus/partie</div>`;
-  return html;
-}
-
-// Hook fin de partie → update quêtes
-var _origShowGo = typeof showGoScreen === 'function' ? showGoScreen : null;
-function _updateQuestsEndGame(){
-  if(!G) return;
-  updateQuestProgress('kills', G.totalKills||0);
-  updateQuestProgress('wave', G.wave||0);
-  updateQuestProgress('score', G.score||0);
-  updateQuestProgress('combo', G.maxComboThisRun||0);
-  updateQuestProgress('boss', G.bossKillsThisRun||0);
-  updateQuestProgress('games', 1);
-  if(_rageActive || G._rageActivated) updateQuestProgress('rage', 1);
-  // Login streak
-  const today = new Date().toISOString().slice(0,10);
-  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-  const yStr = yesterday.toISOString().slice(0,10);
-  if(streak.lastDate === today){
-    // déjà joué aujourd'hui, ok
-  } else if(streak.lastDate === yStr){
-    streak.streak = (streak.streak||0)+1;
-    streak.lastDate = today;
-    saveData('pulse_login_streak_v1', streak);
-    if(streak.streak % 7 === 0) showToast('🔥 7 jours de suite ! Bonus +100 XP !','success',4000);
-  } else {
-    streak.streak = 1;
-    streak.lastDate = today;
-    saveData('pulse_login_streak_v1', streak);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  CLANS
-// ═══════════════════════════════════════════════════════════════
-var _myClans = null;
-var _myClanData = null;
-
-async function openClan(){
-  show('s-clan');
-  await loadClanData();
-}
-
-async function loadClanData(){
-  const el = document.getElementById('clan-main-content');
+function renderChatMessages(){
+  const el = document.getElementById('chat-messages');
   if(!el) return;
-  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
-
-  if(!currentUser || !SB){
-    el.innerHTML = renderClanGuestView();
-    return;
-  }
-
-  try {
-    // Récupérer le profil pour voir si j'ai un clan
-    const {data:profile} = await SB.from('profiles').select('clan_id,pseudo').eq('id',currentUser.id).single();
-    if(!profile) { el.innerHTML = renderClanGuestView(); return; }
-
-    if(profile.clan_id){
-      // Je suis dans un clan
-      const {data:clan} = await SB.from('clans').select('*').eq('id',profile.clan_id).single();
-      const {data:members} = await SB.from('clan_members').select('*,profiles(pseudo,stats,equipped_skin)').eq('clan_id',profile.clan_id).order('contribution',{ascending:false});
-      _myClanData = {clan, members, myRole: members?.find(m=>m.user_id===currentUser.id)?.role||'membre'};
-      el.innerHTML = renderMyClan(_myClanData);
-    } else {
-      // Pas de clan — afficher liste + créer
-      const {data:clans} = await SB.from('clans').select('*').order('total_score',{ascending:false}).limit(20);
-      el.innerHTML = renderClanBrowser(clans||[], profile.pseudo);
-    }
-  } catch(e){
-    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--c2);">Erreur : ${e.message}</div>`;
-  }
-}
-
-function renderClanGuestView(){
-  return `<div style="text-align:center;padding:30px;display:flex;flex-direction:column;gap:12px;align-items:center;">
-    <div style="font-size:40px;">⚔</div>
-    <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--txt);">REJOINS UN CLAN !</div>
-    <div style="font-size:8px;color:var(--txt2);max-width:280px;line-height:1.7;">Crée ou rejoins un clan pour combattre avec tes alliés, participer aux guerres de clans et grimper dans les classements.</div>
-    <button class="btn btn-g" onclick="show('s-auth')"><span>SE CONNECTER</span></button>
-  </div>`;
+  const myId = currentUser?.id;
+  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
+  el.innerHTML = _chatMessages.map(msg=>{
+    const isMe = msg.user_id===myId;
+    const time = new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const badge = msg.rarity==='legendary'?'<span class="chat-msg-badge chef">★ LÉGEND</span>':
+                  msg.rarity==='premium'?'<span class="chat-msg-badge prem">⭐ PREM</span>':'';
+    return `<div class="chat-msg${isMe?' me':''}">
+      <div class="chat-msg-avatar">${(msg.pseudo||'?')[0].toUpperCase()}</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-header">
+          <span class="chat-msg-name" onclick="viewProfile('${msg.user_id}')">${msg.pseudo||'Anonyme'}</span>
+          ${badge}
+          <span class="chat-msg-time">${time}</span>
+        </div>
+        <div class="chat-msg-text">${escapeHtml(msg.content||'')}</div>
+      </div>
+    </div>`;
+  }).join('') + '<div id="chat-bottom"></div>';
+  document.getElementById('chat-bottom')?.scrollIntoView();
 }
 
 function renderClanBrowser(clans, pseudo){
@@ -14641,36 +14947,17 @@ function renderClanBrowser(clans, pseudo){
   return html;
 }
 
-function renderMyClan({clan, members, myRole}){
-  const isChef = myRole==='chef';
-  let html = `
-    <div class="clan-hero">
-      <div class="clan-tag-big">${clan.tag||'??'}</div>
-      <div>
-        <div class="clan-name-big">${clan.name||'Mon Clan'}</div>
-        <div class="clan-stats-row">
-          <div class="clan-stat">👥 <span>${clan.members_count||members?.length||0}</span> membres</div>
-          <div class="clan-stat">🏆 <span>${(clan.total_score||0).toLocaleString('fr-FR')}</span> pts</div>
-          <div class="clan-stat">⚔ <span>${clan.war_wins||0}</span> guerres gagnées</div>
-        </div>
-        ${clan.description?`<div style="font-size:7px;color:var(--txt2);margin-top:4px;">${clan.description}</div>`:''}
-      </div>
-    </div>
-    <div class="clan-tabs">
-      <button class="clan-tab active" onclick="clanTab('members',this)">👥 MEMBRES</button>
-      <button class="clan-tab" onclick="clanTab('war',this)">⚔ GUERRE</button>
-      ${isChef?`<button class="clan-tab" onclick="clanTab('manage',this)">⚙ GÉRER</button>`:''}
-    </div>
-    <div id="clan-tab-content">`;
+function renderClanGuestView(){
+  return `<div style="text-align:center;padding:30px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+    <div style="font-size:40px;">⚔</div>
+    <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--txt);">REJOINS UN CLAN !</div>
+    <div style="font-size:8px;color:var(--txt2);max-width:280px;line-height:1.7;">Crée ou rejoins un clan pour combattre avec tes alliés, participer aux guerres de clans et grimper dans les classements.</div>
+    <button class="btn btn-g" onclick="show('s-auth')"><span>SE CONNECTER</span></button>
+  </div>`;
+}
 
-  // Membres tab par défaut
-  html += renderClanMembersTab(members||[]);
-  html += `</div>`;
-
-  if(!isChef){
-    html += `<button class="btn btn-s" style="margin-top:12px;color:var(--c2);border-color:rgba(255,26,110,.3);" onclick="leaveClan()"><span>🚪 QUITTER LE CLAN</span></button>`;
-  }
-  return html;
+function renderClanManageTab({clan}){
+  return `<div style="padding:10px 0;">En cours de chargement...</div>`;
 }
 
 function renderClanMembersTab(members){
@@ -14688,442 +14975,42 @@ function renderClanMembersTab(members){
   return html||`<div style="text-align:center;padding:20px;color:var(--dim);">Aucun membre</div>`;
 }
 
-function clanTab(tab, btn){
-  document.querySelectorAll('.clan-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const el = document.getElementById('clan-tab-content');
-  if(!el || !_myClanData) return;
-  if(tab==='members') el.innerHTML = renderClanMembersTab(_myClanData.members||[]);
-  else if(tab==='war') el.innerHTML = renderClanWarTab(_myClanData);
-  else if(tab==='manage') el.innerHTML = renderClanManageTab(_myClanData);
-}
-
 function renderClanWarTab({clan, members}){
-  // Guerre de clans simplifiée — score cumulé de la semaine
-  const weekScore = members?.reduce((s,m)=>s+(m.week_score||0),0)||0;
-  return `<div style="padding:10px 0;">
-    <div class="clan-war-card">
-      <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.2em;color:var(--c2);margin-bottom:8px;">⚔ GUERRE DE LA SEMAINE</div>
-      <div class="clan-war-vs">
-        <div class="clan-war-team">
-          <div class="clan-war-tag">${clan.tag||'??'}</div>
-          <div class="clan-war-score winning">${weekScore.toLocaleString('fr-FR')}</div>
-        </div>
-        <div class="clan-war-divider">VS</div>
-        <div class="clan-war-team">
-          <div class="clan-war-tag" id="war-enemy-tag">???</div>
-          <div class="clan-war-score" id="war-enemy-score" style="color:var(--dim);">—</div>
-        </div>
-      </div>
-      <div class="clan-war-timer" id="war-timer">Reset lundi à minuit</div>
-    </div>
-    <div style="font-size:7px;color:var(--txt2);padding:8px 0;line-height:1.8;">
-      💡 Chaque partie que tu joues contribue au score de guerre de ton clan.<br>
-      Le meilleur score de la semaine est comptabilisé automatiquement.
-    </div>
-    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin:8px 0 4px;">CONTRIBUTIONS CETTE SEMAINE</div>
-    ${members?.slice(0,5).map((m,i)=>`<div class="clan-member-row">
-      <div class="clan-member-rank">${i+1}</div>
-      <div class="clan-member-name">${m.profiles?.pseudo||'Joueur'}</div>
-      <div class="clan-member-score">${(m.week_score||0).toLocaleString('fr-FR')}</div>
-    </div>`).join('')||''}
-  </div>`;
+  return "";
 }
 
-function renderClanManageTab({clan}){
-  return `<div style="padding:10px 0;display:flex;flex-direction:column;gap:10px;">
-    <div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);">GESTION DU CLAN</div>
-    <div class="acc-row">
-      <label class="acc-lbl">Tag du clan</label>
-      <input class="acc-input" id="manage-tag" value="${clan.tag||''}" maxlength="4" placeholder="TAG" style="text-transform:uppercase;width:80px;">
-    </div>
-    <div class="acc-row">
-      <label class="acc-lbl">Description</label>
-      <textarea class="acc-input" id="manage-desc" maxlength="120" style="width:100%;height:50px;resize:none;">${clan.description||''}</textarea>
-    </div>
-    <button class="btn btn-g" onclick="saveClanSettings()"><span>💾 SAUVEGARDER</span></button>
-    <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-    <button class="btn btn-s" style="color:var(--c2);border-color:rgba(255,26,110,.3);" onclick="disbandClan()"><span>💀 DISSOUDRE LE CLAN</span></button>
-  </div>`;
-}
-
-async function createClan(){
-  if(!currentUser||!SB){ showToast('Connexion requise','error',2000); return; }
-  const name = (document.getElementById('clan-create-name')?.value||'').trim();
-  const tag  = (document.getElementById('clan-create-tag')?.value||'').trim().toUpperCase().slice(0,4);
-  const desc = (document.getElementById('clan-create-desc')?.value||'').trim();
-  if(name.length<3||name.length>24){ showToast('Nom : 3 à 24 caractères','error',2000); return; }
-  if(tag.length<2||tag.length>4){ showToast('Tag : 2 à 4 lettres','error',2000); return; }
-  try {
-    const {data:clan, error} = await SB.from('clans').insert({
-      name, tag, description:desc, owner_id:currentUser.id,
-      members_count:1, total_score:0, war_wins:0,
-      created_at:new Date().toISOString()
-    }).select().single();
-    if(error) throw error;
-    await SB.from('clan_members').insert({clan_id:clan.id,user_id:currentUser.id,role:'chef',contribution:0,week_score:0,joined_at:new Date().toISOString()});
-    await SB.from('profiles').update({clan_id:clan.id}).eq('id',currentUser.id);
-    document.getElementById('clan-create-modal').style.display='none';
-    showToast('⚔ Clan créé !','success',3000);
-    await loadClanData();
-  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
-}
-
-async function joinClan(clanId, clanName){
-  if(!currentUser||!SB){ show('s-auth'); return; }
-  if(!confirm(`Rejoindre ${clanName} ?`)) return;
-  try {
-    await SB.from('clan_members').insert({clan_id:clanId,user_id:currentUser.id,role:'membre',contribution:0,week_score:0,joined_at:new Date().toISOString()});
-    await SB.from('profiles').update({clan_id:clanId}).eq('id',currentUser.id);
-    await SB.from('clans').update({members_count:SB.rpc('increment',{x:1})}).eq('id',clanId);
-    showToast('⚔ Tu as rejoint le clan !','success',3000);
-    await loadClanData();
-  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
-}
-
-async function leaveClan(){
-  if(!currentUser||!SB||!_myClanData) return;
-  if(!confirm('Quitter le clan ?')) return;
-  try {
-    await SB.from('clan_members').delete().eq('clan_id',_myClanData.clan.id).eq('user_id',currentUser.id);
-    await SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id);
-    showToast('Tu as quitté le clan','info',2000);
-    await loadClanData();
-  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
-}
-
-async function disbandClan(){
-  if(!_myClanData||!currentUser||!SB) return;
-  if(!confirm('Dissoudre définitivement le clan ?')) return;
-  try {
-    const clanId = _myClanData.clan.id;
-    await SB.from('clan_members').delete().eq('clan_id',clanId);
-    await SB.from('profiles').update({clan_id:null}).eq('clan_id',clanId);
-    await SB.from('clans').delete().eq('id',clanId);
-    showToast('Clan dissous','info',2000);
-    await loadClanData();
-  } catch(e){ showToast('Erreur : '+e.message,'error',3000); }
-}
-
-async function saveClanSettings(){
-  if(!_myClanData||!currentUser||!SB) return;
-  const tag = (document.getElementById('manage-tag')?.value||'').toUpperCase().slice(0,4);
-  const desc = (document.getElementById('manage-desc')?.value||'').trim();
-  try {
-    await SB.from('clans').update({tag,description:desc}).eq('id',_myClanData.clan.id);
-    showToast('Sauvegardé ✓','success',2000);
-  } catch(e){ showToast('Erreur','error',2000); }
-}
-
-// Contribution clan en fin de partie
-async function updateClanContribution(score){
-  if(!currentUser||!SB) return;
-  try {
-    const {data:member} = await SB.from('clan_members').select('clan_id,contribution,week_score').eq('user_id',currentUser.id).single();
-    if(!member) return;
-    const newContrib = (member.contribution||0)+score;
-    const newWeek = Math.max(member.week_score||0, score);
-    await SB.from('clan_members').update({contribution:newContrib,week_score:newWeek}).eq('user_id',currentUser.id);
-    await SB.from('clans').update({total_score:newContrib}).eq('id',member.clan_id);
-  } catch(e){}
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  CHAT GLOBAL (Supabase Realtime)
-// ═══════════════════════════════════════════════════════════════
-var _chatChannel = null;
-var _chatMessages = [];
-var CHAT_MAX = 80;
-
-async function openChat(){
-  show('s-chat');
-  if(!_chatChannel) await connectChat();
-}
-
-async function connectChat(){
-  const el = document.getElementById('chat-messages');
-  if(!el) return;
-  el.innerHTML = '<div class="chat-system-msg">Connexion au chat…</div>';
-
-  if(!SB){
-    el.innerHTML = '<div class="chat-system-msg">Connexion requise pour le chat</div>';
-    return;
-  }
-
-  try {
-    // Charger les derniers messages
-    const {data:msgs} = await SB.from('chat_messages')
-      .select('id,user_id,pseudo,content,created_at,rarity')
-      .order('created_at',{ascending:false}).limit(50);
-    _chatMessages = (msgs||[]).reverse();
-    renderChatMessages();
-
-    // Subscribe realtime
-    _chatChannel = SB.channel('global-chat')
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'}, payload=>{
-        _chatMessages.push(payload.new);
-        if(_chatMessages.length > CHAT_MAX) _chatMessages.shift();
-        renderChatMessages();
-        updateChatNotif();
-      })
-      .subscribe(status=>{
-        const countEl = document.getElementById('chat-online-count');
-        if(countEl) countEl.textContent = status==='SUBSCRIBED'?'• En ligne':'• Connexion…';
-      });
-  } catch(e){
-    if(el) el.innerHTML = `<div class="chat-system-msg">Erreur : ${e.message}</div>`;
-  }
-}
-
-function disconnectChat(){
-  if(_chatChannel){ _chatChannel.unsubscribe(); _chatChannel = null; }
-}
-
-function renderChatMessages(){
-  const el = document.getElementById('chat-messages');
-  if(!el) return;
-  const myId = currentUser?.id;
-  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
-  el.innerHTML = _chatMessages.map(msg=>{
-    const isMe = msg.user_id===myId;
-    const time = new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    const badge = msg.rarity==='legendary'?'<span class="chat-msg-badge chef">★ LÉGEND</span>':
-                  msg.rarity==='premium'?'<span class="chat-msg-badge prem">⭐ PREM</span>':'';
-    return `<div class="chat-msg${isMe?' me':''}">
-      <div class="chat-msg-avatar">${(msg.pseudo||'?')[0].toUpperCase()}</div>
-      <div class="chat-msg-body">
-        <div class="chat-msg-header">
-          <span class="chat-msg-name" onclick="viewProfile('${msg.user_id}')">${msg.pseudo||'Anonyme'}</span>
-          ${badge}
-          <span class="chat-msg-time">${time}</span>
-        </div>
-        <div class="chat-msg-text">${escapeHtml(msg.content||'')}</div>
-      </div>
+function renderLoginStreak(){
+  const streak = loadData('pulse_login_streak_v1',{streak:0,lastDate:''});
+  const today = new Date().toISOString().slice(0,10);
+  const days = Math.min(streak.streak||0, 7);
+  let html = `<div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px;">`;
+  for(let i=0;i<7;i++){
+    const active = i < days;
+    html += `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;${active?'background:rgba(255,190,11,.15);border:2px solid rgba(255,190,11,.5);':'background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);'}">
+      ${active?'🔥':'○'}
     </div>`;
-  }).join('') + '<div id="chat-bottom"></div>';
-  document.getElementById('chat-bottom')?.scrollIntoView();
-}
-
-async function sendChatMsg(){
-  const input = document.getElementById('chat-input');
-  const text = (input?.value||'').trim();
-  if(!text||!SB||!currentUser){ return; }
-  if(!loadData('pulse_pseudo_v3','')){ showToast('Choisis un pseudo d\'abord','error',2000); return; }
-  input.value='';
-  const pseudo = loadData('pulse_pseudo_v3','');
-  const rarity = battlePass.level>=25?'legendary':hasPremiumPass.owned?'premium':'common';
-  try {
-    await SB.from('chat_messages').insert({
-      user_id:currentUser.id, pseudo, content:text,
-      created_at:new Date().toISOString(), rarity
-    });
-  } catch(e){ showToast('Envoi échoué','error',2000); }
-}
-
-function updateChatNotif(){
-  const notif = document.getElementById('hub-chat-notif');
-  if(notif && document.querySelector('#s-chat.on') === null){
-    notif.classList.add('on');
   }
+  html += `</div>`;
+  html += `<div style="text-align:center;font-size:7px;color:var(--txt2);letter-spacing:.1em;">🔥 ${days} jour${days>1?'s':''} de suite — +${days*10} XP bonus/partie</div>`;
+  return html;
 }
 
-function escapeHtml(text){
-  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function renderMyClan({clan, members, myRole}){
+  return "";
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  TOURNOIS HEBDOMADAIRES
-// ═══════════════════════════════════════════════════════════════
-var _currentTournament = null;
-var _tournTimer = null;
-
-async function openTournament(){
-  show('s-tournament');
-  await loadTournamentData();
-}
-
-async function loadTournamentData(){
-  const el = document.getElementById('tournament-content');
+async function renderProfileClanBadge(el, profileData){
   if(!el) return;
-  el.innerHTML = `<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>`;
-
-  // Tournoi local simulé si pas de Supabase
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=dim, 1=lun...
-  const daysUntilMonday = (8 - dayOfWeek) % 7 || 7;
-  const nextReset = new Date(now);
-  nextReset.setDate(nextReset.getDate() + daysUntilMonday);
-  nextReset.setHours(0,0,0,0);
-  const msLeft = nextReset - now;
-  const dLeft = Math.floor(msLeft/86400000);
-  const hLeft = Math.floor((msLeft%86400000)/3600000);
-  const mLeft = Math.floor((msLeft%3600000)/60000);
-
-  const SEASON_NAMES = ['NEON CITY','BLOOD MOON','VOID WALKER','CYBER DAWN'];
-  const weekNum = Math.floor(Date.now()/604800000);
-  const tournName = SEASON_NAMES[weekNum%SEASON_NAMES.length] + ' WEEKLY';
-
-  // Mon meilleur score de la semaine
-  const weekKey = 'pulse_tourn_week_'+weekNum;
-  const myEntry = loadData(weekKey, {score:0,wave:0,submitted:false});
-
-  let leaderboard = [];
-  if(SB){
-    try {
-      const {data} = await SB.from('tournament_scores')
-        .select('user_id,pseudo,score,wave,submitted_at')
-        .eq('week',weekNum)
-        .order('score',{ascending:false})
-        .limit(20);
-      leaderboard = data||[];
-    } catch(e){}
-  }
-
-  const myRank = leaderboard.findIndex(r=>r.user_id===currentUser?.id)+1||0;
-
-  _currentTournament = {weekNum, weekKey, myEntry, leaderboard, myRank};
-
-  // Démarrer le timer de compte à rebours
-  if(_tournTimer) clearInterval(_tournTimer);
-  _tournTimer = setInterval(()=>{
-    const el2 = document.getElementById('tourn-timer-display');
-    if(!el2) return;
-    const ms = nextReset - Date.now();
-    if(ms<=0){ el2.textContent='Fin du tournoi'; clearInterval(_tournTimer); return; }
-    const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
-    el2.textContent=`${d}j ${h}h ${m}m ${s}s`;
-  },1000);
-
-  let html = `
-    <div class="tourn-hero">
-      <div class="tourn-name">${tournName}</div>
-      <div class="tourn-timer-lbl">TEMPS RESTANT</div>
-      <div class="tourn-timer-big" id="tourn-timer-display">${dLeft}j ${hLeft}h ${mLeft}m</div>
-      <div class="tourn-status active">● EN COURS</div>
-      <div class="tourn-rewards-row">
-        <div class="tourn-reward-pill">🥇 TOP 1 — 2000🪙 + Skin Exclusif</div>
-        <div class="tourn-reward-pill">🥈 TOP 3 — 800🪙</div>
-        <div class="tourn-reward-pill">🥉 TOP 10 — 300🪙</div>
-        <div class="tourn-reward-pill">🏅 TOP 50 — 100🪙 + 500 XP BP</div>
-      </div>
-    </div>`;
-
-  // Mon score
-  html += `<div class="tourn-my-score">
-    <div class="tourn-my-rank">${myRank>0?'#'+myRank:'—'}</div>
-    <div class="tourn-my-info">
-      <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c3);">${(myEntry.score||0).toLocaleString('fr-FR')}</div>
-      <div style="font-size:7px;color:var(--txt2);margin-top:3px;">Vague ${myEntry.wave||0} · Mon meilleur cette semaine</div>
-      ${myEntry.score>0?`<div style="font-size:6px;color:var(--dim);margin-top:2px;">Soumis · mise à jour automatique</div>`:'<div style="font-size:6px;color:var(--dim);margin-top:2px;">Joue une partie pour participer !</div>'}
-    </div>
-  </div>`;
-
-  // Leaderboard
-  html += `<div style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.15em;color:var(--dim);margin:8px 0 4px;">CLASSEMENT</div>`;
-  if(!leaderboard.length){
-    html += `<div style="text-align:center;padding:20px;color:var(--dim);">Sois le premier à soumettre un score !</div>`;
-  } else {
-    leaderboard.forEach((entry,i)=>{
-      const rank = i+1;
-      const isMe = entry.user_id===currentUser?.id;
-      const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
-      html += `<div class="tourn-lb-row${isMe?' me':''}">
-        <div class="tourn-lb-rank ${rankClass}">${rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank}</div>
-        <div class="tourn-lb-name">${isMe?'<strong>'+entry.pseudo+'</strong>':entry.pseudo||'Anonyme'}</div>
-        <div class="tourn-lb-score">${(entry.score||0).toLocaleString('fr-FR')}</div>
-        <div style="font-size:6px;color:var(--dim);padding:0 4px;">V${entry.wave||0}</div>
+  const isMe = !profileData;
+  if(!isMe||!currentUser||!SB) return;
+  try {
+    const {data:member} = await SB.from('clan_members').select('clan_id,role,clans(name,tag)').eq('user_id',currentUser.id).maybeSingle();
+    if(member?.clans){
+      el.innerHTML += `<div class="profile-clan-badge" onclick="openClan()">
+        ⚔ [${member.clans.tag}] ${member.clans.name} <span style="margin-left:4px;opacity:.6;">(${member.role})</span>
       </div>`;
-    });
-  }
-  html += `<div style="height:12px;"></div>`;
-  el.innerHTML = html;
-}
-
-// Soumettre score tournoi en fin de partie
-async function submitTournamentScore(score, wave){
-  if(!SB||!currentUser) return;
-  const weekNum = Math.floor(Date.now()/604800000);
-  const weekKey = 'pulse_tourn_week_'+weekNum;
-  const existing = loadData(weekKey,{score:0,wave:0});
-  if(score <= existing.score) return; // pas meilleur
-  saveData(weekKey, {score,wave,submitted:true});
-  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
-  try {
-    await SB.from('tournament_scores').upsert({
-      user_id:currentUser.id, pseudo, score, wave, week:weekNum,
-      submitted_at:new Date().toISOString()
-    }, {onConflict:'user_id,week'});
-    showToast('🏆 Score soumis au tournoi !','success',3000);
-    // XP BP bonus si top 50
-    const {data:rank_data} = await SB.from('tournament_scores').select('score').eq('week',weekNum).gt('score',score).limit(50);
-    if(rank_data&&rank_data.length<50){ addBpXpManual(50); }
-    // Hub notif
-    const notif = document.getElementById('hub-tourn-notif');
-    if(notif) notif.classList.add('on');
+    }
   } catch(e){}
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  SYSTÈME DE REPLAY
-// ═══════════════════════════════════════════════════════════════
-var REPLAY_MAX_FRAMES = 3600; // 60s max
-var _replayRecording = false;
-var _replayBuffer = [];
-var _replayMeta = {};
-var _replayPlaying = false;
-var _replayFrameIdx = 0;
-var _replayTimer = null;
-var _savedReplays = [];
-
-function startReplayRecording(){
-  _replayRecording = true;
-  _replayBuffer = [];
-  _replayMeta = {startTime:Date.now(), score:0, wave:0, kills:0};
-}
-
-function recordReplayFrame(){
-  if(!_replayRecording || !G) return;
-  if(_replayBuffer.length >= REPLAY_MAX_FRAMES){ _replayRecording=false; return; }
-  // Snapshot compact de l'état
-  const snap = {
-    f: frame,
-    px: Math.round(G.player.x), py: Math.round(G.player.y),
-    ph: G.player.hp,
-    s: G.score, w: G.wave,
-    e: G.enemies.filter(e=>!e.dead).map(e=>({x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':e.mini?'m':'n',hp:Math.round(e.hp)})).slice(0,30),
-    b: G.bullets.slice(0,50).map(b=>({x:Math.round(b.x),y:Math.round(b.y),en:b.enemy})),
-    pu: G.powerups.map(p=>({x:Math.round(p.x),y:Math.round(p.y),t:p.type?.id?.slice(0,3)||'?'})).slice(0,10),
-  };
-  _replayBuffer.push(snap);
-  _replayMeta.score = G.score;
-  _replayMeta.wave = G.wave;
-  _replayMeta.kills = G.totalKills;
-}
-
-function stopReplayRecording(){
-  _replayRecording = false;
-  if(_replayBuffer.length < 60) return; // trop court
-  const replay = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    score: _replayMeta.score,
-    wave: _replayMeta.wave,
-    kills: _replayMeta.kills,
-    duration: _replayBuffer.length,
-    frames: _replayBuffer,
-  };
-  let replays = loadData('pulse_replays_v1',[]);
-  replays.unshift(replay);
-  if(replays.length > 5) replays = replays.slice(0,5); // garder 5 max
-  saveData('pulse_replays_v1', replays);
-  _savedReplays = replays;
-  showToast('⏮ Replay sauvegardé !','success',2000);
-}
-
-function openReplays(){
-  _savedReplays = loadData('pulse_replays_v1',[]);
-  renderReplayList();
-  show('s-replay');
 }
 
 function renderReplayList(){
@@ -15155,90 +15042,36 @@ function renderReplayList(){
   el.innerHTML = html;
 }
 
-function playReplay(idx){
-  const rep = _savedReplays[idx];
-  if(!rep||!rep.frames) return;
-  _replayPlaying = true;
-  _replayFrameIdx = 0;
-
-  // Setup canvas pour replay
-  setupCanvas();
-  show('__none__');
-  const hud = document.getElementById('replay-hud-overlay');
-  if(hud) hud.classList.add('on');
-  document.body.classList.add('game-active');
-
-  function step(){
-    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){
-      stopReplay();
-      return;
-    }
-    const snap = rep.frames[_replayFrameIdx];
-    drawReplayFrame(snap, rep);
-
-    // Mettre à jour le HUD replay
-    const rhScore = document.getElementById('rh-score');
-    const rhWave  = document.getElementById('rh-wave');
-    const rhTime  = document.getElementById('rh-time');
-    if(rhScore) rhScore.textContent = (snap.s||0).toLocaleString('fr-FR');
-    if(rhWave)  rhWave.textContent = snap.w||1;
-    if(rhTime){
-      const sec = Math.floor(_replayFrameIdx/60);
-      rhTime.textContent = Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0');
-    }
-    _replayFrameIdx++;
-    _replayTimer = requestAnimationFrame(step);
-  }
-  _replayTimer = requestAnimationFrame(step);
+async function saveClanSettings(){
+  if(!_myClanData||!currentUser||!SB) return;
+  const tag = (document.getElementById('manage-tag')?.value||'').toUpperCase().slice(0,4);
+  const desc = (document.getElementById('manage-desc')?.value||'').trim();
+  try {
+    await SB.from('clans').update({tag,description:desc}).eq('id',_myClanData.clan.id);
+    showToast('Sauvegardé ✓','success',2000);
+  } catch(e){ showToast('Erreur','error',2000); }
 }
 
-function drawReplayFrame(snap, rep){
-  if(!ctx||!W||!H) return;
-  drawBg(Date.now()*.001);
-  ctx.save();
+async function sendChatMsg(){
+  const input = document.getElementById('chat-input');
+  const text = (input?.value||'').trim();
+  if(!text||!SB||!currentUser){ return; }
+  if(!loadData('pulse_pseudo_v3','')){ showToast('Choisis un pseudo d\'abord','error',2000); return; }
+  input.value='';
+  const pseudo = loadData('pulse_pseudo_v3','');
+  const rarity = battlePass.level>=25?'legendary':hasPremiumPass.owned?'premium':'common';
+  try {
+    await SB.from('chat_messages').insert({
+      user_id:currentUser.id, pseudo, content:text,
+      created_at:new Date().toISOString(), rarity
+    });
+  } catch(e){ showToast('Envoi échoué','error',2000); }
+}
 
-  // Obstacles (simplifiés)
-  ctx.fillStyle='rgba(0,245,212,.12)';
-  ctx.strokeStyle='rgba(0,245,212,.3)';
-
-  // Powerups
-  (snap.pu||[]).forEach(p=>{
-    ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,245,212,.4)';ctx.fill();
-  });
-
-  // Ennemis
-  (snap.e||[]).forEach(e=>{
-    const r=e.t==='b'?24:e.t==='m'?16:10;
-    ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);
-    ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':e.t==='m'?'rgba(255,100,0,.6)':'rgba(255,26,110,.5)';
-    ctx.fill();
-  });
-
-  // Balles
-  (snap.b||[]).forEach(b=>{
-    ctx.beginPath();ctx.arc(b.x,b.y,b.en?5:4,0,Math.PI*2);
-    ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill();
-  });
-
-  // Joueur
-  ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.stroke();
-
-  // Barre HP
-  const hpPct = Math.max(0,Math.min(1,(snap.ph||0)/100));
-  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(snap.px-20,snap.py-22,40,4);
-  ctx.fillStyle=hpPct>0.5?'#2ecc71':hpPct>0.25?'#f1c40f':'#e74c3c';
-  ctx.fillRect(snap.px-20,snap.py-22,40*hpPct,4);
-
-  // Badge REPLAY
-  ctx.fillStyle='rgba(0,245,212,.15)';
-  ctx.fillRect(4,4,90,22);
-  ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px Orbitron,monospace';
-  ctx.fillText('▶ REPLAY',10,17);
-
-  ctx.restore();
+function startReplayRecording(){
+  _replayRecording = true;
+  _replayBuffer = [];
+  _replayMeta = {startTime:Date.now(), score:0, wave:0, kills:0};
 }
 
 function stopReplay(){
@@ -15250,117 +15083,160 @@ function stopReplay(){
   openReplays();
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  HOOKS — Intégration dans la game loop existante
-// ═══════════════════════════════════════════════════════════════
+function stopReplayRecording(){
+  _replayRecording = false;
+  if(_replayBuffer.length < 60) return; // trop court
+  const replay = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    score: _replayMeta.score,
+    wave: _replayMeta.wave,
+    kills: _replayMeta.kills,
+    duration: _replayBuffer.length,
+    frames: _replayBuffer,
+  };
+  let replays = loadData('pulse_replays_v1',[]);
+  replays.unshift(replay);
+  if(replays.length > 5) replays = replays.slice(0,5); // garder 5 max
+  saveData('pulse_replays_v1', replays);
+  _savedReplays = replays;
+  showToast('⏮ Replay sauvegardé !','success',2000);
+}
 
-// Hook dans startGame pour démarrer l'enregistrement
-var _origStartGame = typeof startGame === 'function' ? null : null;
-document.addEventListener('_pulse_startgame', ()=>{ startReplayRecording(); });
-
-// Hook dans la game loop pour enregistrer les frames
-var _origDraw = null; // on patch draw() ci-dessous
-
-// Patch léger — on appelle recordReplayFrame dans draw()
-var __replayPatchDraw = true;
-
-// Hook fin de partie
-var _origShowGoScore = null;
-
-// ═══════════════════════════════════════════════════════════════
-//  MISE À JOUR DU PROFIL — Onglet clan + badges améliorés
-// ═══════════════════════════════════════════════════════════════
-async function renderProfileClanBadge(el, profileData){
-  if(!el) return;
-  const isMe = !profileData;
-  if(!isMe||!currentUser||!SB) return;
+async function submitTournamentScore(score, wave){
+  if(!SB||!currentUser) return;
+  const weekNum = Math.floor(Date.now()/604800000);
+  const weekKey = 'pulse_tourn_week_'+weekNum;
+  const existing = loadData(weekKey,{score:0,wave:0});
+  if(score <= existing.score) return; // pas meilleur
+  saveData(weekKey, {score,wave,submitted:true});
+  const pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
   try {
-    const {data:member} = await SB.from('clan_members').select('clan_id,role,clans(name,tag)').eq('user_id',currentUser.id).maybeSingle();
-    if(member?.clans){
-      el.innerHTML += `<div class="profile-clan-badge" onclick="openClan()">
-        ⚔ [${member.clans.tag}] ${member.clans.name} <span style="margin-left:4px;opacity:.6;">(${member.role})</span>
-      </div>`;
-    }
+    await SB.from('tournament_scores').upsert({
+      user_id:currentUser.id, pseudo, score, wave, week:weekNum,
+      submitted_at:new Date().toISOString()
+    }, {onConflict:'user_id,week'});
+    showToast('🏆 Score soumis au tournoi !','success',3000);
+    // XP BP bonus si top 50
+    const {data:rank_data} = await SB.from('tournament_scores').select('score').eq('week',weekNum).gt('score',score).limit(50);
+    if(rank_data&&rank_data.length<50){ addBpXpManual(50); }
+    // Hub notif
+    const notif = document.getElementById('hub-tourn-notif');
+    if(notif) notif.classList.add('on');
   } catch(e){}
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  SUPABASE — Création des tables (SQL à exécuter dans dashboard)
-// ═══════════════════════════════════════════════════════════════
-/*
--- Coller ce SQL dans le dashboard Supabase > SQL Editor
+function updateChatNotif(){
+  const notif = document.getElementById('hub-chat-notif');
+  if(notif && document.querySelector('#s-chat.on') === null){
+    notif.classList.add('on');
+  }
+}
 
-CREATE TABLE IF NOT EXISTS clans (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  name text NOT NULL,
-  tag text NOT NULL,
-  description text,
-  owner_id uuid REFERENCES auth.users(id),
-  members_count int DEFAULT 1,
-  total_score bigint DEFAULT 0,
-  war_wins int DEFAULT 0,
-  created_at timestamptz DEFAULT now()
-);
+async function updateClanContribution(score){
+  if(!currentUser||!SB) return;
+  try {
+    const {data:member} = await SB.from('clan_members').select('clan_id,contribution,week_score').eq('user_id',currentUser.id).single();
+    if(!member) return;
+    const newContrib = (member.contribution||0)+score;
+    const newWeek = Math.max(member.week_score||0, score);
+    await SB.from('clan_members').update({contribution:newContrib,week_score:newWeek}).eq('user_id',currentUser.id);
+    await SB.from('clans').update({total_score:newContrib}).eq('id',member.clan_id);
+  } catch(e){}
+}
 
-CREATE TABLE IF NOT EXISTS clan_members (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  clan_id uuid REFERENCES clans(id) ON DELETE CASCADE,
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-  role text DEFAULT 'membre',
-  contribution bigint DEFAULT 0,
-  week_score bigint DEFAULT 0,
-  joined_at timestamptz DEFAULT now(),
-  UNIQUE(user_id)
-);
+function updateQuestProgress(stat, value){
+  if(!dailyQuests) return;
+  let changed = false;
+  for(const [id, state] of Object.entries(dailyQuests.quests)){
+    if(state.done) continue;
+    const def = QUEST_DEFS.find(q=>q.id===id);
+    if(!def || def.stat !== stat) continue;
+    const prev = state.progress;
+    state.progress = Math.max(state.progress, stat==='wave'||stat==='combo'||stat==='score'||stat==='kills'||stat==='boss'
+      ? value : state.progress + 1);
+    if(state.progress >= def.target && !state.done){
+      state.done = true;
+      showToast('📋 Quête terminée : '+def.name+' !','success',3000);
+      changed = true;
+    } else if(state.progress !== prev) changed = true;
+  }
+  if(changed) saveData('pulse_daily_quests_v1', dailyQuests);
+}
 
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS clan_id uuid REFERENCES clans(id);
+// ── Hooks game loop ──
+// Enregistrement replay dans draw()
+const _origDraw_v4 = draw;
+function draw() {
+  _origDraw_v4();
+  if(frame%2===0) recordReplayFrame();
+}
 
-CREATE TABLE IF NOT EXISTS chat_messages (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id),
-  pseudo text,
-  content text NOT NULL,
-  rarity text DEFAULT 'common',
-  created_at timestamptz DEFAULT now()
-);
+// Reset au startGame
+const _origStartGame_v4 = startGame;
+function startGame() {
+  resetMilestones();
+  _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
+  startReplayRecording();
+  loadDailyQuests();
+  _origStartGame_v4.apply(this, arguments);
+}
 
-CREATE TABLE IF NOT EXISTS tournament_scores (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id),
-  pseudo text,
-  score bigint DEFAULT 0,
-  wave int DEFAULT 0,
-  week int NOT NULL,
-  submitted_at timestamptz DEFAULT now(),
-  UNIQUE(user_id, week)
-);
+// Fin de partie
+const _origEndGame_v4 = endGame;
+function endGame() {
+  stopReplayRecording();
+  _updateQuestsEndGame();
+  if(G) submitTournamentScore(G.score||0, G.wave||0);
+  if(G) updateClanContribution(G.score||0);
+  _origEndGame_v4.apply(this, arguments);
+}
 
--- Activer Realtime sur chat_messages
-ALTER TABLE chat_messages REPLICA IDENTITY FULL;
+// Rage dans onKill
+const _origOnKill_v4 = onKill;
+function onKill(e) {
+  _origOnKill_v4(e);
+  onKillRage();
+}
 
--- RLS policies (simplifiées — adapter selon tes besoins)
-ALTER TABLE clans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE clan_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tournament_scores ENABLE ROW LEVEL SECURITY;
+// updateRageMode/checkScoreMilestones dans update()
+const _origUpdate_v4 = update;
+function update(now) {
+  _origUpdate_v4(now);
+  if(G && G.running && !G.paused) {
+    updateRageMode();
+    checkScoreMilestones(G.score||0);
+  }
+}
 
-CREATE POLICY "Public read clans" ON clans FOR SELECT USING (true);
-CREATE POLICY "Auth insert clans" ON clans FOR INSERT WITH CHECK (auth.uid() = owner_id);
-CREATE POLICY "Chef update clan" ON clans FOR UPDATE USING (auth.uid() = owner_id);
-CREATE POLICY "Owner delete clan" ON clans FOR DELETE USING (auth.uid() = owner_id);
+// Wave hooks dans startWave
+const _origStartWave_v4 = startWave;
+function startWave() {
+  const prevWave = G ? G.wave : 0;
+  _origStartWave_v4();
+  const w = G ? G.wave : 0;
+  if(w>1) checkPerfectWave(w-1);
+  if(w<50) showWaveThreatPreview(w+1);
+}
 
-CREATE POLICY "Public read members" ON clan_members FOR SELECT USING (true);
-CREATE POLICY "Auth join clan" ON clan_members FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Update own membership" ON clan_members FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Leave clan" ON clan_members FOR DELETE USING (auth.uid() = user_id);
+// _waveHitCount dans dmgPlayer
+const _origDmgPlayer_v4 = dmgPlayer;
+function dmgPlayer(raw) {
+  _waveHitCount++;
+  _origDmgPlayer_v4(raw);
+}
 
-CREATE POLICY "Public read chat" ON chat_messages FOR SELECT USING (true);
-CREATE POLICY "Auth send message" ON chat_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Public read tournament" ON tournament_scores FOR SELECT USING (true);
-CREATE POLICY "Auth submit score" ON tournament_scores FOR UPSERT WITH CHECK (auth.uid() = user_id);
-*/
-
+// Secours écran noir
+setTimeout(function(){
+  if(!document.querySelector('.scr.on')){
+    var btn=document.getElementById('emergency-cache-btn');
+    if(btn) btn.style.display='flex';
+    if(typeof show==='function') show('s-title');
+  }
+},3000);
+setTimeout(function(){
+  if(!document.querySelector('.scr.on')) location.reload();
+},6000);
 
 </script>
 <!-- SKIN DETAIL MODAL -->
@@ -15513,6 +15389,7 @@ CREATE POLICY "Auth submit score" ON tournament_scores FOR UPSERT WITH CHECK (au
   <button onclick="stopReplay()" style="margin-left:8px;font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;background:rgba(255,26,110,.1);border:1px solid rgba(255,26,110,.3);color:var(--c2);cursor:pointer;border-radius:3px;">■ STOP</button>
 </div>
 
+
 <!-- ═══ BOUTON SECOURS CACHE — visible si écran noir ═══ -->
 <div id="emergency-cache-btn" style="
   position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
@@ -15539,9 +15416,3 @@ CREATE POLICY "Auth submit score" ON tournament_scores FOR UPSERT WITH CHECK (au
 
 </body>
 </html>
-
-  } catch(e) {
-    console.error('[afterLogin] Erreur:', e);
-    // Continuer quand même — afficher l'écran titre en mode dégradé
-    isGuest = !currentUser;
-  }
