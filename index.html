@@ -4102,6 +4102,8 @@ var UPDATE_NOTES = [
   '📊 Score — animation pulse sur les gros gains de points',
 ];
 var LAST_UPDATE_VERSION = 'v30.0';
+let _adminBcChannel = null;
+const ADMIN_CHANNEL = 'pulse_admin_broadcast';
 async function afterLogin(isNewAccount=false){
   // Load cloud data if logged in
   if(currentUser&&SB){
@@ -11673,8 +11675,6 @@ async function adminFixInconsistencies(){
 }
 
 // ── Admin Broadcast ──
-const ADMIN_CHANNEL = 'pulse_admin_broadcast';
-let _adminBcChannel = null;
 let _adminCtrlChannel = null;
 
 function adminInitBroadcast(){
