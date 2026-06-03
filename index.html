@@ -3852,18 +3852,18 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 // ═══════════════════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════
-const VERSION = '30.0';
-const JOY_R   = 40;
-const AIM_R   = 44;
+var VERSION = '30.0';
+var JOY_R   = 40;
+var AIM_R   = 44;
 
 // ═══════════════════════════════════════════════════════
 //  SUPABASE — Auth & Cloud Storage
 // ═══════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://kyqureoaiobyersjrosm.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_KcEXNeipkIRziDVyVq7Cmw_If3A0kFo';
-let SB = null;
-let currentUser = null;
-let isGuest = false;
+var SUPABASE_URL = 'https://kyqureoaiobyersjrosm.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_KcEXNeipkIRziDVyVq7Cmw_If3A0kFo';
+var SB = null;
+var currentUser = null;
+var isGuest = false;
 
 try {
   // Tente linitialisation — la lib supabase-js@2 accepte les cles sb_publishable
@@ -3924,7 +3924,7 @@ async function saveCloudProfile(partial){
 // ═══════════════════════════════════════════════════════
 //  AUTH
 // ═══════════════════════════════════════════════════════
-let authMode = 'login'; // 'login' | 'register'
+var authMode = 'login'; // 'login' | 'register'
 
 function toggleAuthMode(){
   authMode = authMode==='login' ? 'register' : 'login';
@@ -4087,7 +4087,7 @@ function getSeasonEndDate(){
   const d=new Date();
   return new Date(d.getFullYear(), d.getMonth()+1, 1); // 1er du mois suivant
 }
-const BP_SEASON_CURRENT = getCurrentSeason();
+var BP_SEASON_CURRENT = getCurrentSeason();
 
 var UPDATE_NOTES = [
   '📱 Mode portrait corrigé — scroll activé sur le menu principal',
@@ -4102,8 +4102,8 @@ var UPDATE_NOTES = [
   '📊 Score — animation pulse sur les gros gains de points',
 ];
 var LAST_UPDATE_VERSION = 'v30.0';
-let _adminBcChannel = null;
-const ADMIN_CHANNEL = 'pulse_admin_broadcast';
+var _adminBcChannel = null;
+var ADMIN_CHANNEL = 'pulse_admin_broadcast';
 async function afterLogin(isNewAccount=false){
   // Load cloud data if logged in
   if(currentUser&&SB){
@@ -4185,7 +4185,7 @@ async function doLogout(){
 }
 
 // ── Profil actuel affiche (null = soi-meme, sinon {id,pseudo,stats,...}) ──
-let _viewingProfile = null;
+var _viewingProfile = null;
 
 function profileTab(tab, btn){
   document.querySelectorAll('#s-profile .shop-tab').forEach(b=>b.classList.remove('active'));
@@ -4342,7 +4342,7 @@ function renderProfileTab(tab, profileData){
 }
 
 // ── AMIS ─────────────────────────────────────────────────────────
-let _sdmCurrentSkin = '';
+var _sdmCurrentSkin = '';
 
 function openSkinDetail(skinId){
   _sdmCurrentSkin = skinId;
@@ -4668,7 +4668,7 @@ var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
 var equippedSkin  = loadData('pulse_equipped_v3', 'default');
 
 // ── CURSOR SKIN SYSTEM ──
-const CURSOR_DEFS = [
+var CURSOR_DEFS = [
   {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
     ctx.strokeStyle=col; ctx.lineWidth=1.5;
     const g=s*.14, arm=s*.46;
@@ -4713,8 +4713,8 @@ const CURSOR_DEFS = [
     ctx.fillStyle=col; ctx.beginPath(); ctx.arc(c,c,2,0,Math.PI*2); ctx.fill();
   }},
 ];
-let equippedCursor = loadData('pulse_cursor_v1','crosshair');
-let ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
+var equippedCursor = loadData('pulse_cursor_v1','crosshair');
+var ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
 
 function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURSOR_DEFS[0]; }
 function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
@@ -4726,7 +4726,7 @@ function buyCursor(id){
   equipCursor(id);
 }
 
-let _xhairCanvas=null;
+var _xhairCanvas=null;
 function drawXhair(){
   if(!_xhairCanvas) _xhairCanvas=document.getElementById('xhair');
   const cvs=_xhairCanvas; if(!cvs) return;
@@ -4751,7 +4751,7 @@ document.addEventListener('click',e=>{
     sfxClick&&sfxClick();
 },{passive:true});
 
-const SKIN_DEFS = [
+var SKIN_DEFS = [
   {id:'default',  name:'HEXAGONE',      price:0,   color:'#00f5d4', shape:'hex',      sides:6, trail:'#00f5d4', glow:'#00f5d4'},
   {id:'crimson',  name:'CRIMSON',       price:80,  color:'#ff1a6e', shape:'hex',      sides:6, trail:'#ff1a6e', glow:'#ff1a6e'},
   {id:'gold',     name:'OR PUR',        price:120, color:'#ffbe0b', shape:'hex',      sides:6, trail:'#ffbe0b', glow:'#ffbe0b'},
@@ -5027,7 +5027,7 @@ function grantSkin(id){
   saveData('pulse_skins_v3',ownedSkins);
   if(currentUser&&SB) saveCloudProfile({owned_skins:ownedSkins});
 }
-let _bpClaimInProgress=false;
+var _bpClaimInProgress=false;
 
 function buySkin(id){
   const sk=SKIN_DEFS.find(s=>s.id===id);
@@ -5064,7 +5064,7 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 var permaUpgrades = loadData('pulse_perma_v3', {});
 
-const PERMA_DEFS = [
+var PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
   {id:'p_spd',   ico:'💨', name:'AGILITE+',       desc:'+3% vitesse de depart par niveau.',   maxLvl:5, costs:[40,70,100,140,190], apply:(p,lvl)=>{ p.speed*=(1+.03*lvl); }},
@@ -5111,7 +5111,7 @@ function applyPermaUpgrades(player, gameState){
 // ═══════════════════════════════════════════════════════
 //  SHOP RENDERER
 // ═══════════════════════════════════════════════════════
-let currentShopTab = 'skins';
+var currentShopTab = 'skins';
 
 
 function openInventory(){
@@ -5288,8 +5288,8 @@ function renderShop(tab){
 }
 
 // ─── LOTTERY ───
-const LOTTERY_COST=75; // Coute 75, esperance negative = realiste
-const LOTTERY_PRIZES=[
+var LOTTERY_COST=75; // Coute 75, esperance negative = realiste
+var LOTTERY_PRIZES=[
   // Pertes (~55%) — tu perds ta mise
   {w:30, ico:'💸', lbl:'PERDU — +0 pieces',       loss:true, fn:()=>{}},
   {w:15, ico:'💸', lbl:'PERDU — +0 pieces',        loss:true, fn:()=>{}},
@@ -5490,7 +5490,7 @@ function showLotteryRewardOverlay(prize){
 
 
 // ─── ENEMY DEFINITIONS ───
-const ENEMY_DEFS = [
+var ENEMY_DEFS = [
   {id:'grunt',    col:'#ff1a6e', r:10, hp:3,   spd:1.4,  pts:10,  dmg:8,  lbl:'GRUNT',    shape:'circle'},
   {id:'runner',   col:'#ff9f1c', r:7,  hp:2,   spd:3.1,  pts:15,  dmg:6,  lbl:'RUNNER',   shape:'circle'},
   {id:'tank',     col:'#9b5de5', r:20, hp:15,  spd:0.58, pts:45,  dmg:22, lbl:'TANK',     shape:'hex', ranged:true, shootInterval:240},
@@ -5515,7 +5515,7 @@ const ENEMY_DEFS = [
 ];
 
 // ─── POWER-UP DROPS ───
-const POWERUP_DEFS = [
+var POWERUP_DEFS = [
   {id:'heal',    col:'#00f5d4', icon:'❤',  lbl:'+25 VIE',       ch:.07, apply:(p)=>{ p.hp=Math.min(p.maxHp,p.hp+25); flashHeal(); }},
   {id:'speed',   col:'#ffbe0b', icon:'⚡', lbl:'SPEED BOOST',   ch:.06, apply:(p)=>{ p.speedBoost=360; }},
   {id:'shield',  col:'#b44fff', icon:'🛡', lbl:'BOUCLIER ×3',   ch:.04, apply:(p)=>{ p.tempShield=true; p.tempShieldHp=3; }},
@@ -5531,7 +5531,7 @@ const POWERUP_DEFS = [
 ];
 
 // ─── UPGRADES ───
-const UPGRADE_DEFS = [
+var UPGRADE_DEFS = [
   {id:'dmg',      ico:'🔴', n:'Balle Rouge',    d:'+40% degats.',                   tier:'common',     stacks:true,  apply:s=>{ s.bulletDmg=+(s.bulletDmg*1.4).toFixed(2); }},
   {id:'fire',     ico:'⚡', n:'Cadence+',       d:'-22% delai entre tirs.',         tier:'common',     stacks:true,  apply:s=>{ s.fireRate=Math.max(38,Math.round(s.fireRate*.78)); }},
   {id:'spd',      ico:'💨', n:'Overdrive',      d:'+28% vitesse.',                  tier:'common',     stacks:true,  apply:s=>{ s.speed*=1.28; }},
@@ -5563,7 +5563,7 @@ const UPGRADE_DEFS = [
 ];
 
 // ─── CURSE DEFINITIONS ───
-const CURSE_DEFS = [
+var CURSE_DEFS = [
   {id:'c_speed',    ico:'🐌', n:'LENTEUR',         d:'Ta vitesse est reduite de 35%.',            reward:'🔴 Degats ×1.5',    apply:(p)=>{ p.speed*=0.65; }, rewardApply:(p)=>{ p.bulletDmg*=1.5; }, weight:3},
   {id:'c_armor',    ico:'💔', n:'FRAGILE',          d:'Tu recois 30% de degats en plus.',          reward:'❤️ PV max +50',      apply:(p)=>{ p.cursedArmor=true; }, rewardApply:(p)=>{ p.maxHp+=50; p.hp+=50; }, weight:3},
   {id:'c_fire',     ico:'🔥', n:'SURCHAUFFE',       d:'Ton arme surchauffe (arret 1s/5s).',        reward:'⚡ Cadence ×1.4',   apply:(p)=>{ p.overheatCurse=true; }, rewardApply:(p)=>{ p.fireRate=Math.max(28,Math.round(p.fireRate*.72)); }, weight:2},
@@ -5573,7 +5573,7 @@ const CURSE_DEFS = [
 ];
 
 // ─── ACHIEVEMENTS ───
-const ACH_DEFS = [
+var ACH_DEFS = [
   {id:'first_kill',   ico:'⚔️',  n:'Premier Sang',       d:'Tuer son premier ennemi.',              goal:1,      stat:'totalKills',     reward:25},
   {id:'kills_100',    ico:'💀',  n:'Centurion',           d:'Tuer 100 ennemis en une partie.',       goal:100,    stat:'sessionKills',   reward:50},
   {id:'kills_500',    ico:'☣️',  n:'Exterminateur',       d:'Tuer 500 ennemis en une partie.',       goal:500,    stat:'sessionKills',   reward:150},
@@ -5599,7 +5599,7 @@ const ACH_DEFS = [
 ];
 
 // ─── TIP MESSAGES ───
-const TIPS = [
+var TIPS = [
   'Le dash te rend invincible pendant 7 frames !',
   'Les bombers explosent — eloigne-toi quand ils sont faibles.',
   'Les guardians ont un bouclier — tire dessus d\'abord.',
@@ -5627,7 +5627,7 @@ function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); 
 
 var scores     = loadData('pulse_scores_v2',   []);
 var achDone    = loadData('pulse_ach_v2',      {});
-let achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
+var achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE NOTIFICATIONS
 // ═══════════════════════════════════════════════════════
@@ -5706,8 +5706,8 @@ function _notifAgo(ts){
 }
 
 var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
-let settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
-let newAchThisRun = [];
+var settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
+var newAchThisRun = [];
 
 function saveScores(){
   saveData('pulse_scores_v2',scores);
@@ -5739,7 +5739,7 @@ function resetGlobalStats(){ gStats={totalKills:0,gamesPlayed:0,totalScore:0,tot
 // ═══════════════════════════════════════════════════════
 //  AUDIO  (Web Audio API — generative sounds)
 // ═══════════════════════════════════════════════════════
-let AC = null;
+var AC = null;
 function getAC(){ if(!AC&&settings.sfx){ try{ AC=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
 function resumeAC(){ if(AC&&AC.state==='suspended') AC.resume(); }
 
@@ -5781,7 +5781,7 @@ function sfxShoot(){
 }
 
 // ── SFX hit ennemi ──────────────────────────────────────
-let _lastSfxHit=0;
+var _lastSfxHit=0;
 function sfxHit(){
   const now=Date.now(); if(now-_lastSfxHit<30) return; _lastSfxHit=now;
   const ac=getAC(); if(!ac||!settings.sfx) return;
@@ -5795,7 +5795,7 @@ function sfxHit(){
 }
 
 // ── SFX mort ennemi — crunch + bruit ───────────────────
-let _lastSfxDeath=0;
+var _lastSfxDeath=0;
 function sfxDeath(){
   const now=Date.now(); if(now-_lastSfxDeath<45) return; _lastSfxDeath=now;
   const ac=getAC(); if(!ac||!settings.sfx) return;
@@ -5919,10 +5919,10 @@ function sfxClick(){
 // ═══════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════
-let G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
+var G=null, animId=null, frame=0, isMobile=false, fps=60, fpsTimer=0, fpsCount=0, _fpsT0=0;
 
 // ── DOM Element Cache (queried once, never inside the frame loop) ──
-let _dom={};
+var _dom={};
 function initDomCache(){
   const ids=['hv-score','hv-kills','hv-enemies','hv-wave','hv-hp','hv-lv',
     'bfhp','bfxp','bfsp','bfcd','wave-bar-fill','frz-fx',
@@ -5998,8 +5998,8 @@ function mkState(){
 // ═══════════════════════════════════════════════════════
 //  CANVAS
 // ═══════════════════════════════════════════════════════
-let bCtx, gCtx, W, H, bgStars=[];
-let canvasOffsetX=0, canvasOffsetY=0, canvasScale=1;
+var bCtx, gCtx, W, H, bgStars=[];
+var canvasOffsetX=0, canvasOffsetY=0, canvasScale=1;
 
 function setupCanvas(){
   const bc=document.getElementById('cvs-bg'), gc=document.getElementById('cvs-game');
@@ -6042,7 +6042,7 @@ function setupCanvas(){
 }
 
 // Static bg canvas — redrawn at a low rate (6fps) since it barely changes
-let _bgLastT=-99, _bgLastCombo=-1, _bgLastHp=-1;
+var _bgLastT=-99, _bgLastCombo=-1, _bgLastHp=-1;
 function drawBg(t){
   const comboIntensity = G ? Math.min(G.combo/20,1) : 0;
   const hpRatio = G ? G.player.hp/G.player.maxHp : 1;
@@ -6305,7 +6305,7 @@ function showBanner(num,sub,tip=''){
   }
 }
 
-let cdTm=null;
+var cdTm=null;
 function countdown(n,cb){
   if(G) G._countingDown=true;
   clearTimeout(cdTm);
@@ -7954,9 +7954,9 @@ function draw(){
 // ═══════════════════════════════════════════════════════
 //  MAIN LOOP
 // ═══════════════════════════════════════════════════════
-let _lastLoopTime=0;
-const _TARGET_FPS=60;
-const _FRAME_MS=1000/_TARGET_FPS;
+var _lastLoopTime=0;
+var _TARGET_FPS=60;
+var _FRAME_MS=1000/_TARGET_FPS;
 
 function loop(now){
   if(!G) return;
@@ -7971,7 +7971,7 @@ function loop(now){
 }
 
 // Gamepad poll runs independently — works in menus AND in game
-let _gpPollRaf=null;
+var _gpPollRaf=null;
 function _gpMenuLoop(){
   // Always poll gamepad regardless of game state
   pollGamepad();
@@ -7983,7 +7983,7 @@ _gpPollRaf=requestAnimationFrame(_gpMenuLoop);
 // ═══════════════════════════════════════════════════════
 //  UPGRADES SCREEN
 // ═══════════════════════════════════════════════════════
-let rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
+var rerollsLeft=1; // local UI tracker (syncs from G.rerollsLeft)
 
 function showUpgrades(){
   if(document.getElementById('s-upg').classList.contains('on')) return;
@@ -9047,7 +9047,7 @@ async function fetchGlobalLeaderboard(){
   } catch(e){ return null; }
 }
 
-let currentLbTab = 'local';
+var currentLbTab = 'local';
 function lbTab(tab, btnEl){
   document.querySelectorAll('.lb-tab').forEach(b=>b.classList.remove('active'));
   btnEl.classList.add('active');
@@ -9103,7 +9103,7 @@ async function renderLeaderboard(){
 // ═══════════════════════════════════════════════════════
 //  SCREEN NAV
 // ═══════════════════════════════════════════════════════
-const BACK_MAP = {
+var BACK_MAP = {
   's-bp':'s-title','s-shop':'s-title','s-lb':'s-title','s-ach':'s-title',
   's-stats':'s-title','s-settings':'s-title','s-mode':'s-title',
   's-keybinds':'s-settings','s-gpmap':'s-settings',
@@ -9111,7 +9111,7 @@ const BACK_MAP = {
   's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
   's-admin':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-replay':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
 };
-let _backBtn=null;
+var _backBtn=null;
 function _initBackBtn(){
   if(_backBtn) return;
   _backBtn=document.createElement('button');
@@ -9379,15 +9379,15 @@ document.addEventListener('keyup',e=>{
 // ═══════════════════════════════════════════════════════
 //  INPUT — MOBILE TWIN-STICK (THE FIXED VERSION)
 // ═══════════════════════════════════════════════════════
-let joyTouchId=null, joyBx=0, joyBy=0;
-let aimTouchId=null, aimCx=0, aimCy=0;
-let _aimLastTap=0; // for double-tap bomb detection
+var joyTouchId=null, joyBx=0, joyBy=0;
+var aimTouchId=null, aimCx=0, aimCy=0;
+var _aimLastTap=0; // for double-tap bomb detection
 
-const joyZone  = document.getElementById('joy-zone');
-const joyBase  = document.getElementById('joy-base');
-const joyKnob  = document.getElementById('joy-knob');
-const aimZone  = document.getElementById('aim-zone');
-const aimKnob  = document.getElementById('aim-knob');
+var joyZone  = document.getElementById('joy-zone');
+var joyBase  = document.getElementById('joy-base');
+var joyKnob  = document.getElementById('joy-knob');
+var aimZone  = document.getElementById('aim-zone');
+var aimKnob  = document.getElementById('aim-knob');
 
 // ── LEFT STICK: movement ──
 joyZone.addEventListener('touchstart', e=>{
@@ -9504,11 +9504,11 @@ function formatSeasonEnd(){
   return diff<=0?'SAISON TERMINEE':'Se termine dans '+diff+' jour'+(diff>1?'s':'');
 }
 
-const BP_MAX_LEVEL = 30;
-const BP_XP_PER_LEVEL = 500;
+var BP_MAX_LEVEL = 30;
+var BP_XP_PER_LEVEL = 500;
 
 // ── THEMES SAISONNIERS ──
-const SEASON_THEMES = [
+var SEASON_THEMES = [
   {name:'NEON CITY',   accent:[0,245,212],  bg:'#03030a', effect:'scanlines'},
   {name:'BLOOD MOON',  accent:[255,26,110], bg:'#120308', effect:'radial'},
   {name:'VOID',        accent:[180,79,255], bg:'#080810', effect:'scanlines'},
@@ -9526,7 +9526,7 @@ function getSeasonTheme(){return SEASON_THEMES[(BP_SEASON_CURRENT-1)%SEASON_THEM
 
 // ── RECOMPENSES DUAL-TRACK ──
 // track: 'free' ou 'premium'
-const BP_REWARDS = [
+var BP_REWARDS = [
   // NIV 1
   {lv:1,  track:'free',    type:'coins',  value:50,          label:'+50 pieces',          icon:'🪙', rarity:'common'},
   {lv:1,  track:'premium', type:'coins',  value:150,         label:'+150 pieces',          icon:'🪙', rarity:'rare'},
@@ -9627,7 +9627,7 @@ if(battlePass.season !== BP_SEASON_CURRENT){
   saveData('pulse_bp_v2', battlePass);
 }
 
-const PREMIUM_PASS_COST = 1500;
+var PREMIUM_PASS_COST = 1500;
 var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
@@ -9909,12 +9909,12 @@ function grantBpXp(score, wave, kills){
 // ═══════════════════════════════════════════════════════
 //  DUO LOCAL — Touches configurables P2
 // ═══════════════════════════════════════════════════════
-const P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
-let p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
-let duoRemapTarget=null, duoRemapBtn=null;
+var P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
+var p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
+var duoRemapTarget=null, duoRemapBtn=null;
 
-const DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
-const P1_DEFAULT_DISPLAY = {up:'W / ↑',down:'S / ↓',left:'A / ←',right:'D / →',dash:'ESPACE',bomb:'Q'};
+var DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
+var P1_DEFAULT_DISPLAY = {up:'W / ↑',down:'S / ↓',left:'A / ←',right:'D / →',dash:'ESPACE',bomb:'Q'};
 
 function renderDuoConfig(){
   renderDuoPlayer1();
@@ -9994,8 +9994,8 @@ document.addEventListener('mousedown',function(e){
   duoRemapTarget=null; duoRemapBtn=null;
 },true);
 
-let duoMode = 'classic';
-let _duoActive = false;
+var duoMode = 'classic';
+var _duoActive = false;
 
 function selectDuoMode(mode){
   duoMode = mode;
@@ -10022,9 +10022,9 @@ function launchDuo(){
 // ═══════════════════════════════════════════════════════
 //  GAME MODES
 // ═══════════════════════════════════════════════════════
-let currentMode = 'classic';
-let modeTimer = 0;
-let P2 = null;
+var currentMode = 'classic';
+var modeTimer = 0;
+var P2 = null;
 
 function showModeSelect(){
   show('s-mode');
@@ -10103,10 +10103,10 @@ function updateModeLogic(){
 // ═══════════════════════════════════════════════════════
 //  ARENE — SYSTEME DE NIVEAUX PROGRESSIFS
 // ═══════════════════════════════════════════════════════
-let arenaLevel = loadData('pulse_arena_level_v1', 1);
-let arenaBestLevel = loadData('pulse_arena_best_v1', 0);
+var arenaLevel = loadData('pulse_arena_level_v1', 1);
+var arenaBestLevel = loadData('pulse_arena_best_v1', 0);
 
-const ARENA_LEVELS = [
+var ARENA_LEVELS = [
   // {n: nom, desc, enemies: [{id, count}], reward: {type, value, label, icon, desc}}
   {n:'ECHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
     enemies:[{id:'grunt',n:15},{id:'runner',n:8},{id:'swarm',n:10}],
@@ -10418,13 +10418,13 @@ function renderArenaMap(){
 }
 
 // Replay mode vars
-let _arenaReplayMode=false;
-let _arenaReplaySavedLevel=1;
+var _arenaReplayMode=false;
+var _arenaReplaySavedLevel=1;
 
-const P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
+var P2_KEYS = {up:['i','I'],down:['k','K'],left:['j','J'],right:['l','L'],dash:['Shift']};
 
 // Mouse button state for P2 remap support
-const _mouseButtons = {};
+var _mouseButtons = {};
 document.addEventListener('mousedown', e=>{ _mouseButtons['Mouse'+e.button]=true; });
 document.addEventListener('mouseup',   e=>{ _mouseButtons['Mouse'+e.button]=false; });
 
@@ -10629,21 +10629,21 @@ function drawP2(){
 //  MULTIJOUEUR EN LIGNE — Supabase Realtime
 //  Rooms publiques visibles par tous + rooms privees par code
 // ═══════════════════════════════════════════════════════
-const OL_MAX_PLAYERS = 4;
-const OL_SYNC_MS = 120;
-const OL_ROOMS_CHANNEL = 'pulse_public_rooms';
+var OL_MAX_PLAYERS = 4;
+var OL_SYNC_MS = 120;
+var OL_ROOMS_CHANNEL = 'pulse_public_rooms';
 
-let olChannel = null;       // game channel
-let olLobbyChannel = null;  // lobby/discovery channel
-let olPlayers = {};
-let olMyUid = null;
-let olRoomCode = null;
-let olRoomName = null;
-let olIsHost = false;
-let olStarted = false;
-let olSyncTimer = null;
-let olTab = 'browse';
-let olPublicRooms = {};     // {code: {name, players, host}}
+var olChannel = null;       // game channel
+var olLobbyChannel = null;  // lobby/discovery channel
+var olPlayers = {};
+var olMyUid = null;
+var olRoomCode = null;
+var olRoomName = null;
+var olIsHost = false;
+var olStarted = false;
+var olSyncTimer = null;
+var olTab = 'browse';
+var olPublicRooms = {};     // {code: {name, players, host}}
 
 function olInit(){
   olMyUid = currentUser?.id || ('g_'+Math.random().toString(36).slice(2,9));
@@ -10717,7 +10717,7 @@ function olRenderRoomList(){
 }
 
 // ── CREATE ──
-let olMode = 'classic'; // 'classic' | 'chrono' | 'arena' | 'duo'
+var olMode = 'classic'; // 'classic' | 'chrono' | 'arena' | 'duo'
 
 function selectOlMode(mode){
   olMode = mode;
@@ -10904,17 +10904,17 @@ function olUpdateHud(){
 // ═══════════════════════════════════════════════════════
 //  MODE DUEL PvP
 // ═══════════════════════════════════════════════════════
-let duelChannel = null;
-let duelCode = null;
-let duelIsHost = false;
-let duelOpponent = null; // {uid, name, hp, x, y, score}
-let duelMyUid = null;
-let duelTimer = null;
-let duelTimeLeft = 90;
-let duelActive = false;
-let duelMyHp = 100;
-const DUEL_MAX_HP = 100;
-const DUEL_DURATION = 90;
+var duelChannel = null;
+var duelCode = null;
+var duelIsHost = false;
+var duelOpponent = null; // {uid, name, hp, x, y, score}
+var duelMyUid = null;
+var duelTimer = null;
+var duelTimeLeft = 90;
+var duelActive = false;
+var duelMyHp = 100;
+var DUEL_MAX_HP = 100;
+var DUEL_DURATION = 90;
 
 function duelStatus(msg, cls){
   const el=document.getElementById('ol-duel-status');
@@ -11063,7 +11063,7 @@ function duelLaunch(){
   if(duelSyncInt) clearInterval(duelSyncInt);
   duelSyncInt=setInterval(duelSyncPosition,50);
 }
-let duelSyncInt=null;
+var duelSyncInt=null;
 
 function duelSyncPosition(){
   if(!G||!G.running||!duelActive) return;
@@ -11182,8 +11182,8 @@ function adminTabSwitch(tab){
 }
 
 // ── Admin Logs ──
-const ADMIN_LOG_KEY = 'pulse_admin_logs_v1';
-const ADMIN_LOG_MAX = 100;
+var ADMIN_LOG_KEY = 'pulse_admin_logs_v1';
+var ADMIN_LOG_MAX = 100;
 
 function adminLog(action, detail=''){
   if(!isAdmin()) return;
@@ -11336,7 +11336,7 @@ async function adminClearNotifsByType(){
 //  ADMIN PANEL
 //  Accessible uniquement pour fozyllll.yt@gmail.com
 // ═══════════════════════════════════════════════════════
-const ADMIN_EMAILS = ['fozyllll.yt@gmail.com','tcb.theo@gmail.com'];
+var ADMIN_EMAILS = ['fozyllll.yt@gmail.com','tcb.theo@gmail.com'];
 function isAdmin(){ return currentUser && ADMIN_EMAILS.includes(currentUser.email); }
 
 function openAdmin(){
@@ -11675,7 +11675,7 @@ async function adminFixInconsistencies(){
 }
 
 // ── Admin Broadcast ──
-let _adminCtrlChannel = null;
+var _adminCtrlChannel = null;
 
 function adminInitBroadcast(){
   if(!SB||!isAdmin()) return;
@@ -11766,7 +11766,7 @@ function initAdminBroadcastListener(){
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE RELIQUES
 // ═══════════════════════════════════════════════════════
-const RELIC_DEFS = [
+var RELIC_DEFS = [
   {id:'dash_trail',   ico:'💫', name:'TRAINE DE DASH',      desc:'Chaque dash laisse une traîne qui inflige 15 dégâts aux ennemis traversés. Stacks avec les dégâts normaux.', tag:'MOBILITE',  rarity:'common',  price:600,
     apply:(p)=>{ p.dashTrail=true; }},
   {id:'vampire',      ico:'🩸', name:'VAMPIRISME',           desc:'+2 PV par ennemi tué. Désactivé en mode Hardcore.', tag:'SURVIE',     rarity:'common',  price:600,
@@ -11822,7 +11822,7 @@ const RELIC_DEFS = [
 // ═══════════════════════════════════════════════════════
 //  CONFIRM PERSONNALISE
 // ═══════════════════════════════════════════════════════
-let _pcResolve = null;
+var _pcResolve = null;
 (function(){
   function init(){
     const el = document.getElementById('pulse-confirm');
@@ -11846,8 +11846,8 @@ function pulseConfirm(msg){
   });
 }
 
-let activeRelics = [];
-let pendingRelicOffer = false;
+var activeRelics = [];
+var pendingRelicOffer = false;
 
 function shouldOfferRelic(wave){
   return wave>0 && wave%5===0 && wave<=30; // every 5 waves up to 30
@@ -11935,7 +11935,7 @@ function resetRelics(){
 // ═══════════════════════════════════════════════════════
 //  DEFI QUOTIDIEN
 // ═══════════════════════════════════════════════════════
-const DAILY_MODIFIERS_POOL = [
+var DAILY_MODIFIERS_POOL = [
   {id:'fast_enemies',  ico:'💨', name:'ENNEMIS RAPIDES',   desc:'Vitesse ennemis +40%', apply:(g)=>{ g._dailyMod_fastEnemies=true; }},
   {id:'no_powerups',   ico:'🚫', name:'SANS BONUS',         desc:'Aucun powerup au sol', apply:(g)=>{ g._dailyMod_noPowerups=true; }},
   {id:'double_enemies',ico:'👥', name:'DOUBLE VAGUE',       desc:'2× plus d\'ennemis par vague', apply:(g)=>{ g._dailyMod_doubleEnemies=true; }},
@@ -11945,7 +11945,7 @@ const DAILY_MODIFIERS_POOL = [
   {id:'fog_always',    ico:'🌫', name:'BROUILLARD TOTAL',   desc:'Visibilite permanente reduite', apply:(g)=>{ g.player.fogCurse=true; }},
 ];
 
-let dailyState = {played:false, score:0, date:''};
+var dailyState = {played:false, score:0, date:''};
 
 function getDailyDateStr(){
   const d=new Date();
@@ -12141,7 +12141,7 @@ async function checkDailyRankReward(){
 // ═══════════════════════════════════════════════════════
 //  HISTORIQUE DES PARTIES
 // ═══════════════════════════════════════════════════════
-let gameHistory = loadData('pulse_history_v1', []);
+var gameHistory = loadData('pulse_history_v1', []);
 
 function addToHistory(entry){
   gameHistory.unshift(entry);
@@ -12210,9 +12210,9 @@ function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
 // Cout dupgrade par niveau (0→1, 1→2, 2→3)
-const SKIN_PERK_COSTS = [200, 500, 1000];
+var SKIN_PERK_COSTS = [200, 500, 1000];
 
-const SKIN_PERKS = {
+var SKIN_PERKS = {
   // ── SKINS CLASSIQUES ──
   'default': {
     ico:'🔋', name:'SURCHARGE HEX',
@@ -12471,7 +12471,7 @@ function renderRelicEquip(){
 // ═══════════════════════════════════════════════════════
 //  KEYBOARD REMAPPING
 // ═══════════════════════════════════════════════════════
-const KB_DEFAULT = {
+var KB_DEFAULT = {
   up:    ['w','ArrowUp'],
   down:  ['s','ArrowDown'],
   left:  ['a','ArrowLeft'],
@@ -12480,7 +12480,7 @@ const KB_DEFAULT = {
   bomb:  ['q','Q'],
   pause: ['p','P','Escape'],
 };
-const KB_ACTION_LABELS = {
+var KB_ACTION_LABELS = {
   up:    '⬆ MONTER',
   down:  '⬇ DESCENDRE',
   left:  '⬅ GAUCHE',
@@ -12493,8 +12493,8 @@ const KB_ACTION_LABELS = {
 var kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
 
 // Keyboard remap state
-let kbRemapTarget = null;
-let kbRemapListener = null;
+var kbRemapTarget = null;
+var kbRemapListener = null;
 
 function kbKeyName(key){
   const names = {
@@ -12543,7 +12543,7 @@ function openKeybinds(){
 }
 
 // Track which physical keys are currently pressed for the tester
-const _kbTesterPressed = new Set();
+var _kbTesterPressed = new Set();
 
 function startKbTester(){
   const keysEl = document.getElementById('kb-tester-keys');
@@ -12669,11 +12669,11 @@ function kbIsMove(key, dir){
 // ═══════════════════════════════════════════════════════
 //  GAMEPAD — Anti-lag BT + Remapping
 // ═══════════════════════════════════════════════════════
-let gpIndex=null, gpPrev={};
-let _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
+var gpIndex=null, gpPrev={};
+var _gpLayout='standard'; // 'standard' | 'nintendo' | 'generic'
 
 // Deadzone reduite a 0.12 pour meilleure reactivite (surtout BT)
-const GP_DEADZONE=0.12;
+var GP_DEADZONE=0.12;
 
 // Auto-detect gamepad layout from id string
 function detectGpLayout(id=''){
@@ -12691,10 +12691,10 @@ function gpBtnLabels(layout){
 }
 
 // Nintendo swaps A/B and X/Y vs standard
-const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
+var GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
 var gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
-let gpRemapTarget=null, gpRemapListener=null;
-const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
+var gpRemapTarget=null, gpRemapListener=null;
+var GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
 function gpVal(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.value:b):0; }
 function gpPressed(gp,btnIdx){ const b=gp.buttons[btnIdx]; return b?(typeof b==='object'?b.pressed:!!b):false; }
@@ -12705,8 +12705,8 @@ function gpAxis(gp,axIdx){ const v=gpAxisRaw(gp,axIdx); return Math.abs(v)>GP_DE
 // BT gamepads can have 8–30ms hardware latency. Chrome/Firefox only update
 // gamepad state when getGamepads() is called inside rAF, but we can call it
 // more often via setInterval to capture the freshest state possible.
-let _gpSnap=null; // latest snapshot, written by interval, read by rAF
-let _gpPrevSnap=null; // previous snapshot for edge detection outside game loop
+var _gpSnap=null; // latest snapshot, written by interval, read by rAF
+var _gpPrevSnap=null; // previous snapshot for edge detection outside game loop
 function safeGetGamepads(){ try{ return navigator.getGamepads?navigator.getGamepads():[]; }catch(e){ return []; } }
 
 // Poll at ~250Hz — handles remap detection AND game-loop-independent button reading
@@ -12715,7 +12715,7 @@ document.addEventListener('visibilitychange',()=>{
   if(_gpInterval) clearInterval(_gpInterval);
   // restart handled by reassignment below — this is declarative, skip restart
 });
-const _gpInterval=setInterval(()=>{
+var _gpInterval=setInterval(()=>{
   if(gpIndex===null){ _gpSnap=null; return; }
   const gps=safeGetGamepads();
   const gp=gps[gpIndex];
@@ -12951,7 +12951,7 @@ function pollGamepad(){
   gpPrev={DASH:nDASH,SPEC:nSPEC,PAUSE:nPAUSE,START:nSTART,SEL:nSEL,LB:nLB,RB:nRB,LT:nLT,RT:nRT,_navCd:gpPrev._navCd,_menuFocusIdx:gpPrev._menuFocusIdx,_menuNavCd:gpPrev._menuNavCd,_scrollCd:gpPrev._scrollCd,_navStart:gpPrev._navStart};
 }
 
-let gpCardIdx=0;
+var gpCardIdx=0;
 function gpNavigateCards(wasConfirm,nowConfirm){
   // Works regardless of whether G is running — covers menus too
   const upg=document.getElementById('s-upg'), curse=document.getElementById('s-curse');
@@ -12985,11 +12985,11 @@ function gpNavigateCards(wasConfirm,nowConfirm){
 // ═══════════════════════════════════════════════════════
 
 // Screens where the card-picker (s-upg / s-curse) takes over — skip general nav
-const GP_CARD_SCREENS = ['s-upg','s-curse'];
+var GP_CARD_SCREENS = ['s-upg','s-curse'];
 // Screens that are overlays on top of the game — don't scroll
-const GP_NO_SCROLL_SCREENS = ['s-upg','s-curse','s-pause'];
+var GP_NO_SCROLL_SCREENS = ['s-upg','s-curse','s-pause'];
 // All navigable menu screens
-const GP_MENU_SCREENS = [
+var GP_MENU_SCREENS = [
   's-title','s-go','s-pause','s-shop','s-lb','s-settings',
   's-stats','s-ach','s-mode','s-relics','s-inventory','s-bp',
   's-keybinds','s-gpmap','s-ob','s-admin','s-gifts'
@@ -13085,7 +13085,7 @@ function gpScrollMenus(){
 }
 
 // Reset menu focus index when changing screens
-const _origShow=window.show;
+var _origShow=window.show;
 // Patch show() to reset menu nav index on screen change
 (function(){
   const orig=show;
@@ -13103,8 +13103,8 @@ const _origShow=window.show;
 // ═══════════════════════════════════════════════════════
 //  ONBOARDING TUTORIAL
 // ═══════════════════════════════════════════════════════
-const OB_TOTAL = 9;
-let obCurrent = 0;
+var OB_TOTAL = 9;
+var obCurrent = 0;
 
 function obInit(){
   // Build dots
@@ -13396,8 +13396,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 
 // ── FLOATING DAMAGE NUMBERS ─────────────────────────────────────
-const _dmgContainer = document.getElementById('dmg-numbers');
-let _dmgPool = [];
+var _dmgContainer = document.getElementById('dmg-numbers');
+var _dmgPool = [];
 
 function spawnDmgNumber(x, y, text, type='hit'){
   if(!_dmgContainer || !settings.particles) return;
@@ -13420,7 +13420,7 @@ function spawnDmgNumber(x, y, text, type='hit'){
 }
 
 // Patch onKill to show floating kill numbers
-const _origOnKill = typeof onKill === 'function' ? onKill : null;
+var _origOnKill = typeof onKill === 'function' ? onKill : null;
 if(_origOnKill){
   window.onKill = function(e){
     _origOnKill(e);
@@ -13430,12 +13430,12 @@ if(_origOnKill){
 }
 
 // ── ENHANCED COMBO DISPLAY ──────────────────────────────────────
-const _cvalNew = document.getElementById('cval-new');
-const _comboTier = document.getElementById('combo-tier');
-const _comboBarFill = document.getElementById('combo-bar-fill');
-const _comboInner = document.getElementById('combo-inner');
+var _cvalNew = document.getElementById('cval-new');
+var _comboTier = document.getElementById('combo-tier');
+var _comboBarFill = document.getElementById('combo-bar-fill');
+var _comboInner = document.getElementById('combo-inner');
 
-const COMBO_TIERS = [
+var COMBO_TIERS = [
   {min:0,   label:'COMBO',       color:'var(--c3)',   size:'clamp(42px,10vw,66px)'},
   {min:5,   label:'HOT ✦',       color:'#ff9f1c',    size:'clamp(44px,11vw,70px)'},
   {min:10,  label:'BLAZING ✦✦',  color:'var(--c6)',   size:'clamp(46px,12vw,74px)'},
@@ -13443,8 +13443,8 @@ const COMBO_TIERS = [
   {min:50,  label:'⚡ GODLIKE',   color:'var(--c4)',   size:'clamp(52px,14vw,88px)'},
 ];
 
-let _lastCombo = 0;
-let _streakCount = 0;
+var _lastCombo = 0;
+var _streakCount = 0;
 
 function updateEnhancedCombo(val){
   if(!_cvalNew) return;
@@ -13505,7 +13505,7 @@ function showStreakPopup(text, color){
 }
 
 // Patch the combo update if combo tracking exists
-const _origComboUpdate = typeof updateCombo === 'function' ? updateCombo : null;
+var _origComboUpdate = typeof updateCombo === 'function' ? updateCombo : null;
 // We hook via requestAnimationFrame check instead to avoid reference errors
 
 // ── LEVEL UP BANNER ─────────────────────────────────────────────
@@ -13519,9 +13519,9 @@ function showLvupBanner(level){
 }
 
 // ── SPEEDRUN TIMER ───────────────────────────────────────────────
-let _timerEl = null; // lazily initialized
-let _timerStart = 0;
-let _timerRaf = 0;
+var _timerEl = null; // lazily initialized
+var _timerStart = 0;
+var _timerRaf = 0;
 
 function startSpeedrunTimer(){
   if(!_timerEl) _timerEl = document.getElementById('speedrun-timer');
@@ -13612,7 +13612,7 @@ function renderPauseBuildSummary(){
 }
 
 // Hook into the existing pause toggle
-const _origTogglePause = typeof togglePause === 'function' ? togglePause : null;
+var _origTogglePause = typeof togglePause === 'function' ? togglePause : null;
 if(_origTogglePause){
   window.togglePause = function(){
     _origTogglePause();
@@ -13633,7 +13633,7 @@ function updateHPDangerEffect(){
 }
 
 // ── GAME START HOOK ──────────────────────────────────────────────
-const _origStartGame = typeof startGame === 'function' ? startGame : null;
+var _origStartGame = typeof startGame === 'function' ? startGame : null;
 if(_origStartGame){
   window.startGame = function(...args){
     _origStartGame(...args);
@@ -13642,7 +13642,7 @@ if(_origStartGame){
 }
 
 // ── FRAME UPDATE HOOKS (polling approach to avoid reference errors) ──
-let _prevLevel = 0, _prevCombo = 0;
+var _prevLevel = 0, _prevCombo = 0;
 (function patchGameLoop(){
   const _origRaf = window.requestAnimationFrame.bind(window);
   // We use a secondary interval to check game state without touching the RAF
@@ -13682,7 +13682,7 @@ let _prevLevel = 0, _prevCombo = 0;
 
 // ── UPGRADE CARD SYNERGIES ───────────────────────────────────────
 // Inject synergy hints when upgrade screen is rendered
-const _origShowUpgrades = typeof showUpgrades === 'function' ? showUpgrades : null;
+var _origShowUpgrades = typeof showUpgrades === 'function' ? showUpgrades : null;
 if(_origShowUpgrades){
   window.showUpgrades = function(...args){
     _origShowUpgrades(...args);
@@ -13729,7 +13729,7 @@ if(_origShowUpgrades){
 
 // ── GAME OVER ENHANCED STATS ─────────────────────────────────────
 // Adds animated stat bars to game over screen
-const _origShowGO = typeof showGameOver === 'function' ? showGameOver : null;
+var _origShowGO = typeof showGameOver === 'function' ? showGameOver : null;
 if(_origShowGO){
   window.showGameOver = function(...args){
     _origShowGO(...args);
@@ -13802,7 +13802,7 @@ function triggerWaveCinematic(){
 }
 
 // Hook wave complete
-const _origWaveComplete = typeof waveComplete === 'function' ? waveComplete : null;
+var _origWaveComplete = typeof waveComplete === 'function' ? waveComplete : null;
 if(_origWaveComplete){
   window.waveComplete = function(...args){
     _origWaveComplete(...args);
@@ -14050,8 +14050,8 @@ if('serviceWorker' in navigator){
 // ═══════════════════════════════════════════════════════
 //  RAGE MODE
 // ═══════════════════════════════════════════════════════
-const RAGE_THRESHOLD=8,RAGE_DECAY=300;
-let _rageKills=0,_rageTimer=0,_rageMult=1,_rageActive=false;
+var RAGE_THRESHOLD=8,RAGE_DECAY=300;
+var _rageKills=0,_rageTimer=0,_rageMult=1,_rageActive=false;
 
 function onKillRage(){_rageKills=Math.min(_rageKills+1,20);_rageTimer=RAGE_DECAY;}
 
@@ -14079,7 +14079,7 @@ function updateRageMode(){
 // ═══════════════════════════════════════════════════════
 //  PERFECT WAVE
 // ═══════════════════════════════════════════════════════
-let _waveHitCount=0;
+var _waveHitCount=0;
 
 function checkPerfectWave(wave){
   if(_waveHitCount===0&&wave>1){
@@ -14099,8 +14099,8 @@ function checkPerfectWave(wave){
 // ═══════════════════════════════════════════════════════
 //  SCORE MILESTONES
 // ═══════════════════════════════════════════════════════
-const SCORE_MILESTONES=[1000,2500,5000,10000,25000,50000,100000,250000,500000];
-let _nextMilestoneIdx=0;
+var SCORE_MILESTONES=[1000,2500,5000,10000,25000,50000,100000,250000,500000];
+var _nextMilestoneIdx=0;
 
 function resetMilestones(){_nextMilestoneIdx=0;}
 
@@ -14123,7 +14123,7 @@ function checkScoreMilestones(score){
 // ═══════════════════════════════════════════════════════
 //  EDGE THREATS (indicateurs ennemis hors écran)
 // ═══════════════════════════════════════════════════════
-const _edgeMargin=90;
+var _edgeMargin=90;
 
 function updateEdgeThreats(){
   if(!G||!G.running) return;
@@ -14192,13 +14192,13 @@ setTimeout(function(){
 // ── Clans/Chat/Replay/Tournois (variables nouvelles) ──
 
 // ── Clans / Chat / Tournois ──
-let _myClans=null, _myClanData=null, _chatChannel=null, _chatMessages=[];
-let _currentTournament=null, _tournTimer=null;
-let dailyQuests=null;
-const CHAT_MAX=80;
+var _myClans=null, _myClanData=null, _chatChannel=null, _chatMessages=[];
+var _currentTournament=null, _tournTimer=null;
+var dailyQuests=null;
+var CHAT_MAX=80;
 
 // ── Quêtes ──
-const QUEST_DEFS=[
+var QUEST_DEFS=[
   {id:'q_kills_50',  name:'EXTERMINATION',   desc:'Tuer 50 ennemis',       icon:'💀', stat:'kills',       target:50,   xp:120},
   {id:'q_kills_100', name:'MASSACRE',        desc:'Tuer 100 ennemis',      icon:'☠️', stat:'kills',       target:100,  xp:200},
   {id:'q_wave_10',   name:'SURVIVANT',       desc:'Atteindre la vague 10', icon:'🌊', stat:'wave',        target:10,   xp:150},
@@ -15167,14 +15167,14 @@ function updateQuestProgress(stat, value){
 
 // ── Hooks game loop ──
 // Enregistrement replay dans draw()
-const _origDraw_v4 = draw;
+var _origDraw_v4 = draw;
 function draw() {
   _origDraw_v4();
   if(frame%2===0) recordReplayFrame();
 }
 
 // Reset au startGame
-const _origStartGame_v4 = startGame;
+var _origStartGame_v4 = startGame;
 function startGame() {
   resetMilestones();
   _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
@@ -15184,7 +15184,7 @@ function startGame() {
 }
 
 // Fin de partie
-const _origEndGame_v4 = endGame;
+var _origEndGame_v4 = endGame;
 function endGame() {
   stopReplayRecording();
   _updateQuestsEndGame();
@@ -15194,14 +15194,14 @@ function endGame() {
 }
 
 // Rage dans onKill
-const _origOnKill_v4 = onKill;
+var _origOnKill_v4 = onKill;
 function onKill(e) {
   _origOnKill_v4(e);
   onKillRage();
 }
 
 // updateRageMode/checkScoreMilestones dans update()
-const _origUpdate_v4 = update;
+var _origUpdate_v4 = update;
 function update(now) {
   _origUpdate_v4(now);
   if(G && G.running && !G.paused) {
@@ -15211,7 +15211,7 @@ function update(now) {
 }
 
 // Wave hooks dans startWave
-const _origStartWave_v4 = startWave;
+var _origStartWave_v4 = startWave;
 function startWave() {
   const prevWave = G ? G.wave : 0;
   _origStartWave_v4();
@@ -15221,7 +15221,7 @@ function startWave() {
 }
 
 // _waveHitCount dans dmgPlayer
-const _origDmgPlayer_v4 = dmgPlayer;
+var _origDmgPlayer_v4 = dmgPlayer;
 function dmgPlayer(raw) {
   _waveHitCount++;
   _origDmgPlayer_v4(raw);
