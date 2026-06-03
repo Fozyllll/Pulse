@@ -3865,6 +3865,35 @@ var SB = null;
 var currentUser = null;
 var isGuest = false;
 
+var gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
+var kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
+
+// Keyboard remap state
+var arenaBestLevel = loadData('pulse_arena_best_v1', 0);
+var arenaLevel = loadData('pulse_arena_level_v1', 1);
+var p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
+var settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
+var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
+var achDone    = loadData('pulse_ach_v2',      {});
+var scores     = loadData('pulse_scores_v2',   []);
+var permaUpgrades = loadData('pulse_perma_v3', {});
+var equippedCursor = loadData('pulse_cursor_v1','crosshair');
+var equippedSkin  = loadData('pulse_equipped_v3', 'default');
+
+// ── CURSOR SKIN SYSTEM ──
+var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
+
+var coins = loadData('pulse_coins_v3', 0);
+var ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
+var achSeen    = loadData('pulse_ach_seen_v1', {});
+var userPseudo = loadData('pulse_pseudo_v3', '');
+var battlePass = loadData('pulse_bp_v2', {
+  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
+});
+var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
+var gameHistory = loadData('pulse_history_v1', []);
+var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
+
 try {
   // Tente linitialisation — la lib supabase-js@2 accepte les cles sb_publishable
   // mais si elle echoue on reste en mode invite
@@ -4615,8 +4644,6 @@ function setBadge(id, count){
 // ═══════════════════════════════════════════════════════
 //  COINS SYSTEM
 // ═══════════════════════════════════════════════════════
-var coins = loadData('pulse_coins_v3', 0);
-
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
   const base = Math.floor(score/160) + Math.floor(wave*2.1) + Math.floor(kills/5);
@@ -4664,10 +4691,6 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 //  SKINS SYSTEM
 // ═══════════════════════════════════════════════════════
-var ownedSkins    = loadData('pulse_skins_v3',    ['default']);
-var equippedSkin  = loadData('pulse_equipped_v3', 'default');
-
-// ── CURSOR SKIN SYSTEM ──
 var CURSOR_DEFS = [
   {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
     ctx.strokeStyle=col; ctx.lineWidth=1.5;
@@ -4713,9 +4736,6 @@ var CURSOR_DEFS = [
     ctx.fillStyle=col; ctx.beginPath(); ctx.arc(c,c,2,0,Math.PI*2); ctx.fill();
   }},
 ];
-var equippedCursor = loadData('pulse_cursor_v1','crosshair');
-var ownedCursors   = loadData('pulse_owned_cursors_v1',['crosshair']);
-
 function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURSOR_DEFS[0]; }
 function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
 function buyCursor(id){
@@ -5062,8 +5082,6 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 //  PERMANENT UPGRADES
 // ═══════════════════════════════════════════════════════
-var permaUpgrades = loadData('pulse_perma_v3', {});
-
 var PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
@@ -5625,9 +5643,7 @@ var TIPS = [
 function loadData(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
 
-var scores     = loadData('pulse_scores_v2',   []);
-var achDone    = loadData('pulse_ach_v2',      {});
-var achSeen    = loadData('pulse_ach_seen_v1', {}); // succes vus dans lecran succes
+ // succes vus dans lecran succes
 // ═══════════════════════════════════════════════════════
 //  SYSTEME DE NOTIFICATIONS
 // ═══════════════════════════════════════════════════════
@@ -5705,8 +5721,6 @@ function _notifAgo(ts){
   return Math.floor(s/86400)+'j';
 }
 
-var gStats     = loadData('pulse_gstats_v2',   { totalKills:0, gamesPlayed:0, totalScore:0, totalTime:0, maxWave:0, maxScore:0, maxCombo:0, maxLevel:0, bossKills:0, noHitWaves:0, uniqueUpgrades:0, cursesAccepted:0, ghostKills:0, arenaMaxLevel:0 });
-var settings   = loadData('pulse_settings_v2', { sfx:true, music:true, screenshake:true, haptique:true, sfxVol:70, showFps:false, lowQuality:false, gameSpeed:1, particles:true });
 var newAchThisRun = [];
 
 function saveScores(){
@@ -8984,8 +8998,6 @@ function showAuthFrom(from){
 // ═══════════════════════════════════════════════════════
 //  PSEUDO & COMPTE
 // ═══════════════════════════════════════════════════════
-var userPseudo = loadData('pulse_pseudo_v3', '');
-
 function getPseudo(){
   return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
 }
@@ -9619,16 +9631,12 @@ var BP_REWARDS = [
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
 ];
 
-var battlePass = loadData('pulse_bp_v2', {
-  level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{},
-});
 if(battlePass.season !== BP_SEASON_CURRENT){
   battlePass = {level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{}};
   saveData('pulse_bp_v2', battlePass);
 }
 
 var PREMIUM_PASS_COST = 1500;
-var hasPremiumPass = loadData('pulse_premium_v1',{season:0,owned:false});
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
   saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
@@ -9910,7 +9918,6 @@ function grantBpXp(score, wave, kills){
 //  DUO LOCAL — Touches configurables P2
 // ═══════════════════════════════════════════════════════
 var P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
-var p2KeyMap = loadData('pulse_p2keys_v1', Object.assign({},P2_KEY_DEFAULT));
 var duoRemapTarget=null, duoRemapBtn=null;
 
 var DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
@@ -10103,9 +10110,6 @@ function updateModeLogic(){
 // ═══════════════════════════════════════════════════════
 //  ARENE — SYSTEME DE NIVEAUX PROGRESSIFS
 // ═══════════════════════════════════════════════════════
-var arenaLevel = loadData('pulse_arena_level_v1', 1);
-var arenaBestLevel = loadData('pulse_arena_best_v1', 0);
-
 var ARENA_LEVELS = [
   // {n: nom, desc, enemies: [{id, count}], reward: {type, value, label, icon, desc}}
   {n:'ECHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
@@ -12141,8 +12145,6 @@ async function checkDailyRankReward(){
 // ═══════════════════════════════════════════════════════
 //  HISTORIQUE DES PARTIES
 // ═══════════════════════════════════════════════════════
-var gameHistory = loadData('pulse_history_v1', []);
-
 function addToHistory(entry){
   gameHistory.unshift(entry);
   if(gameHistory.length>10) gameHistory=gameHistory.slice(0,10);
@@ -12204,8 +12206,6 @@ function getDifficultyMult(){
 //  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
-var skinPerkLevels = loadData('pulse_skin_perks_v1', {});
-
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
@@ -12490,9 +12490,6 @@ var KB_ACTION_LABELS = {
   pause: '⏸ PAUSE',
 };
 // Deep clone default
-var kbMap = loadData('pulse_kbmap_v1', JSON.parse(JSON.stringify(KB_DEFAULT)));
-
-// Keyboard remap state
 var kbRemapTarget = null;
 var kbRemapListener = null;
 
@@ -12692,7 +12689,6 @@ function gpBtnLabels(layout){
 
 // Nintendo swaps A/B and X/Y vs standard
 var GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
-var gpMap=loadData('pulse_gpmap_v1',{...GP_BTN_DEFAULT});
 var gpRemapTarget=null, gpRemapListener=null;
 var GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
