@@ -15161,68 +15161,48 @@ function updateQuestProgress(stat, value){
   if(changed) saveData('pulse_daily_quests_v1', dailyQuests);
 }
 
-// ── Hooks game loop ──
-// Enregistrement replay dans draw()
-var _origDraw_v4 = draw;
-function draw() {
-  _origDraw_v4();
-  if(frame%2===0) recordReplayFrame();
-}
+// ── Hooks game loop — assignation après DOMContentLoaded pour éviter hoisting ──
+document.addEventListener('DOMContentLoaded', function patchGameLoop() {
+  var _od = draw;
+  draw = function() { _od(); if(frame%2===0) recordReplayFrame(); };
 
-// Reset au startGame
-var _origStartGame_v4 = startGame;
-function startGame() {
-  resetMilestones();
-  _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
-  startReplayRecording();
-  loadDailyQuests();
-  _origStartGame_v4.apply(this, arguments);
-}
+  var _osg = startGame;
+  startGame = function() {
+    resetMilestones();
+    _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
+    startReplayRecording(); loadDailyQuests();
+    _osg.apply(this, arguments);
+  };
 
-// Fin de partie
-var _origEndGame_v4 = endGame;
-function endGame() {
-  stopReplayRecording();
-  _updateQuestsEndGame();
-  if(G) submitTournamentScore(G.score||0, G.wave||0);
-  if(G) updateClanContribution(G.score||0);
-  _origEndGame_v4.apply(this, arguments);
-}
+  var _ook = onKill;
+  onKill = function(e) { _ook(e); onKillRage(); };
 
-// Rage dans onKill
-var _origOnKill_v4 = onKill;
-function onKill(e) {
-  _origOnKill_v4(e);
-  onKillRage();
-}
+  var _ou = update;
+  update = function(now) {
+    _ou(now);
+    if(G && G.running && !G.paused) { updateRageMode(); checkScoreMilestones(G.score||0); }
+  };
 
-// updateRageMode/checkScoreMilestones dans update()
-var _origUpdate_v4 = update;
-function update(now) {
-  _origUpdate_v4(now);
-  if(G && G.running && !G.paused) {
-    updateRageMode();
-    checkScoreMilestones(G.score||0);
-  }
-}
+  var _osw = startWave;
+  startWave = function() {
+    _osw();
+    var w = G ? G.wave : 0;
+    if(w>1) checkPerfectWave(w-1);
+    if(w<50) showWaveThreatPreview(w+1);
+  };
 
-// Wave hooks dans startWave
-var _origStartWave_v4 = startWave;
-function startWave() {
-  const prevWave = G ? G.wave : 0;
-  _origStartWave_v4();
-  const w = G ? G.wave : 0;
-  if(w>1) checkPerfectWave(w-1);
-  if(w<50) showWaveThreatPreview(w+1);
-}
+  var _odp = dmgPlayer;
+  dmgPlayer = function(raw) { _waveHitCount++; _odp(raw); };
 
-// _waveHitCount dans dmgPlayer
-var _origDmgPlayer_v4 = dmgPlayer;
-function dmgPlayer(raw) {
-  _waveHitCount++;
-  _origDmgPlayer_v4(raw);
-}
-
+  // Hook fin de partie via showGoScreen
+  var _ogs = showGoScreen;
+  showGoScreen = function() {
+    stopReplayRecording(); _updateQuestsEndGame();
+    if(G) submitTournamentScore(G.score||0, G.wave||0);
+    if(G) updateClanContribution(G.score||0);
+    _ogs.apply(this, arguments);
+  };
+}, {once:true});
 // Secours écran noir
 setTimeout(function(){
   if(!document.querySelector('.scr.on')){
