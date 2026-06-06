@@ -2593,75 +2593,6 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 .wtp-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.15em;color:var(--dim);margin-bottom:1px;}
 
 
-/* ══ NOUVELLES FEATURES v31 ══ */
-.hub-nav{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
-.hub-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;min-width:70px;position:relative;}
-.hub-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(0,245,212,.25);transform:translateY(-2px);}
-.hub-btn-icon{font-size:20px;}
-.hub-btn-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.12em;color:var(--dim);}
-.hub-notif{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--c2);border-radius:50%;display:none;}
-.hub-notif.on{display:block;}
-/* Clans */
-.clan-wrap{width:min(580px,97vw);}
-.clan-hero{display:flex;align-items:center;gap:14px;padding:14px;background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.15);border-radius:6px;margin-bottom:10px;}
-.clan-tag-big{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:900;background:rgba(0,245,212,.1);border:2px solid rgba(0,245,212,.4);color:var(--c1);flex-shrink:0;}
-.clan-name-big{font-family:'Orbitron',monospace;font-size:clamp(13px,3vw,18px);letter-spacing:.15em;color:var(--c1);}
-.clan-tabs{display:flex;border-bottom:1px solid var(--border);}
-.clan-tab{flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
-.clan-tab.active{color:var(--c1);border-bottom:2px solid var(--c1);}
-.clan-member-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
-.clan-member-rank{font-family:'Orbitron',monospace;font-size:9px;width:24px;text-align:center;color:var(--dim);}
-.clan-member-name{flex:1;font-size:8px;letter-spacing:.08em;}
-.clan-member-score{font-family:'Orbitron',monospace;font-size:8px;color:var(--c3);}
-.clan-member-role{font-size:6px;letter-spacing:.1em;padding:2px 5px;border-radius:2px;border:1px solid rgba(255,255,255,.15);color:var(--dim);}
-.clan-member-role.chef{color:var(--c3);border-color:rgba(255,190,11,.3);}
-/* Chat */
-.chat-wrap{width:min(560px,97vw);height:100%;display:flex;flex-direction:column;}
-.chat-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.chat-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c1);flex:1;}
-.chat-messages{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;}
-.chat-msg{display:flex;gap:8px;align-items:flex-start;}
-.chat-msg-name{font-family:'Orbitron',monospace;font-size:7px;color:var(--c1);}
-.chat-msg.me .chat-msg-name{color:var(--c3);}
-.chat-msg-text{font-size:8px;color:var(--txt2);line-height:1.5;word-break:break-word;margin-top:2px;}
-.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
-.chat-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt);padding:9px 12px;font-size:8px;border-radius:3px;outline:none;font-family:inherit;}
-.chat-input:focus{border-color:rgba(0,245,212,.4);}
-.chat-send{padding:9px 16px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.4);color:var(--c1);cursor:pointer;border-radius:3px;}
-.chat-system-msg{text-align:center;font-size:6px;color:var(--dim);padding:4px 0;}
-/* Tournois */
-.tourn-wrap{width:min(580px,97vw);}
-.tourn-hero{background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(255,26,110,.05));border:1px solid rgba(255,190,11,.25);border-radius:6px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
-.tourn-hero::before{content:'🏆';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:56px;opacity:.08;}
-.tourn-name{font-family:'Orbitron',monospace;font-size:clamp(13px,3vw,18px);letter-spacing:.15em;color:var(--c3);font-weight:700;}
-.tourn-timer-big{font-family:'Orbitron',monospace;font-size:clamp(18px,4vw,26px);color:var(--c2);font-weight:900;margin:4px 0;}
-.tourn-lb-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
-.tourn-lb-row.me{background:rgba(0,245,212,.05);}
-.tourn-lb-rank{font-family:'Orbitron',monospace;font-size:11px;width:32px;color:var(--dim);}
-.tourn-lb-name{flex:1;font-size:8px;}
-.tourn-lb-score{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);}
-/* Replay */
-.replay-wrap{width:min(560px,97vw);}
-.replay-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
-.replay-card:hover{background:rgba(255,255,255,.06);border-color:rgba(0,245,212,.2);}
-.replay-thumb{width:44px;height:44px;border-radius:4px;background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.replay-score{font-family:'Orbitron',monospace;font-size:13px;color:var(--c3);}
-.replay-meta{font-size:7px;color:var(--txt2);margin-top:3px;}
-#replay-hud-overlay{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(3,3,10,.9);border:1px solid rgba(0,245,212,.3);padding:8px 16px;border-radius:4px;display:none;gap:16px;align-items:center;}
-#replay-hud-overlay.on{display:flex;}
-.replay-hud-val{font-family:'Orbitron',monospace;font-size:10px;color:var(--c1);}
-.replay-hud-lbl{font-size:6px;color:var(--dim);}
-/* Quêtes */
-.quest-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;}
-.quest-card.done{border-color:rgba(0,245,212,.25);}
-.quest-icon{font-size:20px;flex-shrink:0;}
-.quest-name{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;}
-.quest-desc{font-size:7px;color:var(--txt2);margin-top:2px;}
-.quest-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:6px;}
-.quest-bar-fill{height:100%;background:var(--c1);border-radius:2px;transition:width .4s;}
-.quest-xp{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);font-weight:700;text-align:center;}
-
-
 /* ═══ NOUVELLES FEATURES v31 ═══ */
 .hub-nav{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
 .hub-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;min-width:70px;position:relative;}
@@ -2670,92 +2601,66 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 .hub-btn-label{font-family:'Orbitron',monospace;font-size:6px;letter-spacing:.12em;color:var(--dim);}
 .hub-notif{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--c2);border-radius:50%;display:none;}
 .hub-notif.on{display:block;}
-
-/* BP v2 */
-.bp2-wrap{width:min(600px,97vw);display:flex;flex-direction:column;gap:0;}
-.bp2-hero{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(180,79,255,.08),rgba(255,190,11,.06));border:1px solid rgba(180,79,255,.25);border-radius:6px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.bp2-wrap{width:min(600px,97vw);}
+.bp2-hero{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(180,79,255,.08),rgba(255,190,11,.06));border:1px solid rgba(180,79,255,.25);border-radius:6px;padding:16px;margin-bottom:10px;}
 .bp2-season-ring{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:conic-gradient(var(--c4) var(--prog,0%),rgba(255,255,255,.06) 0%);position:relative;flex-shrink:0;box-shadow:0 0 20px rgba(180,79,255,.3);}
 .bp2-season-ring::after{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--bg);}
-.bp2-season-lv{position:relative;z-index:1;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--c3);line-height:1;}
-.bp2-season-sub{position:relative;z-index:1;font-size:6px;letter-spacing:.15em;color:var(--c4);margin-top:1px;}
+.bp2-season-lv{position:relative;z-index:1;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--c3);}
+.bp2-season-sub{position:relative;z-index:1;font-size:6px;letter-spacing:.15em;color:var(--c4);}
 .bp2-hero-info{flex:1;padding:0 12px;}
 .bp2-season-name{font-family:'Orbitron',monospace;font-size:clamp(11px,2.5vw,15px);letter-spacing:.15em;color:var(--c4);font-weight:700;}
-.bp2-bar{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;position:relative;margin:6px 0 4px;}
-.bp2-bar-fill{height:100%;background:linear-gradient(90deg,var(--c4),var(--c3));border-radius:3px;transition:width .5s cubic-bezier(.22,1,.36,1);}
-.bp2-bar-shine{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:bpShine 2.5s ease-in-out infinite;}
-@keyframes bpShine{0%{left:-60%}100%{left:160%}}
+.bp2-bar{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin:6px 0 4px;}
+.bp2-bar-fill{height:100%;background:linear-gradient(90deg,var(--c4),var(--c3));border-radius:3px;transition:width .5s;}
 .bp2-tabs{display:flex;border-bottom:1px solid var(--border);}
-.bp2-tab{flex:1;padding:10px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;background:none;border:none;color:var(--dim);cursor:pointer;transition:all .15s;}
+.bp2-tab{flex:1;padding:10px;font-family:'Orbitron',monospace;font-size:7px;background:none;border:none;color:var(--dim);cursor:pointer;}
 .bp2-tab.active{color:var(--c1);border-bottom:2px solid var(--c1);}
-
-/* Quêtes */
-.quest-list{display:flex;flex-direction:column;gap:8px;padding:12px 0;}
-.quest-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;}
-.quest-card.done{background:rgba(0,245,212,.04);border-color:rgba(0,245,212,.25);}
+.bp2-r-btn{font-family:'Orbitron',monospace;font-size:6px;padding:3px 8px;border:1px solid var(--c1);color:var(--c1);background:transparent;cursor:pointer;margin-top:3px;border-radius:2px;}
+.quest-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;margin-bottom:8px;}
+.quest-card.done{border-color:rgba(0,245,212,.25);}
 .quest-icon{font-size:22px;flex-shrink:0;}
-.quest-info{flex:1;}
 .quest-name{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:.1em;}
 .quest-card.done .quest-name{color:var(--c1);}
 .quest-desc{font-size:7px;color:var(--txt2);margin-top:2px;}
-.quest-progress{display:flex;align-items:center;gap:8px;margin-top:6px;}
-.quest-bar{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.quest-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex:1;}
 .quest-bar-fill{height:100%;background:var(--c1);border-radius:2px;transition:width .4s;}
-.quest-pct{font-size:6px;color:var(--dim);}
-.quest-reward{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
-.quest-xp{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);font-weight:700;}
-.quest-xp-lbl{font-size:5px;color:var(--dim);letter-spacing:.1em;}
-
-/* Clans */
-.clan-wrap{width:min(580px,97vw);}
 .clan-hero{display:flex;align-items:center;gap:14px;padding:14px;background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.15);border-radius:6px;margin-bottom:10px;}
-.clan-tag-big{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:18px;font-weight:900;background:rgba(0,245,212,.1);border:2px solid rgba(0,245,212,.4);color:var(--c1);flex-shrink:0;}
-.clan-name-big{font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,20px);letter-spacing:.15em;color:var(--c1);}
-.clan-tabs{display:flex;border-bottom:1px solid var(--border);}
-.clan-tab{flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;background:none;border:none;color:var(--dim);cursor:pointer;}
+.clan-tag-big{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:900;background:rgba(0,245,212,.1);border:2px solid rgba(0,245,212,.4);color:var(--c1);flex-shrink:0;}
+.clan-name-big{font-family:'Orbitron',monospace;font-size:clamp(12px,3vw,18px);letter-spacing:.15em;color:var(--c1);}
+.clan-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.clan-tab{flex:1;padding:9px;font-family:'Orbitron',monospace;font-size:7px;background:none;border:none;color:var(--dim);cursor:pointer;}
 .clan-tab.active{color:var(--c1);border-bottom:2px solid var(--c1);}
 .clan-member-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
 .clan-member-rank{font-family:'Orbitron',monospace;font-size:9px;width:24px;text-align:center;color:var(--dim);}
 .clan-member-name{flex:1;font-size:8px;}
 .clan-member-score{font-family:'Orbitron',monospace;font-size:8px;color:var(--c3);}
-.clan-member-role{font-size:6px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;}
-.clan-member-role.chef{color:var(--c3);border:1px solid rgba(255,190,11,.3);}
-.clan-member-role.membre{color:var(--dim);border:1px solid rgba(255,255,255,.1);}
-
-/* Chat */
 .chat-wrap{width:min(560px,97vw);height:100%;display:flex;flex-direction:column;}
 .chat-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.chat-online-dot{width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0;}
 .chat-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c1);flex:1;}
 .chat-messages{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
-.chat-msg{display:flex;gap:8px;align-items:flex-start;}
+.chat-msg{display:flex;gap:8px;}
 .chat-msg-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.2);display:flex;align-items:center;justify-content:center;font-size:10px;}
-.chat-msg-body{flex:1;}
 .chat-msg-name{font-family:'Orbitron',monospace;font-size:7px;color:var(--c1);}
 .chat-msg-name.me{color:var(--c3);}
 .chat-msg-time{font-size:6px;color:var(--dim);margin-left:6px;}
 .chat-msg-text{font-size:8px;color:var(--txt2);line-height:1.5;word-break:break-word;margin-top:2px;}
-.chat-system-msg{text-align:center;font-size:6px;color:var(--dim);letter-spacing:.1em;padding:4px 0;}
+.chat-system-msg{text-align:center;font-size:6px;color:var(--dim);padding:4px 0;}
 .chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
 .chat-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--txt);padding:9px 12px;font-size:8px;border-radius:3px;outline:none;font-family:inherit;}
 .chat-input:focus{border-color:rgba(0,245,212,.4);}
-.chat-send{padding:9px 16px;font-family:'Orbitron',monospace;font-size:7px;letter-spacing:.12em;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.4);color:var(--c1);cursor:pointer;border-radius:3px;}
-
-/* Tournois */
+.chat-send{padding:9px 16px;font-family:'Orbitron',monospace;font-size:7px;background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.4);color:var(--c1);cursor:pointer;border-radius:3px;}
 .tourn-wrap{width:min(580px,97vw);}
-.tourn-hero{background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(255,26,110,.05));border:1px solid rgba(255,190,11,.25);border-radius:6px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
-.tourn-name{font-family:'Orbitron',monospace;font-size:clamp(14px,3.5vw,18px);letter-spacing:.15em;color:var(--c3);font-weight:700;}
-.tourn-timer-big{font-family:'Orbitron',monospace;font-size:clamp(18px,4vw,26px);letter-spacing:.1em;color:var(--c2);font-weight:900;margin:6px 0;}
+.tourn-hero{background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(255,26,110,.05));border:1px solid rgba(255,190,11,.25);border-radius:6px;padding:16px;margin-bottom:12px;}
+.tourn-name{font-family:'Orbitron',monospace;font-size:clamp(13px,3vw,18px);letter-spacing:.15em;color:var(--c3);font-weight:700;}
+.tourn-timer-big{font-family:'Orbitron',monospace;font-size:clamp(18px,4vw,26px);color:var(--c2);font-weight:900;margin:6px 0;}
 .tourn-lb-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
 .tourn-lb-row.me{background:rgba(0,245,212,.05);}
 .tourn-lb-rank{font-family:'Orbitron',monospace;font-size:11px;width:32px;color:var(--dim);}
 .tourn-lb-name{flex:1;font-size:8px;}
 .tourn-lb-score{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);}
-
-/* Replay */
 .replay-wrap{width:min(560px,97vw);}
 .replay-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;cursor:pointer;margin-bottom:8px;}
 .replay-card:hover{background:rgba(255,255,255,.06);border-color:rgba(0,245,212,.2);}
-.replay-thumb{width:48px;height:48px;border-radius:4px;background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.replay-thumb{width:48px;height:48px;border-radius:4px;background:rgba(0,245,212,.08);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .replay-score{font-family:'Orbitron',monospace;font-size:13px;color:var(--c3);}
 .replay-meta{font-size:7px;color:var(--txt2);margin-top:3px;}
 #replay-hud-overlay{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(3,3,10,.9);border:1px solid rgba(0,245,212,.3);padding:8px 16px;border-radius:4px;display:none;gap:16px;align-items:center;}
@@ -2835,11 +2740,11 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
         </div>
         <div class="bp2-hero-info">
           <div class="bp2-season-name" id="bp2-season-name">SAISON 1</div>
-          <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--txt2);margin-top:4px;"><span id="bp2-xp-label">0 / 500 XP</span></div>
-          <div class="bp2-bar"><div class="bp2-bar-fill" id="bp2-xp-fill" style="width:0%"></div><div class="bp2-bar-shine"></div></div>
+          <div style="font-size:7px;color:var(--txt2);margin-top:4px;" id="bp2-xp-label">0 / 500 XP</div>
+          <div class="bp2-bar"><div class="bp2-bar-fill" id="bp2-xp-fill" style="width:0%"></div></div>
           <div style="font-size:6px;color:var(--dim);margin-top:3px;" id="bp2-season-end"></div>
         </div>
-        <div id="bp2-prem-badge" onclick="buyPremiumPass()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:rgba(180,79,255,.1);border:1px solid rgba(180,79,255,.3);border-radius:4px;cursor:pointer;flex-shrink:0;">
+        <div onclick="buyPremiumPass()" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:rgba(180,79,255,.1);border:1px solid rgba(180,79,255,.3);border-radius:4px;cursor:pointer;flex-shrink:0;" id="bp2-prem-badge">
           <div style="font-size:20px;">⭐</div>
           <div style="font-family:'Orbitron',monospace;font-size:6px;color:var(--c4);">PREMIUM</div>
           <div style="font-size:6px;color:var(--dim);">1500🪙</div>
@@ -2847,12 +2752,13 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       </div>
       <div class="bp2-tabs">
         <button class="bp2-tab active" onclick="bp2Tab('rewards',this)">🎁 RÉCOMPENSES</button>
-        <button class="bp2-tab" onclick="bp2Tab('quests',this)" id="bp2-tab-quests">📋 QUÊTES</button>
+        <button class="bp2-tab" onclick="bp2Tab('quests',this)">📋 QUÊTES</button>
       </div>
       <div id="bp2-content" style="max-height:calc(100vh - 280px);overflow-y:auto;padding:4px 0;"></div>
     </div>
   </div>
 </div>
+
 
 <div class="scr" id="s-mode">
   <div class="scr-inner" style="align-items:center;">
@@ -2947,27 +2853,12 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       <button class="btn btn-s title-sec-btn" onclick="show('s-profile');renderProfile()"><span>👤 PROFIL</span></button>
       <button class="btn btn-s title-sec-btn" style="position:relative;" id="btn-notif" onclick="show('s-notif');renderNotifs()"><span>🔔 NOTIFS</span><span class="notif-badge" id="btn-notif-badge" style="display:none;">0</span></button>
     </div>
-    <!-- Hub social v31 -->
-    <div class="hub-nav">
-      <button class="hub-btn" onclick="openClan()">
-        <div class="hub-btn-icon">⚔</div>
-        <div class="hub-btn-label">CLANS</div>
-        <div class="hub-notif" id="hub-clan-notif"></div>
-      </button>
-      <button class="hub-btn" onclick="openChat()">
-        <div class="hub-btn-icon">💬</div>
-        <div class="hub-btn-label">CHAT</div>
-        <div class="hub-notif" id="hub-chat-notif"></div>
-      </button>
-      <button class="hub-btn" onclick="openTournament()">
-        <div class="hub-btn-icon">🏆</div>
-        <div class="hub-btn-label">TOURNOI</div>
-        <div class="hub-notif" id="hub-tourn-notif"></div>
-      </button>
-      <button class="hub-btn" onclick="openReplays()">
-        <div class="hub-btn-icon">⏮</div>
-        <div class="hub-btn-label">REPLAYS</div>
-      </button>
+    <!-- Hub v31 -->
+    <div class="hub-nav" style="margin-top:8px;">
+      <button class="hub-btn" onclick="openClan()"><div class="hub-btn-icon">⚔</div><div class="hub-btn-label">CLANS</div><div class="hub-notif" id="hub-clan-notif"></div></button>
+      <button class="hub-btn" onclick="openChat()"><div class="hub-btn-icon">💬</div><div class="hub-btn-label">CHAT</div><div class="hub-notif" id="hub-chat-notif"></div></button>
+      <button class="hub-btn" onclick="openTournament()"><div class="hub-btn-icon">🏆</div><div class="hub-btn-label">TOURNOI</div><div class="hub-notif" id="hub-tourn-notif"></div></button>
+      <button class="hub-btn" onclick="openReplays()"><div class="hub-btn-icon">⏮</div><div class="hub-btn-label">REPLAYS</div></button>
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint" style="border-radius:3px;border-color:rgba(0,245,212,.1);line-height:2;max-width:min(420px,90vw);">
@@ -4485,7 +4376,6 @@ function setBadge(id, count){
 // ═══════════════════════════════════════════════════════
 //  COINS SYSTEM
 // ═══════════════════════════════════════════════════════
-
 function calcCoinsEarned(score, wave, kills){
   // Balanced: ~20-60 coins per average game
   const base = Math.floor(score/160) + Math.floor(wave*2.1) + Math.floor(kills/5);
@@ -4533,7 +4423,6 @@ function updateCoinsHUD(){
 // ═══════════════════════════════════════════════════════
 //  SKINS SYSTEM
 // ═══════════════════════════════════════════════════════
-
 // ── CURSOR SKIN SYSTEM ──
 const CURSOR_DEFS = [
   {id:'crosshair', name:'CROSSHAIR',   price:0,    draw:(ctx,s,col)=>{
@@ -4580,7 +4469,6 @@ const CURSOR_DEFS = [
     ctx.fillStyle=col; ctx.beginPath(); ctx.arc(c,c,2,0,Math.PI*2); ctx.fill();
   }},
 ];
-
 function getCursorDef(){ return CURSOR_DEFS.find(c=>c.id===equippedCursor)||CURSOR_DEFS[0]; }
 function equipCursor(id){ equippedCursor=id; saveData('pulse_cursor_v1',id); drawXhair(); }
 function buyCursor(id){
@@ -4927,7 +4815,6 @@ function drawSkinPreview(canvas, skinId, size=54){
 // ═══════════════════════════════════════════════════════
 //  PERMANENT UPGRADES
 // ═══════════════════════════════════════════════════════
-
 const PERMA_DEFS = [
   {id:'p_hp',    ico:'❤️', name:'VITALITE+',      desc:'+8 PV max de depart par niveau.',     maxLvl:5, costs:[40,70,110,160,220], apply:(p,lvl)=>{ p.maxHp+=8*lvl; p.hp+=8*lvl; }},
   {id:'p_dmg',   ico:'🔴', name:'PUISSANCE+',     desc:'+5% degats de depart par niveau.',    maxLvl:5, costs:[50,90,130,180,240], apply:(p,lvl)=>{ p.bulletDmg*=(1+.05*lvl); }},
@@ -5489,7 +5376,6 @@ const TIPS = [
 function loadData(key,def){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 function saveData(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
 
-
  // succes vus dans lecran succes
 const UPDATE_NOTES = [
   '📱 Mode portrait corrigé — scroll activé sur le menu principal',
@@ -5581,7 +5467,6 @@ function _notifAgo(ts){
   if(s<86400) return Math.floor(s/3600)+'h';
   return Math.floor(s/86400)+'j';
 }
-
 
 let newAchThisRun = [];
 
@@ -8235,6 +8120,9 @@ function gameOver(){
     }
   }, 500);
 
+  try{_updateQuestsEndGame();}catch(e){}
+  try{if(G)submitTournamentScore(G.score||0,G.wave||0);}catch(e){}
+  try{if(G)updateClanContribution(G.score||0);}catch(e){}
   show('s-go');
   // Show share button (always — clipboard is universally supported)
   const shareBtn = document.getElementById('go-share-btn');
@@ -8860,7 +8748,6 @@ function showAuthFrom(from){
 // ═══════════════════════════════════════════════════════
 //  PSEUDO & COMPTE
 // ═══════════════════════════════════════════════════════
-
 function getPseudo(){
   return userPseudo || (currentUser ? currentUser.email.split('@')[0] : 'INVITE');
 }
@@ -9058,6 +8945,7 @@ function startGame(){
   newAchThisRun=[];
   resetMilestones();
   _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
+  try{startReplayRecording();loadDailyQuests();}catch(e){}
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
@@ -9494,14 +9382,12 @@ const BP_REWARDS = [
   {lv:30, track:'premium', type:'skin',   value:'rainbow',   label:'Skin Arc-en-Ciel',     icon:'🌈', rarity:'legendary'},
 ];
 
-
 if(battlePass.season !== BP_SEASON_CURRENT){
   battlePass = {level:0, xp:0, season:BP_SEASON_CURRENT, claimed:{}};
   saveData('pulse_bp_v2', battlePass);
 }
 
 const PREMIUM_PASS_COST = 1500;
-
 if(hasPremiumPass.season !== BP_SEASON_CURRENT){
   hasPremiumPass = {season:BP_SEASON_CURRENT,owned:false};
   saveData('pulse_premium_v1', hasPremiumPass); // sauvegarder le reset en local
@@ -9783,7 +9669,6 @@ function grantBpXp(score, wave, kills){
 //  DUO LOCAL — Touches configurables P2
 // ═══════════════════════════════════════════════════════
 const P2_KEY_DEFAULT = {up:'i',down:'k',left:'j',right:'l',dash:'Shift',bomb:'u'};
-
 let duoRemapTarget=null, duoRemapBtn=null;
 
 const DUO_KEY_LABELS = {up:'⬆ MONTER',down:'⬇ DESCENDRE',left:'⬅ GAUCHE',right:'➡ DROITE',dash:'⚡ DASH',bomb:'💥 BOMBE'};
@@ -9976,7 +9861,6 @@ function updateModeLogic(){
 // ═══════════════════════════════════════════════════════
 //  ARENE — SYSTEME DE NIVEAUX PROGRESSIFS
 // ═══════════════════════════════════════════════════════
-
 const ARENA_LEVELS = [
   // {n: nom, desc, enemies: [{id, count}], reward: {type, value, label, icon, desc}}
   {n:'ECHAUFFEMENT',  emoji:'🔥', desc:'Des grunts et runners pour commencer.',
@@ -12014,7 +11898,6 @@ async function checkDailyRankReward(){
 // ═══════════════════════════════════════════════════════
 //  HISTORIQUE DES PARTIES
 // ═══════════════════════════════════════════════════════
-
 function addToHistory(entry){
   gameHistory.unshift(entry);
   if(gameHistory.length>10) gameHistory=gameHistory.slice(0,10);
@@ -12076,7 +11959,6 @@ function getDifficultyMult(){
 //  SKIN PASSIFS — 3 niveaux par skin, stockes dans localStorage
 // ══════════════════════════════════════════════════════════════
 // Format: { skinId: niveau (0-3) }
-
 function getSkinPerkLvl(skinId){ return skinPerkLevels[skinId]||0; }
 function getSkinPerkMaxLvl(){ return 3; }
 
@@ -12361,7 +12243,6 @@ const KB_ACTION_LABELS = {
   pause: '⏸ PAUSE',
 };
 // Deep clone default
-
 // Keyboard remap state
 let kbRemapTarget = null;
 let kbRemapListener = null;
@@ -12562,7 +12443,6 @@ function gpBtnLabels(layout){
 
 // Nintendo swaps A/B and X/Y vs standard
 const GP_BTN_DEFAULT={DASH:0,SPECIAL:1,PAUSE:3,START:9,SELECT:8,LB:4,RB:5,UP:12,DOWN:13,LEFT:14,RIGHT:15};
-
 let gpRemapTarget=null, gpRemapListener=null;
 const GP_ACTION_LABELS={DASH:'⚡ DASH',SPECIAL:'💥 BOMBE',PAUSE:'⏸ PAUSE',LB:'↺ RELANCER',RB:'↷ PASSER MALE.'};
 function gpBtnName(idx){ return (gpBtnLabels(_gpLayout)[idx]??`BTN${idx}`); }
@@ -14071,548 +13951,361 @@ setTimeout(function(){
   if(!document.querySelector('.scr.on')) location.reload();
 },6000);
 
-// ════════════════════════════════════════════════
-//  NOUVELLES FEATURES v31 — code ajouté proprement
-// ════════════════════════════════════════════════
 
-// ── Variables globales ──
-var _chatChannel = null, _chatMessages = [], _currentTournament = null;
-var _tournTimer = null, _myClans = null, _myClanData = null;
-var dailyQuests = null;
-var _replayRecording = false, _replayBuffer = [], _replayMeta = {};
-var _replayPlaying = false, _replayFrameIdx = 0, _replayTimer = null;
-var _savedReplays = [];
-var REPLAY_MAX_FRAMES = 3600;
+// ════════════════════════════════════
+//  NOUVELLES FEATURES PULSE v31
+//  Code ajouté proprement — sans patcher les fonctions existantes
+// ════════════════════════════════════
 
-var QUEST_DEFS = [
-  {id:'q_kills_50', name:'EXTERMINATION', desc:'Tuer 50 ennemis', icon:'💀', stat:'kills', target:50, xp:120},
-  {id:'q_wave_10',  name:'SURVIVANT',     desc:'Atteindre la vague 10', icon:'🌊', stat:'wave', target:10, xp:150},
-  {id:'q_score_5k', name:'SCORE ÉLITE',   desc:'Marquer 5000 pts', icon:'⭐', stat:'score', target:5000, xp:100},
-  {id:'q_combo_20', name:'ENCHAÎNEUR',    desc:'Atteindre combo x20', icon:'🔥', stat:'combo', target:20, xp:180},
-  {id:'q_boss_1',   name:'CHASSEUR',      desc:'Tuer 1 boss', icon:'👑', stat:'boss', target:1, xp:200},
+var _chatChannel=null,_chatMessages=[],_tournTimer=null,_myClans=null,_myClanData=null,dailyQuests=null;
+var _replayRecording=false,_replayBuffer=[],_replayMeta={},_replayPlaying=false,_replayFrameIdx=0,_replayRAF=null,_replayInterval=null,_savedReplays=[];
+var QUEST_DEFS=[
+  {id:'q_kills_50',name:'EXTERMINATION',desc:'Tuer 50 ennemis',icon:'💀',stat:'kills',target:50,xp:120},
+  {id:'q_wave_10',name:'SURVIVANT',desc:'Atteindre la vague 10',icon:'🌊',stat:'wave',target:10,xp:150},
+  {id:'q_score_5k',name:'SCORE ÉLITE',desc:'Marquer 5000 pts',icon:'⭐',stat:'score',target:5000,xp:100},
+  {id:'q_boss_1',name:'CHASSEUR',desc:'Tuer 1 boss',icon:'👑',stat:'boss',target:1,xp:200},
+  {id:'q_combo_20',name:'ENCHAÎNEUR',desc:'Atteindre combo x20',icon:'🔥',stat:'combo',target:20,xp:180},
 ];
 
 // ── Quêtes ──
-function getTodayQuestIds(){
-  var now = new Date();
-  var seed = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();
-  var idxs = [];
-  var s = seed;
-  while(idxs.length < 3){
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
-    var i = Math.abs(s) % QUEST_DEFS.length;
-    if(!idxs.includes(i)) idxs.push(i);
-  }
-  return idxs.map(function(i){ return QUEST_DEFS[i].id; });
-}
-
 function loadDailyQuests(){
-  var today = new Date().toISOString().slice(0,10);
-  var saved = loadData('pulse_daily_quests_v1', {date:'', quests:{}});
-  if(saved.date !== today){
-    var ids = getTodayQuestIds();
-    dailyQuests = {date:today, quests:{}};
-    ids.forEach(function(id){ dailyQuests.quests[id] = {progress:0, done:false, claimed:false}; });
-    saveData('pulse_daily_quests_v1', dailyQuests);
-  } else {
-    dailyQuests = saved;
-  }
+  var today=new Date().toISOString().slice(0,10);
+  var saved=loadData('pulse_daily_quests_v1',{date:'',quests:{}});
+  if(saved.date!==today){
+    var s=parseInt(today.replace(/-/g,''));
+    var ids=[];
+    while(ids.length<3){s=(s*1664525+1013904223)&0xffffffff;var i=Math.abs(s)%QUEST_DEFS.length;if(!ids.includes(i))ids.push(i);}
+    dailyQuests={date:today,quests:{}};
+    ids.forEach(function(i){dailyQuests.quests[QUEST_DEFS[i].id]={progress:0,done:false,claimed:false};});
+    saveData('pulse_daily_quests_v1',dailyQuests);
+  }else{dailyQuests=saved;}
 }
-
-function updateQuestProgress(stat, value){
-  if(!dailyQuests) return;
-  var changed = false;
+function updateQuestProgress(stat,value){
+  if(!dailyQuests)return;var changed=false;
   Object.keys(dailyQuests.quests).forEach(function(id){
-    var state = dailyQuests.quests[id];
-    if(state.done) return;
-    var def = QUEST_DEFS.find(function(q){ return q.id===id; });
-    if(!def || def.stat !== stat) return;
-    var prev = state.progress;
-    state.progress = Math.max(state.progress, value);
-    if(state.progress >= def.target && !state.done){ state.done = true; showToast('📋 Quête : '+def.name+' !','success',3000); changed = true; }
-    else if(state.progress !== prev) changed = true;
+    var st=dailyQuests.quests[id];if(st.done)return;
+    var def=QUEST_DEFS.find(function(q){return q.id===id;});
+    if(!def||def.stat!==stat)return;
+    var prev=st.progress;st.progress=Math.max(st.progress,value);
+    if(st.progress>=def.target&&!st.done){st.done=true;showToast('📋 '+def.name+' !','success',3000);changed=true;}
+    else if(st.progress!==prev)changed=true;
   });
-  if(changed) saveData('pulse_daily_quests_v1', dailyQuests);
+  if(changed)saveData('pulse_daily_quests_v1',dailyQuests);
 }
-
-function claimQuestReward(questId){
-  if(!dailyQuests || !dailyQuests.quests[questId]) return;
-  var state = dailyQuests.quests[questId];
-  if(!state.done || state.claimed) return;
-  var def = QUEST_DEFS.find(function(q){ return q.id===questId; });
-  if(!def) return;
-  state.claimed = true;
-  addBpXp(def.xp);
-  saveData('pulse_daily_quests_v1', dailyQuests);
-  showToast('+'+def.xp+' XP BP !','success',2500);
+function claimQuestReward(qid){
+  if(!dailyQuests||!dailyQuests.quests[qid])return;
+  var st=dailyQuests.quests[qid];if(!st.done||st.claimed)return;
+  var def=QUEST_DEFS.find(function(q){return q.id===qid;});if(!def)return;
+  st.claimed=true;addBpXp(def.xp);saveData('pulse_daily_quests_v1',dailyQuests);
+  showToast('+'+def.xp+' XP BP !','success',2500);renderBP2Content('quests');
 }
-
 function _updateQuestsEndGame(){
-  if(!G) return;
-  loadDailyQuests();
-  updateQuestProgress('kills', G.totalKills||0);
-  updateQuestProgress('wave', G.wave||0);
-  updateQuestProgress('score', G.score||0);
-  updateQuestProgress('combo', G.maxComboThisRun||0);
-  updateQuestProgress('boss', G.bossKillsThisRun||0);
-  updateQuestProgress('games', 1);
+  if(!G)return;loadDailyQuests();
+  updateQuestProgress('kills',G.totalKills||0);updateQuestProgress('wave',G.wave||0);
+  updateQuestProgress('score',G.score||0);updateQuestProgress('combo',G.maxComboThisRun||0);
+  updateQuestProgress('boss',G.bossKillsThisRun||0);updateQuestProgress('games',1);
 }
 
 // ── Clans ──
-function openClan(){ show('s-clan'); loadClanData(); }
-
+function openClan(){show('s-clan');loadClanData();}
 function loadClanData(){
-  var el = document.getElementById('clan-main-content');
-  if(!el) return;
-  if(!currentUser || !SB){ el.innerHTML = renderClanLoginPrompt(); return; }
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div>';
-  SB.from('profiles').select('clan_id,pseudo').eq('id',currentUser.id).single()
-    .then(function(r){
-      var profile = r.data;
-      if(!profile || !profile.clan_id){
-        return SB.from('clans').select('*').order('total_score',{ascending:false}).limit(15)
-          .then(function(r2){ el.innerHTML = renderClanBrowser(r2.data||[]); });
-      } else {
-        return Promise.all([
-          SB.from('clans').select('*').eq('id',profile.clan_id).single(),
-          SB.from('clan_members').select('*').eq('clan_id',profile.clan_id).order('contribution',{ascending:false})
-        ]).then(function(results){
-          var clan = results[0].data, members = results[1].data||[];
-          var myRole = (members.find(function(m){ return m.user_id===currentUser.id; })||{}).role||'membre';
-          _myClanData = {clan:clan, members:members, myRole:myRole};
-          el.innerHTML = renderMyClan(_myClanData);
+  var el=document.getElementById('clan-main-content');if(!el)return;
+  if(!currentUser||!SB){el.innerHTML='<div style="text-align:center;padding:30px;"><button class="btn btn-g" onclick="show(\'s-auth\')"><span>SE CONNECTER</span></button></div>';return;}
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim);">Chargement…</div>';
+  SB.from('profiles').select('clan_id').eq('id',currentUser.id).single().then(function(r){
+    if(!r.data||!r.data.clan_id){
+      return SB.from('clans').select('*').order('total_score',{ascending:false}).limit(15).then(function(r2){
+        var clans=r2.data||[];var html='<div style="display:flex;gap:8px;margin-bottom:10px;"><button class="btn btn-g" style="flex:1;" onclick="document.getElementById(\'clan-create-modal\').style.display=\'flex\'"><span>⚔ CRÉER UN CLAN</span></button></div>';
+        if(!clans.length){html+='<div style="text-align:center;padding:20px;color:var(--dim);">Aucun clan — sois le premier !</div>';}
+        clans.forEach(function(clan){
+          html+='<div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:4px;margin-bottom:6px;">'
+            +'<div class="clan-tag-big">'+clan.tag+'</div>'
+            +'<div style="flex:1;"><div style="font-family:\'Orbitron\',monospace;font-size:9px;">'+clan.name+'</div>'
+            +'<div style="font-size:7px;color:var(--txt2);">'+(clan.members_count||0)+' membres</div></div>'
+            +'<button class="btn btn-s" style="font-size:7px;padding:6px 10px;" onclick="joinClan(\''+clan.id+'\',\''+clan.name.replace(/'/g,"\\'")+'\')"><span>REJOINDRE</span></button></div>';
         });
-      }
-    }).catch(function(e){ el.innerHTML = '<div style="padding:20px;color:var(--c2);">Erreur : '+e.message+'</div>'; });
+        el.innerHTML=html;
+      });
+    }else{
+      return Promise.all([
+        SB.from('clans').select('*').eq('id',r.data.clan_id).single(),
+        SB.from('clan_members').select('*').eq('clan_id',r.data.clan_id).order('contribution',{ascending:false})
+      ]).then(function(res){
+        var clan=res[0].data,members=res[1].data||[];
+        var myRole=(members.find(function(m){return m.user_id===currentUser.id;})||{}).role||'membre';
+        _myClanData={clan:clan,members:members,myRole:myRole};
+        var html='<div class="clan-hero"><div class="clan-tag-big">'+clan.tag+'</div>'
+          +'<div><div class="clan-name-big">'+clan.name+'</div>'
+          +'<div style="font-size:7px;color:var(--txt2);margin-top:4px;">'+members.length+' membres · '+(clan.total_score||0).toLocaleString('fr-FR')+' pts</div></div></div>'
+          +'<div class="clan-tabs"><button class="clan-tab active" onclick="clanTab(\'members\',this)">👥 MEMBRES</button></div>'
+          +'<div id="clan-tab-content">'+renderClanMembers(members)+'</div>'
+          +'<button class="btn btn-s" style="margin-top:12px;color:var(--c2);" onclick="leaveClan()"><span>🚪 QUITTER</span></button>';
+        el.innerHTML=html;
+      });
+    }
+  }).catch(function(e){el.innerHTML='<div style="padding:20px;color:var(--c2);">'+e.message+'</div>';});
 }
-
-function renderClanLoginPrompt(){
-  return '<div style="text-align:center;padding:30px;display:flex;flex-direction:column;gap:12px;align-items:center;"><div style="font-size:40px;">⚔</div><div style="font-family:\'Orbitron\',monospace;font-size:10px;color:var(--txt);">REJOINS UN CLAN !</div><button class="btn btn-g" onclick="show(\'s-auth\')"><span>SE CONNECTER</span></button></div>';
-}
-
-function renderClanBrowser(clans){
-  var html = '<div style="display:flex;gap:8px;margin-bottom:10px;"><button class="btn btn-g" style="flex:1;" onclick="document.getElementById(\'clan-create-modal\').style.display=\'flex\'"><span>⚔ CRÉER UN CLAN</span></button></div>';
-  html += '<div style="font-family:\'Orbitron\',monospace;font-size:8px;color:var(--dim);margin-bottom:8px;">CLANS ACTIFS</div>';
-  if(!clans.length) return html + '<div style="text-align:center;padding:20px;color:var(--dim);">Aucun clan — sois le premier !</div>';
-  clans.forEach(function(clan){
-    html += '<div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:4px;margin-bottom:6px;">'
-      + '<div class="clan-tag-big" style="width:40px;height:40px;font-size:12px;">'+clan.tag+'</div>'
-      + '<div style="flex:1;"><div style="font-family:\'Orbitron\',monospace;font-size:9px;">'+clan.name+'</div>'
-      + '<div style="font-size:7px;color:var(--txt2);margin-top:2px;">'+(clan.members_count||0)+' membres · '+(clan.total_score||0).toLocaleString('fr-FR')+' pts</div></div>'
-      + '<button class="btn btn-s" style="font-size:7px;padding:6px 10px;" onclick="joinClan(\''+clan.id+'\',\''+clan.name.replace(/'/g,"\\'")+'\')" ><span>REJOINDRE</span></button></div>';
-  });
-  return html;
-}
-
-function renderMyClan(d){
-  var html = '<div class="clan-hero"><div class="clan-tag-big">'+d.clan.tag+'</div><div><div class="clan-name-big">'+d.clan.name+'</div><div style="font-size:7px;color:var(--txt2);margin-top:4px;">'+((d.members||[]).length)+' membres · '+(d.clan.total_score||0).toLocaleString('fr-FR')+' pts</div></div></div>';
-  html += '<div class="clan-tabs"><button class="clan-tab active" onclick="clanTab(\'members\',this)">👥 MEMBRES</button>'+(d.myRole==='chef'?'<button class="clan-tab" onclick="clanTab(\'manage\',this)">⚙ GÉRER</button>':'')+'</div>';
-  html += '<div id="clan-tab-content">'+renderClanMembersTab(d.members||[])+'</div>';
-  html += '<button class="btn btn-s" style="margin-top:12px;color:var(--c2);" onclick="leaveClan()"><span>🚪 QUITTER</span></button>';
-  return html;
-}
-
-function renderClanMembersTab(members){
+function renderClanMembers(members){
   return members.map(function(m,i){
-    return '<div class="clan-member-row"><div class="clan-member-rank">'+(i===0?'👑':i+1)+'</div><div class="clan-member-name">'+(m.pseudo||'Joueur')+'</div><div class="clan-member-score">'+((m.contribution||0).toLocaleString('fr-FR'))+'</div><div class="clan-member-role '+(m.role||'membre')+'">'+(m.role||'MEMBRE').toUpperCase()+'</div></div>';
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--dim);">Aucun membre</div>';
+    return '<div class="clan-member-row"><div class="clan-member-rank">'+(i===0?'👑':i+1)+'</div>'
+      +'<div class="clan-member-name">'+(m.pseudo||'Joueur')+'</div>'
+      +'<div class="clan-member-score">'+((m.contribution||0).toLocaleString('fr-FR'))+'</div></div>';
+  }).join('')||'<div style="padding:20px;text-align:center;color:var(--dim);">Aucun membre</div>';
 }
-
-function clanTab(tab, btn){
-  document.querySelectorAll('.clan-tab').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  var el = document.getElementById('clan-tab-content');
-  if(!el || !_myClanData) return;
-  if(tab==='members') el.innerHTML = renderClanMembersTab(_myClanData.members||[]);
-  else if(tab==='manage') el.innerHTML = '<div style="padding:12px 0;"><button class="btn btn-s" style="color:var(--c2);" onclick="disbandClan()"><span>💀 DISSOUDRE</span></button></div>';
-}
-
+function clanTab(tab,btn){document.querySelectorAll('.clan-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
 function createClan(){
-  if(!currentUser||!SB){ showToast('Connexion requise','error',2000); return; }
-  var name = (document.getElementById('clan-create-name').value||'').trim();
-  var tag  = (document.getElementById('clan-create-tag').value||'').trim().toUpperCase().slice(0,4);
-  if(name.length<3){ showToast('Nom trop court','error',2000); return; }
-  if(tag.length<2){ showToast('Tag invalide','error',2000); return; }
-  SB.from('clans').insert({name:name,tag:tag,owner_id:currentUser.id,members_count:1,total_score:0,war_wins:0,created_at:new Date().toISOString()}).select().single()
+  if(!currentUser||!SB)return;
+  var name=(document.getElementById('clan-create-name').value||'').trim();
+  var tag=(document.getElementById('clan-create-tag').value||'').trim().toUpperCase().slice(0,4);
+  if(name.length<3||tag.length<2){showToast('Nom ou tag invalide','error',2000);return;}
+  SB.from('clans').insert({name:name,tag:tag,owner_id:currentUser.id,members_count:1,total_score:0,created_at:new Date().toISOString()}).select().single()
     .then(function(r){
-      return SB.from('clan_members').insert({clan_id:r.data.id,user_id:currentUser.id,role:'chef',contribution:0,joined_at:new Date().toISOString()})
-        .then(function(){ return SB.from('profiles').update({clan_id:r.data.id}).eq('id',currentUser.id); });
-    })
-    .then(function(){ document.getElementById('clan-create-modal').style.display='none'; showToast('Clan créé !','success',3000); loadClanData(); })
-    .catch(function(e){ showToast('Erreur : '+e.message,'error',3000); });
+      return Promise.all([
+        SB.from('clan_members').insert({clan_id:r.data.id,user_id:currentUser.id,role:'chef',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()}),
+        SB.from('profiles').update({clan_id:r.data.id}).eq('id',currentUser.id)
+      ]);
+    }).then(function(){document.getElementById('clan-create-modal').style.display='none';showToast('Clan créé !','success',3000);loadClanData();})
+    .catch(function(e){showToast('Erreur : '+e.message,'error',3000);});
 }
-
-function joinClan(clanId, clanName){
-  if(!currentUser||!SB){ show('s-auth'); return; }
-  if(!confirm('Rejoindre '+clanName+' ?')) return;
-  SB.from('clan_members').insert({clan_id:clanId,user_id:currentUser.id,role:'membre',contribution:0,joined_at:new Date().toISOString()})
-    .then(function(){ return SB.from('profiles').update({clan_id:clanId}).eq('id',currentUser.id); })
-    .then(function(){ showToast('Clan rejoint !','success',3000); loadClanData(); })
-    .catch(function(e){ showToast('Erreur : '+e.message,'error',3000); });
+function joinClan(id,name){
+  if(!currentUser||!SB){show('s-auth');return;}
+  if(!confirm('Rejoindre '+name+' ?'))return;
+  SB.from('clan_members').insert({clan_id:id,user_id:currentUser.id,role:'membre',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()})
+    .then(function(){return SB.from('profiles').update({clan_id:id}).eq('id',currentUser.id);})
+    .then(function(){showToast('Clan rejoint !','success',3000);loadClanData();})
+    .catch(function(e){showToast('Erreur : '+e.message,'error',3000);});
 }
-
 function leaveClan(){
-  if(!currentUser||!SB||!_myClanData) return;
-  if(!confirm('Quitter le clan ?')) return;
+  if(!currentUser||!SB||!_myClanData)return;
+  if(!confirm('Quitter le clan ?'))return;
   SB.from('clan_members').delete().eq('user_id',currentUser.id)
-    .then(function(){ return SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id); })
-    .then(function(){ showToast('Tu as quitté le clan','info',2000); loadClanData(); })
-    .catch(function(e){ showToast('Erreur','error',2000); });
+    .then(function(){return SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id);})
+    .then(function(){showToast('Tu as quitté le clan','info',2000);loadClanData();})
+    .catch(function(){showToast('Erreur','error',2000);});
 }
-
-function disbandClan(){
-  if(!_myClanData||!currentUser||!SB) return;
-  if(!confirm('Dissoudre le clan ?')) return;
-  var cid = _myClanData.clan.id;
-  SB.from('clan_members').delete().eq('clan_id',cid)
-    .then(function(){ return SB.from('clans').delete().eq('id',cid); })
-    .then(function(){ return SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id); })
-    .then(function(){ showToast('Clan dissous','info',2000); loadClanData(); })
-    .catch(function(e){ showToast('Erreur','error',2000); });
-}
-
 function updateClanContribution(score){
-  if(!currentUser||!SB||!score) return;
-  SB.from('clan_members').select('clan_id,contribution').eq('user_id',currentUser.id).maybeSingle()
-    .then(function(r){
-      if(!r.data||!r.data.clan_id) return;
-      SB.from('clan_members').update({contribution:(r.data.contribution||0)+score}).eq('user_id',currentUser.id).then(function(){});
-    }).catch(function(){});
+  if(!currentUser||!SB||!score)return;
+  SB.from('clan_members').select('contribution').eq('user_id',currentUser.id).maybeSingle()
+    .then(function(r){if(r.data)SB.from('clan_members').update({contribution:(r.data.contribution||0)+score}).eq('user_id',currentUser.id).then(function(){});})
+    .catch(function(){});
 }
 
 // ── Chat ──
-function openChat(){ show('s-chat'); connectChat(); }
-
+function openChat(){show('s-chat');connectChat();}
 function connectChat(){
-  var el = document.getElementById('chat-messages');
-  if(!el) return;
-  if(!SB){ el.innerHTML = '<div class="chat-system-msg">Connexion requise</div>'; return; }
+  var el=document.getElementById('chat-messages');if(!el)return;
+  if(!SB){el.innerHTML='<div class="chat-system-msg">Connexion requise</div>';return;}
   SB.from('chat_messages').select('*').order('created_at',{ascending:false}).limit(50)
     .then(function(r){
-      _chatMessages = (r.data||[]).reverse();
-      renderChatMessages();
-      if(_chatChannel) return;
-      _chatChannel = SB.channel('global-chat')
-        .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},function(p){
-          _chatMessages.push(p.new);
-          if(_chatMessages.length > 80) _chatMessages.shift();
-          renderChatMessages();
-          var n = document.getElementById('hub-chat-notif');
-          if(n && !document.querySelector('#s-chat.on')) n.classList.add('on');
-        }).subscribe();
-    }).catch(function(e){
-      if(el) el.innerHTML = '<div class="chat-system-msg">Erreur : '+e.message+'</div>';
-    });
+      _chatMessages=(r.data||[]).reverse();renderChatMessages();
+      if(!_chatChannel){
+        _chatChannel=SB.channel('global-chat')
+          .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},function(p){
+            _chatMessages.push(p.new);if(_chatMessages.length>80)_chatMessages.shift();
+            renderChatMessages();
+            if(!document.querySelector('#s-chat.on')){var n=document.getElementById('hub-chat-notif');if(n)n.classList.add('on');}
+          }).subscribe();
+      }
+    }).catch(function(e){if(el)el.innerHTML='<div class="chat-system-msg">Erreur : '+e.message+'</div>';});
 }
-
-function disconnectChat(){
-  if(_chatChannel){ _chatChannel.unsubscribe(); _chatChannel = null; }
-}
-
+function disconnectChat(){if(_chatChannel){_chatChannel.unsubscribe();_chatChannel=null;}}
 function renderChatMessages(){
-  var el = document.getElementById('chat-messages');
-  if(!el) return;
-  var myId = currentUser && currentUser.id;
-  el.innerHTML = _chatMessages.map(function(msg){
-    var isMe = msg.user_id === myId;
-    var time = new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var el=document.getElementById('chat-messages');if(!el)return;
+  var myId=currentUser&&currentUser.id;
+  el.innerHTML=_chatMessages.map(function(msg){
+    var isMe=msg.user_id===myId;
+    var time=new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     return '<div class="chat-msg"><div class="chat-msg-avatar">'+(msg.pseudo||'?')[0].toUpperCase()+'</div>'
-      +'<div class="chat-msg-body"><span class="chat-msg-name'+(isMe?' me':'')+'">'+(msg.pseudo||'Anonyme')+'</span>'
+      +'<div style="flex:1;"><span class="chat-msg-name'+(isMe?' me':'')+'">'+(msg.pseudo||'Anonyme')+'</span>'
       +'<span class="chat-msg-time">'+time+'</span>'
-      +'<div class="chat-msg-text">'+escapeHtml(msg.content||'')+'</div></div></div>';
-  }).join('') + '<div id="chat-bottom"></div>';
-  var b = document.getElementById('chat-bottom');
-  if(b) b.scrollIntoView();
+      +'<div class="chat-msg-text">'+String(msg.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div></div>';
+  }).join('')+'<div id="chat-bottom"></div>';
+  var b=document.getElementById('chat-bottom');if(b)b.scrollIntoView();
 }
-
 function sendChatMsg(){
-  var input = document.getElementById('chat-input');
-  var text = (input&&input.value||'').trim();
-  if(!text||!SB||!currentUser) return;
-  var pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
-  input.value = '';
+  var input=document.getElementById('chat-input');var text=(input&&input.value||'').trim();
+  if(!text||!SB||!currentUser)return;
+  var pseudo=loadData('pulse_pseudo_v3','')||'Anonyme';
+  input.value='';
   SB.from('chat_messages').insert({user_id:currentUser.id,pseudo:pseudo,content:text,created_at:new Date().toISOString()})
-    .catch(function(){ showToast('Envoi échoué','error',2000); });
-}
-
-function escapeHtml(t){
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    .catch(function(){showToast('Envoi échoué','error',2000);});
 }
 
 // ── Tournois ──
-function openTournament(){ show('s-tournament'); loadTournamentData(); }
-
+function openTournament(){show('s-tournament');loadTournamentData();}
 function loadTournamentData(){
-  var el = document.getElementById('tournament-content');
-  if(!el) return;
-  var now = new Date();
-  var dow = now.getDay();
-  var daysLeft = (dow===0)?7:(8-dow)%7||7;
-  var nextReset = new Date(now); nextReset.setDate(nextReset.getDate()+daysLeft); nextReset.setHours(0,0,0,0);
-  var weekNum = Math.floor(Date.now()/604800000);
-  var myEntry = loadData('pulse_tourn_week_'+weekNum,{score:0,wave:0});
-  var html = '<div class="tourn-hero"><div class="tourn-name">🏆 TOURNOI HEBDOMADAIRE</div>'
-    +'<div class="tourn-timer-big" id="tourn-timer-display">…</div>'
-    +'<div style="font-size:7px;color:var(--dim);">Reset lundi à minuit</div>'
+  var el=document.getElementById('tournament-content');if(!el)return;
+  var weekNum=Math.floor(Date.now()/604800000);
+  var myEntry=loadData('pulse_tourn_week_'+weekNum,{score:0,wave:0});
+  var now=new Date(),dLeft=(8-now.getDay())%7||7;
+  var next=new Date(now);next.setDate(next.getDate()+dLeft);next.setHours(0,0,0,0);
+  var html='<div class="tourn-hero"><div class="tourn-name">🏆 TOURNOI HEBDOMADAIRE</div>'
+    +'<div class="tourn-timer-big" id="tourn-timer">…</div>'
     +'<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'
-    +'<div style="font-size:7px;padding:4px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥇 TOP 1 — 2000🪙 + Skin</div>'
-    +'<div style="font-size:7px;padding:4px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥈 TOP 3 — 800🪙</div>'
-    +'<div style="font-size:7px;padding:4px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥉 TOP 10 — 300🪙</div>'
-    +'</div></div>';
-  html += '<div style="padding:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'
-    +'<div style="font-family:\'Orbitron\',monospace;font-size:28px;color:var(--c3);">#—</div>'
-    +'<div><div style="font-family:\'Orbitron\',monospace;font-size:12px;color:var(--c3);">'+(myEntry.score||0).toLocaleString('fr-FR')+'</div>'
-    +'<div style="font-size:7px;color:var(--txt2);">Vague '+(myEntry.wave||0)+' · Mon meilleur cette semaine</div></div></div>';
-  el.innerHTML = html;
-  if(_tournTimer) clearInterval(_tournTimer);
-  _tournTimer = setInterval(function(){
-    var ms = nextReset - Date.now();
-    var d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000), s=Math.floor((ms%60000)/1000);
-    var t = document.getElementById('tourn-timer-display');
-    if(t) t.textContent = d+'j '+h+'h '+m+'m '+s+'s';
-    if(ms<=0) clearInterval(_tournTimer);
+    +'<div style="font-size:7px;padding:3px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥇 TOP 1 — 2000🪙</div>'
+    +'<div style="font-size:7px;padding:3px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥈 TOP 3 — 800🪙</div>'
+    +'<div style="font-size:7px;padding:3px 10px;background:rgba(255,190,11,.07);border:1px solid rgba(255,190,11,.2);border-radius:12px;color:var(--c3);">🥉 TOP 10 — 300🪙</div>'
+    +'</div></div>'
+    +'<div style="padding:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'
+    +'<div style="font-family:\'Orbitron\',monospace;font-size:11px;color:var(--c3);">'+(myEntry.score||0).toLocaleString('fr-FR')+' pts</div>'
+    +'<div style="font-size:7px;color:var(--txt2);">Vague '+(myEntry.wave||0)+' · Mon meilleur</div></div>'
+    +'<div style="font-family:\'Orbitron\',monospace;font-size:8px;color:var(--dim);margin-bottom:4px;">CLASSEMENT</div>'
+    +'<div id="tourn-lb"><div style="text-align:center;padding:20px;color:var(--dim);">Chargement…</div></div>';
+  el.innerHTML=html;
+  if(_tournTimer)clearInterval(_tournTimer);
+  _tournTimer=setInterval(function(){
+    var ms=next-Date.now(),d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    var t=document.getElementById('tourn-timer');if(t)t.textContent=d+'j '+h+'h '+m+'m '+s+'s';
+    if(ms<=0)clearInterval(_tournTimer);
   },1000);
-  if(!SB) return;
+  if(!SB)return;
   SB.from('tournament_scores').select('user_id,pseudo,score,wave').eq('week',weekNum).order('score',{ascending:false}).limit(20)
     .then(function(r){
-      var lb = r.data||[];
-      var myRank = lb.findIndex(function(e){ return e.user_id===currentUser?.id; })+1;
-      var lbHtml = '<div style="font-family:\'Orbitron\',monospace;font-size:8px;color:var(--dim);margin:8px 0 4px;">CLASSEMENT</div>';
-      if(!lb.length){ lbHtml += '<div style="text-align:center;padding:20px;color:var(--dim);">Sois le premier !</div>'; }
-      lb.forEach(function(e,i){
-        var isMe = e.user_id===currentUser?.id;
-        var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
-        lbHtml += '<div class="tourn-lb-row'+(isMe?' me':'')+'"><div class="tourn-lb-rank">'+medal+'</div><div class="tourn-lb-name">'+(isMe?'<strong>'+e.pseudo+'</strong>':e.pseudo||'Anonyme')+'</div><div class="tourn-lb-score">'+((e.score||0).toLocaleString('fr-FR'))+'</div></div>';
-      });
-      el.innerHTML += lbHtml;
+      var lb=r.data||[];var lbEl=document.getElementById('tourn-lb');if(!lbEl)return;
+      if(!lb.length){lbEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim);">Sois le premier !</div>';return;}
+      lbEl.innerHTML=lb.map(function(e,i){
+        var isMe=e.user_id===currentUser?.id;
+        var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+        return '<div class="tourn-lb-row'+(isMe?' me':'')+'"><div class="tourn-lb-rank">'+medal+'</div>'
+          +'<div class="tourn-lb-name">'+(isMe?'<strong>':'')+e.pseudo+(isMe?'</strong>':'')+'</div>'
+          +'<div class="tourn-lb-score">'+((e.score||0).toLocaleString('fr-FR'))+'</div></div>';
+      }).join('');
     }).catch(function(){});
 }
-
-function submitTournamentScore(score, wave){
-  if(!SB||!currentUser||!score) return;
-  var weekNum = Math.floor(Date.now()/604800000);
-  var key = 'pulse_tourn_week_'+weekNum;
-  var existing = loadData(key,{score:0,wave:0});
-  if(score <= existing.score) return;
+function submitTournamentScore(score,wave){
+  if(!SB||!currentUser||!score)return;
+  var wk=Math.floor(Date.now()/604800000),key='pulse_tourn_week_'+wk;
+  var ex=loadData(key,{score:0,wave:0});if(score<=ex.score)return;
   saveData(key,{score:score,wave:wave});
-  var pseudo = loadData('pulse_pseudo_v3','') || 'Anonyme';
-  SB.from('tournament_scores').upsert({user_id:currentUser.id,pseudo:pseudo,score:score,wave:wave,week:weekNum,submitted_at:new Date().toISOString()},{onConflict:'user_id,week'})
-    .then(function(){ showToast('🏆 Score soumis au tournoi !','success',3000); var n=document.getElementById('hub-tourn-notif'); if(n) n.classList.add('on'); })
+  var pseudo=loadData('pulse_pseudo_v3','')||'Anonyme';
+  SB.from('tournament_scores').upsert({user_id:currentUser.id,pseudo:pseudo,score:score,wave:wave,week:wk,submitted_at:new Date().toISOString()},{onConflict:'user_id,week'})
+    .then(function(){showToast('🏆 Score soumis !','success',3000);var n=document.getElementById('hub-tourn-notif');if(n)n.classList.add('on');})
     .catch(function(){});
 }
 
 // ── Replay ──
-function startReplayRecording(){ _replayRecording=true; _replayBuffer=[]; _replayMeta={startTime:Date.now(),score:0,wave:0,kills:0}; }
-
+function startReplayRecording(){
+  _replayRecording=true;_replayBuffer=[];_replayMeta={score:0,wave:0,kills:0};
+  if(_replayInterval)clearInterval(_replayInterval);
+  _replayInterval=setInterval(function(){if(_replayRecording&&G&&G.running)recordReplayFrame();},50);
+}
 function recordReplayFrame(){
-  if(!_replayRecording||!G||_replayBuffer.length>=REPLAY_MAX_FRAMES){ if(_replayBuffer.length>=REPLAY_MAX_FRAMES) _replayRecording=false; return; }
-  _replayBuffer.push({f:frame,px:Math.round(G.player.x),py:Math.round(G.player.y),ph:G.player.hp,s:G.score,w:G.wave,
-    e:G.enemies.filter(function(e){ return !e.dead; }).slice(0,25).map(function(e){ return {x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':e.mini?'m':'n'}; }),
-    b:G.bullets.slice(0,30).map(function(b){ return {x:Math.round(b.x),y:Math.round(b.y),en:b.enemy}; })
+  if(!_replayRecording||!G||_replayBuffer.length>=3600){if(_replayBuffer.length>=3600)_replayRecording=false;return;}
+  _replayBuffer.push({s:G.score,w:G.wave,px:Math.round(G.player.x),py:Math.round(G.player.y),ph:G.player.hp,
+    e:(G.enemies||[]).filter(function(e){return !e.dead;}).slice(0,20).map(function(e){return {x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':'n'};}),
+    b:(G.bullets||[]).slice(0,20).map(function(b){return {x:Math.round(b.x),y:Math.round(b.y),en:b.enemy};})
   });
-  _replayMeta.score=G.score; _replayMeta.wave=G.wave; _replayMeta.kills=G.totalKills;
+  _replayMeta.score=G.score;_replayMeta.wave=G.wave;_replayMeta.kills=G.totalKills||0;
 }
-
 function stopReplayRecording(){
-  _replayRecording=false;
-  if(_replayBuffer.length<60) return;
-  var rep = {id:Date.now(),date:new Date().toISOString(),score:_replayMeta.score,wave:_replayMeta.wave,kills:_replayMeta.kills,duration:_replayBuffer.length,frames:_replayBuffer};
-  var replays = loadData('pulse_replays_v1',[]);
-  replays.unshift(rep);
-  if(replays.length>5) replays=replays.slice(0,5);
-  saveData('pulse_replays_v1',replays);
-  _savedReplays=replays;
-  showToast('⏮ Replay sauvegardé !','success',2000);
+  _replayRecording=false;if(_replayInterval){clearInterval(_replayInterval);_replayInterval=null;}
+  if(_replayBuffer.length<30)return;
+  var rep={id:Date.now(),date:new Date().toISOString(),score:_replayMeta.score,wave:_replayMeta.wave,kills:_replayMeta.kills,frames:_replayBuffer};
+  var reps=loadData('pulse_replays_v1',[]);reps.unshift(rep);if(reps.length>5)reps=reps.slice(0,5);
+  saveData('pulse_replays_v1',reps);_savedReplays=reps;showToast('⏮ Replay sauvegardé !','success',2000);
 }
-
-function openReplays(){
-  _savedReplays = loadData('pulse_replays_v1',[]);
-  renderReplayList();
-  show('s-replay');
-}
-
+function openReplays(){_savedReplays=loadData('pulse_replays_v1',[]);renderReplayList();show('s-replay');}
 function renderReplayList(){
-  var el = document.getElementById('replay-list-content');
-  if(!el) return;
-  if(!_savedReplays.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--dim);">Aucun replay — joue une partie !</div>'; return; }
-  el.innerHTML = _savedReplays.map(function(rep,i){
-    var date = new Date(rep.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  var el=document.getElementById('replay-list-content');if(!el)return;
+  if(!_savedReplays.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--dim);">Aucun replay — joue une partie !</div>';return;}
+  el.innerHTML=_savedReplays.map(function(rep,i){
+    var date=new Date(rep.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
     return '<div class="replay-card" onclick="playReplay('+i+')">'
       +'<div class="replay-thumb">🎮</div>'
       +'<div style="flex:1;"><div class="replay-score">'+((rep.score||0).toLocaleString('fr-FR'))+' pts</div>'
-      +'<div class="replay-meta">Vague '+(rep.wave||0)+' · '+(rep.kills||0)+' kills · '+date+'</div></div>'
+      +'<div class="replay-meta">V'+rep.wave+' · '+rep.kills+' kills · '+date+'</div></div>'
       +'<button class="btn btn-s" style="font-size:7px;padding:6px 10px;" onclick="event.stopPropagation();playReplay('+i+')"><span>▶ VOIR</span></button></div>';
   }).join('');
 }
-
 function playReplay(idx){
-  var rep = _savedReplays[idx];
-  if(!rep||!rep.frames) return;
-  _replayPlaying=true; _replayFrameIdx=0;
-  setupCanvas(); show('__none__');
-  var hud = document.getElementById('replay-hud-overlay');
-  if(hud) hud.classList.add('on');
+  var rep=_savedReplays[idx];if(!rep||!rep.frames)return;
+  _replayPlaying=true;_replayFrameIdx=0;setupCanvas();show('__none__');
+  var hud=document.getElementById('replay-hud-overlay');if(hud)hud.classList.add('on');
   document.body.classList.add('game-active');
   function step(){
-    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){ stopReplay(); return; }
-    var snap = rep.frames[_replayFrameIdx];
-    drawReplayFrame(snap);
-    var rs=document.getElementById('rh-score'), rw=document.getElementById('rh-wave'), rt=document.getElementById('rh-time');
-    if(rs) rs.textContent=(snap.s||0).toLocaleString('fr-FR');
-    if(rw) rw.textContent=snap.w||1;
-    if(rt){ var sec=Math.floor(_replayFrameIdx/60); rt.textContent=Math.floor(sec/60)+':'+(sec%60).toString().padStart(2,'0'); }
-    _replayFrameIdx++;
-    _replayTimer=requestAnimationFrame(step);
+    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){stopReplay();return;}
+    var snap=rep.frames[_replayFrameIdx];
+    if(ctx&&W&&H){
+      drawBg(Date.now()*.001);ctx.save();
+      (snap.e||[]).forEach(function(e){ctx.beginPath();ctx.arc(e.x,e.y,e.t==='b'?24:10,0,Math.PI*2);ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':'rgba(255,26,110,.5)';ctx.fill();});
+      (snap.b||[]).forEach(function(b){ctx.beginPath();ctx.arc(b.x,b.y,4,0,Math.PI*2);ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill();});
+      ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(4,4,80,20);ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px monospace';ctx.fillText('▶ REPLAY',10,16);
+      ctx.restore();
+    }
+    var rs=document.getElementById('rh-score'),rw=document.getElementById('rh-wave');
+    if(rs)rs.textContent=(snap.s||0).toLocaleString('fr-FR');if(rw)rw.textContent=snap.w||1;
+    _replayFrameIdx++;_replayRAF=requestAnimationFrame(step);
   }
-  _replayTimer=requestAnimationFrame(step);
+  _replayRAF=requestAnimationFrame(step);
 }
-
-function drawReplayFrame(snap){
-  if(!ctx||!W||!H) return;
-  drawBg(Date.now()*.001);
-  ctx.save();
-  (snap.pu||[]).forEach(function(p){ ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.fillStyle='rgba(0,245,212,.4)';ctx.fill(); });
-  (snap.e||[]).forEach(function(e){ ctx.beginPath();ctx.arc(e.x,e.y,e.t==='b'?24:e.t==='m'?16:10,0,Math.PI*2);ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':'rgba(255,26,110,.5)';ctx.fill(); });
-  (snap.b||[]).forEach(function(b){ ctx.beginPath();ctx.arc(b.x,b.y,4,0,Math.PI*2);ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill(); });
-  ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
-  ctx.fillStyle='rgba(0,245,212,.15)';ctx.fillRect(4,4,80,20);
-  ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px monospace';ctx.fillText('▶ REPLAY',10,16);
-  ctx.restore();
-}
-
 function stopReplay(){
-  _replayPlaying=false;
-  if(_replayTimer){ cancelAnimationFrame(_replayTimer); _replayTimer=null; }
-  var hud=document.getElementById('replay-hud-overlay');
-  if(hud) hud.classList.remove('on');
-  document.body.classList.remove('game-active');
-  openReplays();
+  _replayPlaying=false;if(_replayRAF){cancelAnimationFrame(_replayRAF);_replayRAF=null;}
+  var hud=document.getElementById('replay-hud-overlay');if(hud)hud.classList.remove('on');
+  document.body.classList.remove('game-active');openReplays();
 }
 
 // ── BP v2 ──
-function openBP(){
-  renderBP2();
-  show('s-bp');
-}
-
+function openBP(){renderBP2();show('s-bp');}
 function renderBP2(){
-  var lv=battlePass.level, xp=battlePass.xp, max=BP_XP_PER_LEVEL;
-  var pct=lv>=BP_MAX_LEVEL?100:Math.round(xp/max*100);
-  var ring=document.getElementById('bp2-ring'); if(ring) ring.style.setProperty('--prog',pct+'%');
-  var elLv=document.getElementById('bp2-level'); if(elLv) elLv.textContent=lv;
-  var fill=document.getElementById('bp2-xp-fill'); if(fill) fill.style.width=pct+'%';
-  var xpLbl=document.getElementById('bp2-xp-label'); if(xpLbl) xpLbl.textContent=lv>=BP_MAX_LEVEL?'MAX':xp+' / '+max+' XP';
-  var sn=document.getElementById('bp2-season-name'); if(sn) sn.textContent='⭐ SAISON '+BP_SEASON_CURRENT;
-  var end=document.getElementById('bp2-season-end'); if(end&&typeof formatSeasonEnd==='function') end.textContent=formatSeasonEnd();
+  var lv=battlePass.level,xp=battlePass.xp,max=BP_XP_PER_LEVEL,pct=lv>=BP_MAX_LEVEL?100:Math.round(xp/max*100);
+  var ring=document.getElementById('bp2-ring');if(ring)ring.style.setProperty('--prog',pct+'%');
+  var elLv=document.getElementById('bp2-level');if(elLv)elLv.textContent=lv;
+  var fill=document.getElementById('bp2-xp-fill');if(fill)fill.style.width=pct+'%';
+  var xpLbl=document.getElementById('bp2-xp-label');if(xpLbl)xpLbl.textContent=lv>=BP_MAX_LEVEL?'MAX':xp+' / '+max+' XP';
+  var sn=document.getElementById('bp2-season-name');if(sn)sn.textContent='⭐ SAISON '+(BP_SEASON_CURRENT||1);
+  var se=document.getElementById('bp2-season-end');if(se&&typeof formatSeasonEnd==='function')se.textContent=formatSeasonEnd();
   var pb=document.getElementById('bp2-prem-badge');
-  if(pb){ pb.style.opacity=hasPremiumPass.owned?'1':'0.7'; }
+  if(pb){pb.style.background=hasPremiumPass.owned?'rgba(255,190,11,.15)':'rgba(180,79,255,.1)';pb.style.borderColor=hasPremiumPass.owned?'rgba(255,190,11,.5)':'rgba(180,79,255,.3)';}
   renderBP2Content('rewards');
 }
-
-function bp2Tab(tab, btn){
-  document.querySelectorAll('.bp2-tab').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  renderBP2Content(tab);
+function bp2Tab(tab,btn){
+  document.querySelectorAll('.bp2-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');renderBP2Content(tab);
 }
-
 function renderBP2Content(tab){
-  var el=document.getElementById('bp2-content');
-  if(!el) return;
+  var el=document.getElementById('bp2-content');if(!el)return;
   var lv=battlePass.level;
   if(tab==='rewards'){
-    var html='<div style="display:grid;grid-template-columns:40px 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);"><div style="padding:6px;font-size:6px;color:var(--dim);text-align:center;border-right:1px solid rgba(255,255,255,.05);">NIV</div><div style="padding:6px 10px;font-size:6px;color:var(--txt2);border-right:1px solid rgba(255,255,255,.04);">🆓 GRATUIT</div><div style="padding:6px 10px;font-size:6px;color:var(--c4);">⭐ PREMIUM</div></div>';
+    var html='<div style="display:grid;grid-template-columns:40px 1fr 1fr;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.08);">'
+      +'<div style="padding:6px;font-size:6px;color:var(--dim);text-align:center;border-right:1px solid rgba(255,255,255,.05);">NIV</div>'
+      +'<div style="padding:6px 10px;font-size:6px;color:var(--txt2);border-right:1px solid rgba(255,255,255,.04);">🆓 GRATUIT</div>'
+      +'<div style="padding:6px 10px;font-size:6px;color:var(--c4);">⭐ PREMIUM</div></div>';
     for(var i=1;i<=BP_MAX_LEVEL;i++){
-      var fr=BP_REWARDS.find(function(r){ return r.lv===i&&r.track==='free'; });
-      var pr=BP_REWARDS.find(function(r){ return r.lv===i&&r.track==='premium'; });
-      var unlocked=lv>=i;
-      var renderCell=function(r,isPrem){
-        if(!r) return '<div style="border-right:'+(isPrem?'none':'1px solid rgba(255,255,255,.04)')+';"></div>';
-        var key=r.lv+':'+r.track, claimed=battlePass.claimed[key], premLocked=isPrem&&!hasPremiumPass.owned;
-        var claimable=unlocked&&!claimed&&!premLocked;
+      var fr=BP_REWARDS.find(function(r){return r.lv===i&&r.track==='free';});
+      var pr=BP_REWARDS.find(function(r){return r.lv===i&&r.track==='premium';});
+      var un=lv>=i;
+      var cell=function(r,isPrem){
+        if(!r)return '<div style="border-right:'+(isPrem?'none':'1px solid rgba(255,255,255,.04)')+';"></div>';
+        var key=r.lv+':'+r.track,cl=battlePass.claimed[key],premLock=isPrem&&!hasPremiumPass.owned,canClaim=un&&!cl&&!premLock;
         return '<div style="padding:8px 10px;display:flex;align-items:center;gap:8px;border-right:'+(isPrem?'none':'1px solid rgba(255,255,255,.04)')+';">'
           +'<div style="font-size:clamp(16px,3.5vmin,22px);">'+r.icon+'</div>'
           +'<div style="flex:1;min-width:0;"><div style="font-size:clamp(7px,1.5vmin,9px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.label+'</div>'
-          +(claimable?'<button class="bp2-r-btn" onclick="event.stopPropagation();claimBpReward('+r.lv+',\''+r.track+'\')" style="font-family:\'Orbitron\',monospace;font-size:6px;padding:3px 8px;border:1px solid var(--c1);color:var(--c1);background:transparent;cursor:pointer;margin-top:3px;border-radius:2px;">⬇ RÉCL.</button>':'')
-          +(claimed?'<span style="font-size:6px;color:var(--c1);">✓</span>':'')
-          +(premLocked?'<span style="font-size:6px;color:var(--c4);">🔒</span>':'')
+          +(canClaim?'<button class="bp2-r-btn" onclick="event.stopPropagation();claimBpReward('+r.lv+',\''+r.track+'\')">⬇ RÉCLAMER</button>':'')
+          +(cl?'<span style="font-size:6px;color:var(--c1);">✓</span>':'')
+          +(premLock?'<span style="font-size:6px;color:var(--c4);">🔒</span>':'')
           +'</div></div>';
       };
       html+='<div style="display:grid;grid-template-columns:40px 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04);">'
-        +'<div style="display:flex;align-items:center;justify-content:center;font-family:\'Orbitron\',monospace;font-size:8px;color:'+(unlocked?'var(--c1)':'var(--dim)')+';border-right:1px solid rgba(255,255,255,.05);">'+i+'</div>'
-        +renderCell(fr,false)+renderCell(pr,true)+'</div>';
+        +'<div style="display:flex;align-items:center;justify-content:center;font-family:\'Orbitron\',monospace;font-size:8px;color:'+(un?'var(--c1)':'var(--dim)')+';border-right:1px solid rgba(255,255,255,.05);">'+i+'</div>'
+        +cell(fr,false)+cell(pr,true)+'</div>';
     }
     el.innerHTML=html;
-    setTimeout(function(){ var rows=el.querySelectorAll('[style*="grid-template-columns:40px"]'); var t=rows[Math.min(lv,rows.length-1)]; if(t) t.scrollIntoView({behavior:'smooth',block:'center'}); },100);
-  } else if(tab==='quests'){
-    loadDailyQuests();
-    var ids=Object.keys(dailyQuests&&dailyQuests.quests||{});
-    var qhtml='<div class="quest-list">';
-    ids.forEach(function(id){
-      var def=QUEST_DEFS.find(function(q){ return q.id===id; });
-      if(!def) return;
-      var state=dailyQuests.quests[id];
-      var pct=Math.min(100,Math.round(state.progress/def.target*100));
-      qhtml+='<div class="quest-card'+(state.done?' done':'')+'">'
+    setTimeout(function(){var rows=el.querySelectorAll('[style*="grid-template-columns:40px"]');var t=rows[Math.min(lv,rows.length-1)];if(t)t.scrollIntoView({behavior:'smooth',block:'center'});},100);
+  }else if(tab==='quests'){
+    loadDailyQuests();var ids=Object.keys((dailyQuests&&dailyQuests.quests)||{});
+    el.innerHTML='<div style="padding:12px 0;">'+ids.map(function(id){
+      var def=QUEST_DEFS.find(function(q){return q.id===id;});if(!def)return '';
+      var st=dailyQuests.quests[id];var pct=Math.min(100,Math.round(st.progress/def.target*100));
+      return '<div class="quest-card'+(st.done?' done':'')+'">'
         +'<div class="quest-icon">'+def.icon+'</div>'
-        +'<div class="quest-info"><div class="quest-name">'+def.name+'</div><div class="quest-desc">'+def.desc+'</div>'
-        +'<div class="quest-progress"><div class="quest-bar"><div class="quest-bar-fill" style="width:'+pct+'%"></div></div><div class="quest-pct">'+state.progress+'/'+def.target+'</div></div></div>'
-        +'<div class="quest-reward">'
-        +(state.done&&!state.claimed?'<button class="btn btn-s" style="font-size:7px;padding:4px 8px;" onclick="claimQuestReward(\''+id+'\')"><span>+'+def.xp+' XP</span></button>':state.claimed?'<div style="font-size:18px;">✓</div>':'<div class="quest-xp">+'+def.xp+'</div><div class="quest-xp-lbl">XP</div>')
+        +'<div style="flex:1;"><div class="quest-name">'+def.name+'</div><div class="quest-desc">'+def.desc+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-top:6px;"><div class="quest-bar"><div class="quest-bar-fill" style="width:'+pct+'%"></div></div>'
+        +'<div style="font-size:6px;color:var(--dim);">'+st.progress+'/'+def.target+'</div></div></div>'
+        +'<div>'+(st.done&&!st.claimed?'<button class="btn btn-s" style="font-size:7px;padding:4px 8px;" onclick="claimQuestReward(\''+id+'\')"><span>+'+def.xp+'XP</span></button>':st.claimed?'<div style="font-size:18px;color:var(--c1);">✓</div>':'<div style="font-family:\'Orbitron\',monospace;font-size:9px;color:var(--c3);">+'+def.xp+'</div><div style="font-size:5px;color:var(--dim);">XP</div>')
         +'</div></div>';
-    });
-    el.innerHTML=qhtml+'</div>';
+    }).join('')+'</div>';
   }
-}
-
-// ── Fin de partie : hooks via showGoScreen patch sécurisé ──
-// On utilise un flag pour éviter les boucles
-var _v31HooksReady = false;
-document.addEventListener('DOMContentLoaded', function(){
-  if(_v31HooksReady) return;
-  _v31HooksReady = true;
-  // Patch showGoScreen pour soumettre tournoi + quêtes
-  if(typeof showGoScreen === 'function'){
-    var _orig = showGoScreen;
-    showGoScreen = function(){
-      try {
-        _updateQuestsEndGame();
-        if(G) submitTournamentScore(G.score||0, G.wave||0);
-        if(G) updateClanContribution(G.score||0);
-      } catch(e) { console.warn('v31 end hooks:', e); }
-      _orig.apply(this, arguments);
-    };
-  }
-  // Patch startGame pour replay
-  if(typeof startGame === 'function'){
-    var _origSG = startGame;
-    startGame = function(){
-      try { startReplayRecording(); loadDailyQuests(); } catch(e){}
-      _origSG.apply(this, arguments);
-    };
-  }
-  // Enregistrer frames replay via loop — on patche loop()
-  if(typeof loop === 'function'){
-    var _origLoop = loop;
-    loop = function(now){
-      _origLoop(now);
-      try { if(_replayRecording && frame%2===0) recordReplayFrame(); } catch(e){}
-    };
-  }
-});
-
-// ── hardReload ──
-function hardReload(){
-  var btn = event && event.currentTarget;
-  if(btn){ btn.textContent='⏳ Nettoyage…'; btn.style.pointerEvents='none'; }
-  Promise.resolve()
-    .then(function(){
-      if('serviceWorker' in navigator) return navigator.serviceWorker.getRegistrations().then(function(regs){ return Promise.all(regs.map(function(r){ return r.unregister(); })); });
-    })
-    .then(function(){
-      if('caches' in window) return caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){ return caches.delete(k); })); });
-    })
-    .then(function(){ location.reload(true); })
-    .catch(function(){ location.reload(true); });
 }
 
 </script>
@@ -14679,18 +14372,18 @@ function hardReload(){
 </div>
 
 
-<!-- ÉCRAN CLANS -->
+<!-- ══ CLANS ══ -->
 <div class="scr" id="s-clan">
   <div class="scr-inner" style="align-items:center;padding:10px 8px;">
-    <div class="clan-wrap">
+    <div style="width:min(580px,97vw);">
       <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
         <button class="btn btn-s" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
         <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c1);flex:1;">⚔ CLANS</div>
       </div>
-      <div id="clan-main-content"><div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div></div>
-      <div id="clan-create-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:800;align-items:center;justify-content:center;">
+      <div id="clan-main-content"></div>
+      <div id="clan-create-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;align-items:center;justify-content:center;">
         <div style="background:var(--bg);border:1px solid rgba(0,245,212,.3);border-radius:6px;padding:20px;width:min(320px,90vw);display:flex;flex-direction:column;gap:10px;">
-          <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.2em;color:var(--c1);">CRÉER UN CLAN</div>
+          <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--c1);">CRÉER UN CLAN</div>
           <input id="clan-create-name" class="acc-input" placeholder="NOM (3-24 caractères)" maxlength="24" style="width:100%;">
           <input id="clan-create-tag" class="acc-input" placeholder="TAG [2-4 lettres]" maxlength="4" style="width:100%;text-transform:uppercase;">
           <div style="display:flex;gap:8px;">
@@ -14703,15 +14396,15 @@ function hardReload(){
   </div>
 </div>
 
-<!-- ÉCRAN CHAT -->
+<!-- ══ CHAT ══ -->
 <div class="scr" id="s-chat">
   <div class="scr-inner" style="padding:0;height:100%;">
     <div class="chat-wrap">
       <div class="chat-header">
-        <button class="btn btn-s" onclick="show('s-title');disconnectChat()" style="padding:6px 12px;min-width:0;font-size:7px;"><span>←</span></button>
-        <div class="chat-online-dot"></div>
+        <button class="btn btn-s" onclick="show('s-title');disconnectChat()" style="padding:6px 12px;min-width:0;"><span>←</span></button>
+        <div style="width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0;"></div>
         <div class="chat-title">CHAT GLOBAL</div>
-        <div style="font-size:7px;color:var(--txt2);" id="chat-online-count">• 0 en ligne</div>
+        <div style="font-size:7px;color:var(--txt2);" id="chat-online-count">• en ligne</div>
       </div>
       <div class="chat-messages" id="chat-messages"><div class="chat-system-msg">Connexion…</div></div>
       <div class="chat-input-row">
@@ -14722,7 +14415,7 @@ function hardReload(){
   </div>
 </div>
 
-<!-- ÉCRAN TOURNOIS -->
+<!-- ══ TOURNOIS ══ -->
 <div class="scr" id="s-tournament">
   <div class="scr-inner" style="align-items:center;padding:10px 8px;">
     <div class="tourn-wrap">
@@ -14730,12 +14423,12 @@ function hardReload(){
         <button class="btn btn-s" onclick="show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
         <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c3);flex:1;">🏆 TOURNOIS</div>
       </div>
-      <div id="tournament-content"><div style="text-align:center;padding:30px;color:var(--dim);">Chargement…</div></div>
+      <div id="tournament-content"></div>
     </div>
   </div>
 </div>
 
-<!-- ÉCRAN REPLAY -->
+<!-- ══ REPLAY ══ -->
 <div class="scr" id="s-replay">
   <div class="scr-inner" style="align-items:center;padding:10px 8px;">
     <div class="replay-wrap">
@@ -14753,8 +14446,6 @@ function hardReload(){
   <div><div class="replay-hud-val" id="rh-score">0</div><div class="replay-hud-lbl">SCORE</div></div>
   <div style="width:1px;height:24px;background:var(--border);"></div>
   <div><div class="replay-hud-val" id="rh-wave">1</div><div class="replay-hud-lbl">VAGUE</div></div>
-  <div style="width:1px;height:24px;background:var(--border);"></div>
-  <div><div class="replay-hud-val" id="rh-time">0:00</div><div class="replay-hud-lbl">TEMPS</div></div>
   <button onclick="stopReplay()" style="margin-left:8px;font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;background:rgba(255,26,110,.1);border:1px solid rgba(255,26,110,.3);color:var(--c2);cursor:pointer;border-radius:3px;">■ STOP</button>
 </div>
 
