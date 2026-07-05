@@ -2657,16 +2657,6 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
 .tourn-lb-rank{font-family:'Orbitron',monospace;font-size:11px;width:32px;color:var(--dim);}
 .tourn-lb-name{flex:1;font-size:8px;}
 .tourn-lb-score{font-family:'Orbitron',monospace;font-size:9px;color:var(--c3);}
-.replay-wrap{width:min(560px,97vw);}
-.replay-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px;cursor:pointer;margin-bottom:8px;}
-.replay-card:hover{background:rgba(255,255,255,.06);border-color:rgba(0,245,212,.2);}
-.replay-thumb{width:48px;height:48px;border-radius:4px;background:rgba(0,245,212,.08);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.replay-score{font-family:'Orbitron',monospace;font-size:13px;color:var(--c3);}
-.replay-meta{font-size:7px;color:var(--txt2);margin-top:3px;}
-#replay-hud-overlay{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(3,3,10,.9);border:1px solid rgba(0,245,212,.3);padding:8px 16px;border-radius:4px;display:none;gap:16px;align-items:center;}
-#replay-hud-overlay.on{display:flex;}
-.replay-hud-val{font-family:'Orbitron',monospace;font-size:10px;color:var(--c1);}
-.replay-hud-lbl{font-size:6px;color:var(--dim);}
 
 </style>
 </head>
@@ -3051,7 +3041,6 @@ body.game-active #rage-bar-wrap,body.game-active #rage-active-banner{display:fle
       <button class="hub-btn" onclick="openClan()"><div class="hub-btn-icon">⚔</div><div class="hub-btn-label">CLANS</div><div class="hub-notif" id="hub-clan-notif"></div></button>
       <button class="hub-btn" onclick="openChat()"><div class="hub-btn-icon">💬</div><div class="hub-btn-label">CHAT</div><div class="hub-notif" id="hub-chat-notif"></div></button>
       <button class="hub-btn" onclick="openTournament()"><div class="hub-btn-icon">🏆</div><div class="hub-btn-label">TOURNOI</div><div class="hub-notif" id="hub-tourn-notif"></div></button>
-      <button class="hub-btn" onclick="openReplays()"><div class="hub-btn-icon">⏮</div><div class="hub-btn-label">REPLAYS</div></button>
     </div>
 
     <div class="ctrl-hint" id="ctrl-hint" style="border-radius:3px;border-color:rgba(0,245,212,.1);line-height:2;max-width:min(420px,90vw);">
@@ -5976,8 +5965,8 @@ function setupCanvas(){
   const isPortrait = isMobile && !isPhysicallyLandscape();
 
   if(isPortrait && isMobile){
-    // Portrait mobile: game in top 60% of real viewport
-    const gameH=Math.floor(sh*0.60);
+    // Portrait mobile: game in top 78% of real viewport (laisse juste la place pour les zones tactiles en bas)
+    const gameH=Math.floor(sh*0.78);
     W=sw; H=gameH;
     bc.style.width=gc.style.width=sw+'px';
     bc.style.height=gc.style.height=H+'px';
@@ -9076,7 +9065,7 @@ const BACK_MAP = {
   's-keybinds':'s-settings','s-gpmap':'s-settings',
   's-duo-config':'s-mode','s-online':'s-mode',
   's-daily':'s-title','s-relics':'s-title','s-inventory':'s-title','s-gift':'s-title','s-arena-win':'s-title','s-arena-map':'s-title','s-profile':'s-title',
-  's-admin':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-replay':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
+  's-admin':'s-title','s-clan':'s-title','s-chat':'s-title','s-tournament':'s-title','s-onboard':'s-title','s-reset':'s-auth','s-notif':'s-title',
 };
 let _backBtn=null;
 function _initBackBtn(){
@@ -9150,7 +9139,7 @@ function startGame(){
   newAchThisRun=[];
   resetMilestones();
   _rageKills=0; _rageTimer=0; _rageMult=1; _rageActive=false; _waveHitCount=0;
-  try{startReplayRecording();loadDailyQuests();}catch(e){}
+  try{loadDailyQuests();}catch(e){}
   setupCanvas();
   G=mkState(); G.running=true; G.explosions=[]; G.rerollsLeft=1; G.floats=[]; frame=0;
   G.shotsFired=0; G.shotsHit=0; G.maxComboThisRun=0;
@@ -13163,11 +13152,11 @@ function detectDevice(){
         : '👆 GAUCHE = joystick deplacement<br>👆 DROITE = viser (tir auto dans cette direction)<br>La visee persiste quand tu retires le doigt<br>💥 = bombe &nbsp;|&nbsp; ⚡ = dash';
     if(isPortrait){
       const combo=document.getElementById('combo');
-      combo.style.bottom='38%';
+      combo.style.bottom='22%';
       const kf=document.getElementById('kfeed');
-      kf.style.bottom='38%';
+      kf.style.bottom='22%';
       const atw=document.getElementById('ach-toast');
-      atw.style.bottom='42%';
+      atw.style.bottom='26%';
     } else {
       const combo=document.getElementById('combo');
       combo.style.bottom='clamp(140px,32vw,170px)';
@@ -14152,7 +14141,6 @@ setTimeout(function(){
 // ════════════════════════════════════
 
 var _chatChannel=null,_chatMessages=[],_tournTimer=null,_myClans=null,_myClanData=null,dailyQuests=null;
-var _replayRecording=false,_replayBuffer=[],_replayMeta={},_replayPlaying=false,_replayFrameIdx=0,_replayRAF=null,_replayInterval=null,_savedReplays=[];
 var QUEST_DEFS=[
   {id:'q_kills_50',name:'EXTERMINATION',desc:'Tuer 50 ennemis',icon:'💀',stat:'kills',target:50,xp:120},
   {id:'q_wave_10',name:'SURVIVANT',desc:'Atteindre la vague 10',icon:'🌊',stat:'wave',target:10,xp:150},
@@ -14200,15 +14188,19 @@ function _updateQuestsEndGame(){
   updateQuestProgress('boss',G.bossKillsThisRun||0);updateQuestProgress('games',1);
 }
 
+// ── Helper: Supabase avale les erreurs au lieu de rejeter la promesse.
+// On force la remontee explicite pour que .catch() se declenche vraiment.
+function sbOk(r){ if(r && r.error) throw r.error; return r; }
+
 // ── Clans ──
 function openClan(){show('s-clan');loadClanData();}
 function loadClanData(){
   var el=document.getElementById('clan-main-content');if(!el)return;
   if(!currentUser||!SB){el.innerHTML='<div style="text-align:center;padding:30px;"><button class="btn btn-g" onclick="show(\'s-auth\')"><span>SE CONNECTER</span></button></div>';return;}
   el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim);">Chargement…</div>';
-  SB.from('profiles').select('clan_id').eq('id',currentUser.id).single().then(function(r){
+  SB.from('profiles').select('clan_id').eq('id',currentUser.id).single().then(sbOk).then(function(r){
     if(!r.data||!r.data.clan_id){
-      return SB.from('clans').select('*').order('total_score',{ascending:false}).limit(15).then(function(r2){
+      return SB.from('clans').select('*').order('total_score',{ascending:false}).limit(15).then(sbOk).then(function(r2){
         var clans=r2.data||[];var html='<div style="display:flex;gap:8px;margin-bottom:10px;"><button class="btn btn-g" style="flex:1;" onclick="document.getElementById(\'clan-create-modal\').style.display=\'flex\'"><span>⚔ CRÉER UN CLAN</span></button></div>';
         if(!clans.length){html+='<div style="text-align:center;padding:20px;color:var(--dim);">Aucun clan — sois le premier !</div>';}
         clans.forEach(function(clan){
@@ -14222,8 +14214,8 @@ function loadClanData(){
       });
     }else{
       return Promise.all([
-        SB.from('clans').select('*').eq('id',r.data.clan_id).single(),
-        SB.from('clan_members').select('*').eq('clan_id',r.data.clan_id).order('contribution',{ascending:false})
+        SB.from('clans').select('*').eq('id',r.data.clan_id).single().then(sbOk),
+        SB.from('clan_members').select('*').eq('clan_id',r.data.clan_id).order('contribution',{ascending:false}).then(sbOk)
       ]).then(function(res){
         var clan=res[0].data,members=res[1].data||[];
         var myRole=(members.find(function(m){return m.user_id===currentUser.id;})||{}).role||'membre';
@@ -14237,7 +14229,7 @@ function loadClanData(){
         el.innerHTML=html;
       });
     }
-  }).catch(function(e){el.innerHTML='<div style="padding:20px;color:var(--c2);">'+e.message+'</div>';});
+  }).catch(function(e){el.innerHTML='<div style="padding:20px;color:var(--c2);">'+(e.message||e.hint||JSON.stringify(e))+'</div>';});
 }
 function renderClanMembers(members){
   return members.map(function(m,i){
@@ -14253,35 +14245,35 @@ function createClan(){
   var tag=(document.getElementById('clan-create-tag').value||'').trim().toUpperCase().slice(0,4);
   if(name.length<3||tag.length<2){showToast('Nom ou tag invalide','error',2000);return;}
   SB.from('clans').insert({name:name,tag:tag,owner_id:currentUser.id,members_count:1,total_score:0,created_at:new Date().toISOString()}).select().single()
-    .then(function(r){
+    .then(sbOk).then(function(r){
       return Promise.all([
-        SB.from('clan_members').insert({clan_id:r.data.id,user_id:currentUser.id,role:'chef',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()}),
-        SB.from('profiles').update({clan_id:r.data.id}).eq('id',currentUser.id)
+        SB.from('clan_members').insert({clan_id:r.data.id,user_id:currentUser.id,role:'chef',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()}).then(sbOk),
+        SB.from('profiles').update({clan_id:r.data.id}).eq('id',currentUser.id).then(sbOk)
       ]);
     }).then(function(){document.getElementById('clan-create-modal').style.display='none';showToast('Clan créé !','success',3000);loadClanData();})
-    .catch(function(e){showToast('Erreur : '+e.message,'error',3000);});
+    .catch(function(e){showToast('Erreur : '+(e.message||e.hint||'inconnue'),'error',4000);console.error('createClan',e);});
 }
 function joinClan(id,name){
   if(!currentUser||!SB){show('s-auth');return;}
   if(!confirm('Rejoindre '+name+' ?'))return;
-  SB.from('clan_members').insert({clan_id:id,user_id:currentUser.id,role:'membre',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()})
-    .then(function(){return SB.from('profiles').update({clan_id:id}).eq('id',currentUser.id);})
+  SB.from('clan_members').insert({clan_id:id,user_id:currentUser.id,role:'membre',contribution:0,pseudo:loadData('pulse_pseudo_v3',''),joined_at:new Date().toISOString()}).then(sbOk)
+    .then(function(){return SB.from('profiles').update({clan_id:id}).eq('id',currentUser.id).then(sbOk);})
     .then(function(){showToast('Clan rejoint !','success',3000);loadClanData();})
-    .catch(function(e){showToast('Erreur : '+e.message,'error',3000);});
+    .catch(function(e){showToast('Erreur : '+(e.message||e.hint||'inconnue'),'error',4000);console.error('joinClan',e);});
 }
 function leaveClan(){
   if(!currentUser||!SB||!_myClanData)return;
   if(!confirm('Quitter le clan ?'))return;
-  SB.from('clan_members').delete().eq('user_id',currentUser.id)
-    .then(function(){return SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id);})
+  SB.from('clan_members').delete().eq('user_id',currentUser.id).then(sbOk)
+    .then(function(){return SB.from('profiles').update({clan_id:null}).eq('id',currentUser.id).then(sbOk);})
     .then(function(){showToast('Tu as quitté le clan','info',2000);loadClanData();})
-    .catch(function(){showToast('Erreur','error',2000);});
+    .catch(function(e){showToast('Erreur : '+(e.message||'inconnue'),'error',3000);console.error('leaveClan',e);});
 }
 function updateClanContribution(score){
   if(!currentUser||!SB||!score)return;
-  SB.from('clan_members').select('contribution').eq('user_id',currentUser.id).maybeSingle()
-    .then(function(r){if(r.data)SB.from('clan_members').update({contribution:(r.data.contribution||0)+score}).eq('user_id',currentUser.id).then(function(){});})
-    .catch(function(){});
+  SB.from('clan_members').select('contribution').eq('user_id',currentUser.id).maybeSingle().then(sbOk)
+    .then(function(r){if(r.data)SB.from('clan_members').update({contribution:(r.data.contribution||0)+score}).eq('user_id',currentUser.id).then(sbOk).catch(function(e){console.error('updateClanContribution',e);});})
+    .catch(function(e){console.error('updateClanContribution',e);});
 }
 
 // ── Chat ──
@@ -14372,71 +14364,9 @@ function submitTournamentScore(score,wave){
   var ex=loadData(key,{score:0,wave:0});if(score<=ex.score)return;
   saveData(key,{score:score,wave:wave});
   var pseudo=loadData('pulse_pseudo_v3','')||'Anonyme';
-  SB.from('tournament_scores').upsert({user_id:currentUser.id,pseudo:pseudo,score:score,wave:wave,week:wk,submitted_at:new Date().toISOString()},{onConflict:'user_id,week'})
+  SB.from('tournament_scores').upsert({user_id:currentUser.id,pseudo:pseudo,score:score,wave:wave,week:wk,submitted_at:new Date().toISOString()},{onConflict:'user_id,week'}).then(sbOk)
     .then(function(){showToast('🏆 Score soumis !','success',3000);var n=document.getElementById('hub-tourn-notif');if(n)n.classList.add('on');})
-    .catch(function(){});
-}
-
-// ── Replay ──
-function startReplayRecording(){
-  _replayRecording=true;_replayBuffer=[];_replayMeta={score:0,wave:0,kills:0};
-  if(_replayInterval)clearInterval(_replayInterval);
-  _replayInterval=setInterval(function(){if(_replayRecording&&G&&G.running)recordReplayFrame();},50);
-}
-function recordReplayFrame(){
-  if(!_replayRecording||!G||_replayBuffer.length>=3600){if(_replayBuffer.length>=3600)_replayRecording=false;return;}
-  _replayBuffer.push({s:G.score,w:G.wave,px:Math.round(G.player.x),py:Math.round(G.player.y),ph:G.player.hp,
-    e:(G.enemies||[]).filter(function(e){return !e.dead;}).slice(0,20).map(function(e){return {x:Math.round(e.x),y:Math.round(e.y),t:e.boss?'b':'n'};}),
-    b:(G.bullets||[]).slice(0,20).map(function(b){return {x:Math.round(b.x),y:Math.round(b.y),en:b.enemy};})
-  });
-  _replayMeta.score=G.score;_replayMeta.wave=G.wave;_replayMeta.kills=G.totalKills||0;
-}
-function stopReplayRecording(){
-  _replayRecording=false;if(_replayInterval){clearInterval(_replayInterval);_replayInterval=null;}
-  if(_replayBuffer.length<30)return;
-  var rep={id:Date.now(),date:new Date().toISOString(),score:_replayMeta.score,wave:_replayMeta.wave,kills:_replayMeta.kills,frames:_replayBuffer};
-  var reps=loadData('pulse_replays_v1',[]);reps.unshift(rep);if(reps.length>5)reps=reps.slice(0,5);
-  saveData('pulse_replays_v1',reps);_savedReplays=reps;showToast('⏮ Replay sauvegardé !','success',2000);
-}
-function openReplays(){_savedReplays=loadData('pulse_replays_v1',[]);renderReplayList();show('s-replay');}
-function renderReplayList(){
-  var el=document.getElementById('replay-list-content');if(!el)return;
-  if(!_savedReplays.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--dim);">Aucun replay — joue une partie !</div>';return;}
-  el.innerHTML=_savedReplays.map(function(rep,i){
-    var date=new Date(rep.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    return '<div class="replay-card" onclick="playReplay('+i+')">'
-      +'<div class="replay-thumb">🎮</div>'
-      +'<div style="flex:1;"><div class="replay-score">'+((rep.score||0).toLocaleString('fr-FR'))+' pts</div>'
-      +'<div class="replay-meta">V'+rep.wave+' · '+rep.kills+' kills · '+date+'</div></div>'
-      +'<button class="btn btn-s" style="font-size:7px;padding:6px 10px;" onclick="event.stopPropagation();playReplay('+i+')"><span>▶ VOIR</span></button></div>';
-  }).join('');
-}
-function playReplay(idx){
-  var rep=_savedReplays[idx];if(!rep||!rep.frames)return;
-  _replayPlaying=true;_replayFrameIdx=0;setupCanvas();show('__none__');
-  var hud=document.getElementById('replay-hud-overlay');if(hud)hud.classList.add('on');
-  document.body.classList.add('game-active');
-  function step(){
-    if(!_replayPlaying||_replayFrameIdx>=rep.frames.length){stopReplay();return;}
-    var snap=rep.frames[_replayFrameIdx];
-    if(ctx&&W&&H){
-      drawBg(Date.now()*.001);ctx.save();
-      (snap.e||[]).forEach(function(e){ctx.beginPath();ctx.arc(e.x,e.y,e.t==='b'?24:10,0,Math.PI*2);ctx.fillStyle=e.t==='b'?'rgba(255,190,11,.7)':'rgba(255,26,110,.5)';ctx.fill();});
-      (snap.b||[]).forEach(function(b){ctx.beginPath();ctx.arc(b.x,b.y,4,0,Math.PI*2);ctx.fillStyle=b.en?'rgba(255,26,110,.9)':'rgba(0,245,212,.9)';ctx.fill();});
-      ctx.beginPath();ctx.arc(snap.px,snap.py,14,0,Math.PI*2);ctx.fillStyle='rgba(0,245,212,.85)';ctx.fill();
-      ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(4,4,80,20);ctx.fillStyle='rgba(0,245,212,.8)';ctx.font='bold 8px monospace';ctx.fillText('▶ REPLAY',10,16);
-      ctx.restore();
-    }
-    var rs=document.getElementById('rh-score'),rw=document.getElementById('rh-wave');
-    if(rs)rs.textContent=(snap.s||0).toLocaleString('fr-FR');if(rw)rw.textContent=snap.w||1;
-    _replayFrameIdx++;_replayRAF=requestAnimationFrame(step);
-  }
-  _replayRAF=requestAnimationFrame(step);
-}
-function stopReplay(){
-  _replayPlaying=false;if(_replayRAF){cancelAnimationFrame(_replayRAF);_replayRAF=null;}
-  var hud=document.getElementById('replay-hud-overlay');if(hud)hud.classList.remove('on');
-  document.body.classList.remove('game-active');openReplays();
+    .catch(function(e){console.error('submitTournamentScore',e);showToast('Erreur tournoi : '+(e.message||'inconnue'),'error',3000);});
 }
 
 // ── BP v2 ──
@@ -14622,26 +14552,6 @@ function renderBP2Content(tab){
   </div>
 </div>
 
-<!-- ══ REPLAY ══ -->
-<div class="scr" id="s-replay">
-  <div class="scr-inner" style="align-items:center;padding:10px 8px;">
-    <div class="replay-wrap">
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0 10px;">
-        <button class="btn btn-s" onclick="stopReplay();show('s-title')" style="padding:8px 16px;min-width:0;font-size:8px;"><span>← RETOUR</span></button>
-        <div style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:.25em;color:var(--c1);flex:1;">⏮ REPLAYS</div>
-      </div>
-      <div id="replay-list-content"></div>
-    </div>
-  </div>
-</div>
-
-<!-- HUD REPLAY -->
-<div id="replay-hud-overlay">
-  <div><div class="replay-hud-val" id="rh-score">0</div><div class="replay-hud-lbl">SCORE</div></div>
-  <div style="width:1px;height:24px;background:var(--border);"></div>
-  <div><div class="replay-hud-val" id="rh-wave">1</div><div class="replay-hud-lbl">VAGUE</div></div>
-  <button onclick="stopReplay()" style="margin-left:8px;font-family:'Orbitron',monospace;font-size:7px;padding:4px 10px;background:rgba(255,26,110,.1);border:1px solid rgba(255,26,110,.3);color:var(--c2);cursor:pointer;border-radius:3px;">■ STOP</button>
-</div>
 
 <!-- ═══ BOUTON SECOURS CACHE — visible si écran noir ═══ -->
 <div id="emergency-cache-btn" style="
